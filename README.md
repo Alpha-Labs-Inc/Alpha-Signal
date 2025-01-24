@@ -1,1 +1,1 @@
-# ALPHA SIGNAL
+# alphaSignal
