@@ -3,7 +3,8 @@ import argparse
 from alphasignal.commands.account import create_account
 from alphasignal.commands.twitter import follow, unfollow
 from alphasignal.commands.coin_manager import track, sell
-
+from alphasignal.wallet.solana_wallet import create_solana_wallet
+import asyncio
 def execute_command(command, args):
     if command == "create_account":
         create_account(args[0])
@@ -15,6 +16,11 @@ def execute_command(command, args):
         track(args[0], args[1])
     elif command == "sell":
         sell(args[0])
+    elif command == "make_wallet":
+        if len(args) == 0:
+            asyncio.run(create_solana_wallet())
+        else:
+            asyncio.run(create_solana_wallet(args[1]))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
 
@@ -48,8 +54,15 @@ def main():
                     print("Error: 'track' requires exactly 2 arguments: <mint_address> <track_type>")
                 elif command == "sell" and len(args) != 1:
                     print("Error: 'sell' requires exactly 1 argument: <mint_address>")
-                else:
-                    execute_command(command, args)
+                elif command == "make_wallet":
+                    if len(args) == 0:
+                        # No arguments, valid
+                        execute_command(command, args)
+                    elif len(args) == 2 and args[0] == "--fund" and args[1].lower() in ["true", "false"]:
+                        # Valid --fund flag with boolean value
+                        execute_command(command, args)
+                    else:
+                        print("Error: 'make_wallet' requires no arguments or --fund BOOLEAN as a flag.")
             except Exception as e:
                 print(f"An error occurred: {e}")
 

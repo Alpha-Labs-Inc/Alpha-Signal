@@ -7,7 +7,9 @@ license = "MIT"
 readme = "README.md"
 requires-python = "3.13.1"
 dependencies = [
-    "solana (==0.36.2)"
+    "solana (==0.36.2)",
+    "solders (==0.23.0)",
+    "base58 (==2.1.1)"
 ]
 
 
