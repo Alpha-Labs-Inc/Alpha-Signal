@@ -81,11 +81,11 @@ async def create_solana_wallet(fund: bool = False):
     # Step 3: Fund the new wallet
     
     if fund:
-        sender_secret_key = os.getenv("SENDER_SECRET_KEY")  # Load sender private key from environment variable
+        sender_secret_key = os.getenv("FUNDING_WALLET_SECRET_KEY")  # Load sender private key from environment variable
         if not sender_secret_key:
             print("Error: Set the SENDER_SECRET_KEY environment variable.")
             return
 
         sender_keypair = Keypair.from_secret_key(base58.b58decode(sender_secret_key))
         print("Funding the new wallet with SOL...")
-        await fund_wallet(sender_keypair, new_wallet.pubkey(), amount=0.1)  # Fix: Use pubkey() instead of public_key
+        await fund_wallet(sender_keypair, new_wallet.pubkey(), amount=0.001)  # Fix: Use pubkey() instead of public_key
