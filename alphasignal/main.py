@@ -11,6 +11,8 @@ from alphasignal.commands.coin_manager import track, sell
 from alphasignal.wallet.solana_wallet import create_solana_wallet
 import asyncio
 
+from alphasignal.wallet.transfer_solana import swap_tokens
+
 
 def execute_command(command, args):
     if command == "create_account":
@@ -28,6 +30,8 @@ def execute_command(command, args):
             asyncio.run(create_solana_wallet())
         else:
             asyncio.run(create_solana_wallet(args[1]))
+    elif command == "swap":
+        asyncio.run(swap_tokens(args[0], args[1], args[2]))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
 
@@ -120,6 +124,45 @@ def main():
                         print(
                             "Error: 'make_wallet' requires no arguments or --fund BOOLEAN as a flag."
                         )
+                elif command == "swap":
+                    print(
+                        f"Arguments received for swap: {args}"
+                    )  # Debugging: Print arguments received
+                    if len(args) != 3:
+                        print(
+                            "Error: 'swap' requires exactly 3 arguments: <from_token_mint> <to_token_mint> <amount>"
+                        )
+                    else:
+                        from_token_mint = args[0]
+                        to_token_mint = args[1]
+                        amount_str = args[2]
+
+                        # Validate token mint addresses (44 characters for Solana mints)
+
+                        try:
+                            # Debugging: Print amount before parsing
+                            print(f"Raw amount received: {amount_str}")
+
+                            # Convert amount to float
+                            amount_float = float(amount_str)
+                            if amount_float <= 0:
+                                print("Error: <amount> must be a positive number.")
+                            else:
+                                # Convert to smallest unit (e.g., lamports for SOL)
+
+                                # Debugging: Print validated inputs
+                                print(
+                                    f"Validated inputs - from: {from_token_mint}, to: {to_token_mint}, amount (in smallest unit): {amount_float}"
+                                )
+
+                                # Execute the command if all validations pass
+                                execute_command(
+                                    command,
+                                    [from_token_mint, to_token_mint, amount_float],
+                                )
+                        except ValueError as e:
+                            print(f"Error: <amount> must be a valid number. {e}")
+                            raise e
             except Exception as e:
                 print(f"An error occurred: {e}")
 
