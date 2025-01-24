@@ -5,9 +5,12 @@ import shutil
 from pathlib import Path
 from alphasignal.commands.account import create_account
 from alphasignal.commands.twitter import follow, unfollow
-from alphasignal.commands.coin_manager import track, sell
+from alphasignal.commands.coin_manager import add_coin, get_wallet_tokens, sell
 
 
+from alphasignal.commands.wallet import load_wallet_address
+from alphasignal.database.db import initialize_database
+from alphasignal.modles.enums import SellMode
 from alphasignal.wallet.solana_wallet import create_solana_wallet
 import asyncio
 
@@ -19,8 +22,40 @@ def execute_command(command, args):
         follow(args[0])
     elif command == "unfollow":
         unfollow(args[0])
-    elif command == "track":
-        track(args[0], args[1])
+    elif command == "tokens":
+        wallet_address = load_wallet_address()
+        tokens = get_wallet_tokens(wallet_address)
+        total_value = 0.0
+        if not tokens:
+            print("No tokens found in the wallet.")
+            return
+
+        print("\nTokens in your wallet:")
+        for token in tokens:
+            wallet_value = token.balance * token.value
+            total_value += wallet_value
+            print(f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}")
+        print(f"Total Value: ${total_value:.2f}")
+    elif command == "add_coin":
+        wallet_address = load_wallet_address()
+        mint_address = input("Enter the mint address of the token: ").strip()
+
+        print("\nChoose a sell mode:")
+        print("1. Time-Based")
+        print("2. Stop-Loss")
+        sell_mode_input = input("Enter 1 or 2: ").strip()
+
+        if sell_mode_input == "1":
+            sell_mode = SellMode.TIME_BASED
+            sell_value = float(input("Enter the sell interval in minutes: ").strip())
+        elif sell_mode_input == "2":
+            sell_mode = SellMode.STOP_LOSS
+            sell_value = float(input("Enter the percentage drop to trigger a sell (e.g., 10 for 10%): ").strip())
+        else:
+            print("Invalid choice. Operation canceled.")
+            return
+
+        add_coin(wallet_address, mint_address, sell_mode, sell_value)
     elif command == "sell":
         sell(args[0])
     elif command == "make_wallet":
@@ -65,6 +100,7 @@ def start():
 
 
 def main():
+    initialize_database() # Move to start once only a single acc can be created
     print(
         "Welcome to the AlphaSignal Interactive CLI. Type 'start' to get started. Type 'help' to see all available commands, or 'exit'/'quit' to quit."
     )
@@ -79,7 +115,8 @@ def main():
             print("  create_account <account_name> - Create an account.")
             print("  follow <twitter_handle> - Follow a Twitter account.")
             print("  unfollow <twitter_handle> - Unfollow a Twitter account.")
-            print("  track <mint_address> <track_type> - Track a coin.")
+            print("  tokens - Get current wallet details.")
+            print("  add_coin <mint_address> - Add a coin in your wallet to be tracked.")
             print("  sell <mint_address> - Sell a coin.")
             print("  exit or quit - Exit the CLI.")
         elif user_input.lower() == "start":
@@ -99,10 +136,6 @@ def main():
                     print(
                         f"Error: '{command}' requires exactly 1 argument: <twitter_handle>"
                     )
-                elif command == "track" and len(args) != 2:
-                    print(
-                        "Error: 'track' requires exactly 2 arguments: <mint_address> <track_type>"
-                    )
                 elif command == "sell" and len(args) != 1:
                     print("Error: 'sell' requires exactly 1 argument: <mint_address>")
                 elif command == "make_wallet":
@@ -120,6 +153,8 @@ def main():
                         print(
                             "Error: 'make_wallet' requires no arguments or --fund BOOLEAN as a flag."
                         )
+                else:
+                    execute_command(command, args)
             except Exception as e:
                 print(f"An error occurred: {e}")
 
