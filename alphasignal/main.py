@@ -14,6 +14,8 @@ from alphasignal.modles.enums import SellMode
 from alphasignal.wallet.solana_wallet import create_solana_wallet
 import asyncio
 
+from alphasignal.wallet.transfer_solana import swap_tokens
+
 
 def execute_command(command, args):
     if command == "create_account":
@@ -34,7 +36,9 @@ def execute_command(command, args):
         for token in tokens:
             wallet_value = token.balance * token.value
             total_value += wallet_value
-            print(f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}")
+            print(
+                f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}"
+            )
         print(f"Total Value: ${total_value:.2f}")
     elif command == "add_coin":
         wallet_address = load_wallet_address()
@@ -50,7 +54,11 @@ def execute_command(command, args):
             sell_value = float(input("Enter the sell interval in minutes: ").strip())
         elif sell_mode_input == "2":
             sell_mode = SellMode.STOP_LOSS
-            sell_value = float(input("Enter the percentage drop to trigger a sell (e.g., 10 for 10%): ").strip())
+            sell_value = float(
+                input(
+                    "Enter the percentage drop to trigger a sell (e.g., 10 for 10%): "
+                ).strip()
+            )
         else:
             print("Invalid choice. Operation canceled.")
             return
@@ -63,6 +71,8 @@ def execute_command(command, args):
             asyncio.run(create_solana_wallet())
         else:
             asyncio.run(create_solana_wallet(args[1]))
+    elif command == "swap":
+        asyncio.run(swap_tokens(args[0], args[1], args[2]))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
 
@@ -100,7 +110,7 @@ def start():
 
 
 def main():
-    initialize_database() # Move to start once only a single acc can be created
+    initialize_database()  # Move to start once only a single acc can be created
     print(
         "Welcome to the AlphaSignal Interactive CLI. Type 'start' to get started. Type 'help' to see all available commands, or 'exit'/'quit' to quit."
     )
@@ -116,7 +126,9 @@ def main():
             print("  follow <twitter_handle> - Follow a Twitter account.")
             print("  unfollow <twitter_handle> - Unfollow a Twitter account.")
             print("  tokens - Get current wallet details.")
-            print("  add_coin <mint_address> - Add a coin in your wallet to be tracked.")
+            print(
+                "  add_coin <mint_address> - Add a coin in your wallet to be tracked."
+            )
             print("  sell <mint_address> - Sell a coin.")
             print("  exit or quit - Exit the CLI.")
         elif user_input.lower() == "start":
@@ -153,6 +165,45 @@ def main():
                         print(
                             "Error: 'make_wallet' requires no arguments or --fund BOOLEAN as a flag."
                         )
+                elif command == "swap":
+                    print(
+                        f"Arguments received for swap: {args}"
+                    )  # Debugging: Print arguments received
+                    if len(args) != 3:
+                        print(
+                            "Error: 'swap' requires exactly 3 arguments: <from_token_mint> <to_token_mint> <amount>"
+                        )
+                    else:
+                        from_token_mint = args[0]
+                        to_token_mint = args[1]
+                        amount_str = args[2]
+
+                        # Validate token mint addresses (44 characters for Solana mints)
+
+                        try:
+                            # Debugging: Print amount before parsing
+                            print(f"Raw amount received: {amount_str}")
+
+                            # Convert amount to float
+                            amount_float = float(amount_str)
+                            if amount_float <= 0:
+                                print("Error: <amount> must be a positive number.")
+                            else:
+                                # Convert to smallest unit (e.g., lamports for SOL)
+
+                                # Debugging: Print validated inputs
+                                print(
+                                    f"Validated inputs - from: {from_token_mint}, to: {to_token_mint}, amount (in smallest unit): {amount_float}"
+                                )
+
+                                # Execute the command if all validations pass
+                                execute_command(
+                                    command,
+                                    [from_token_mint, to_token_mint, amount_float],
+                                )
+                        except ValueError as e:
+                            print(f"Error: <amount> must be a valid number. {e}")
+                            raise e
                 else:
                     execute_command(command, args)
             except Exception as e:
