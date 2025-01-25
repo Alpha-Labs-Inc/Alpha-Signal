@@ -5,12 +5,19 @@ import shutil
 from pathlib import Path
 from alphasignal.commands.account import create_account
 from alphasignal.commands.twitter import follow, unfollow
-from alphasignal.commands.coin_manager import add_coin_command, get_tokens_command, get_tracked_coins_command, process_coins, remove_coin_command, sell
+from alphasignal.commands.coin_manager import (
+    add_coin_command,
+    get_tokens_command,
+    get_tracked_coins_command,
+    process_coins,
+    remove_coin_command,
+    sell,
+)
 
 
 from alphasignal.database.db import initialize_database
 from alphasignal.modles.enums import SellMode
-from alphasignal.wallet.solana_wallet import create_solana_wallet
+from alphasignal.wallet.init_wallet import create_solana_wallet
 import asyncio
 
 from alphasignal.wallet.transfer_solana import swap_tokens

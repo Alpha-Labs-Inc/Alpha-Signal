@@ -9,7 +9,7 @@ from alphasignal.commands.coin_manager import (
     get_tracked_coins_command,
     process_coins,
 )
-from alphasignal.wallet.solana_wallet import create_solana_wallet
+from alphasignal.wallet.init_wallet import create_solana_wallet
 from alphasignal.wallet.transfer_solana import swap_tokens
 from alphasignal.database.db import (
     calculate_remaining_balance,
