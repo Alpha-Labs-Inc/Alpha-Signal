@@ -8,8 +8,15 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 import base64
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Confirmed
+from solana.rpc.commitment import Confirmed, Processed
 from solders.transaction import Transaction
+from solana.rpc.types import TxOpts
+from solders.rpc.config import RpcSendTransactionConfig
+from solders.hash import Hash
+from solana.rpc.api import Client
+from solders.transaction import VersionedTransaction
+from solders import message
+
 
 # Constants
 SOLANA_CLUSTER_URL = "https://api.mainnet-beta.solana.com"  # Solana mainnet
@@ -27,29 +34,16 @@ async def get_token_decimals(mint_address):
     Returns:
         int: The number of decimals for the token.
     """
-    rpc_url = "https://api.mainnet-beta.solana.com"  # Solana mainnet endpoint
-    async with AsyncClient(rpc_url) as client:
+    async with AsyncClient(SOLANA_CLUSTER_URL) as client:
         try:
-            # Convert the Base58 mint address to a valid Pubkey
             mint_pubkey = Pubkey.from_string(mint_address)
-
-            # Fetch account info for the mint
             response = await client.get_account_info(mint_pubkey)
-
-            # Access the account information properly
-            account_info = response.value  # .value holds the account info object
+            account_info = response.value
             if account_info is None:
                 raise ValueError(
                     f"Invalid or non-existent mint address: {mint_address}"
                 )
-
-            # Debugging: Print account_info.data to verify its structure
-            print(f"account_info.data: {account_info.data}")
-
-            # The account data is already raw binary; no need for Base64 decoding
             raw_data = account_info.data
-
-            # The decimals are stored at byte offset 44, size 1 (1 byte)
             decimals = struct.unpack_from("B", raw_data, offset=44)[0]
             return decimals
         except Exception as e:
@@ -73,10 +67,7 @@ def load_wallet_secret_key():
     with open(WALLET_SAVE_FILE, "r") as f:
         wallet_data = json.load(f)
 
-    # Decode the 32-byte private key (seed)
     secret_key = base58.b58decode(wallet_data["secret_key"])
-
-    # Generate the full keypair using the seed
     return Keypair.from_seed(secret_key)
 
 
@@ -104,60 +95,16 @@ async def fetch_swap_quote(
         "slippageBps": slippage_bps,
         "swapMode": swap_mode,
     }
-    headers = {"User-Agent": "AlphaSignalClient/1.0"}
-
-    # Make the API request
-    response = requests.get(url, params=params, headers=headers)
-
-    # Debugging: Print the full response
-    print(f"API Response Status Code: {response.status_code}")
-    print(f"API Response Text: {response.text}")
+    response = requests.get(url, params=params)
 
     if response.status_code != 200:
         raise RuntimeError(f"Error fetching quotes: {response.text}")
 
-    # Process the response JSON
     quote = response.json()
-    print(quote)
-    # Ensure required fields are in the response
     if not quote.get("routePlan"):
         raise RuntimeError("No swap routes available.")
 
     return quote
-
-
-async def execute_swap(quote, wallet):
-    """
-    Execute a swap transaction using the Jupiter Aggregator.
-
-    Args:
-        quote (dict): The best swap quote from Jupiter API.
-        wallet (Keypair): Wallet Keypair object for signing the transaction.
-
-    Returns:
-        str: The transaction signature.
-    """
-    # Extract the serialized transaction
-    swap_transaction = quote.get("swapTransaction")
-    if not swap_transaction:
-        raise RuntimeError("No swapTransaction provided in the quote response.")
-
-    # Deserialize the transaction
-    transaction = Transaction.deserialize(base58.b58decode(swap_transaction))
-
-    # Sign the transaction with the wallet
-    transaction.sign(wallet)
-
-    async with AsyncClient(SOLANA_CLUSTER_URL) as client:
-        # Send the signed transaction
-        response = await client.send_transaction(
-            transaction, opts={"skip_preflight": True}
-        )
-        if "result" not in response or not response["result"]:
-            raise RuntimeError(f"Swap failed! Error: {response['error']}")
-
-        # Return the transaction signature
-        return response["result"]
 
 
 async def swap_tokens(from_token_mint, to_token_mint, input_amount, slippage_bps=50):
@@ -171,32 +118,24 @@ async def swap_tokens(from_token_mint, to_token_mint, input_amount, slippage_bps
         slippage_bps (int): Slippage tolerance in basis points (default: 50 bps = 0.5%).
 
     Returns:
-        None: Prints the swap details and confirms the transaction.
+        str: The transaction signature of the completed swap.
     """
     try:
-        wallet = load_wallet_secret_key()  # Load the wallet from JSON
-
-        # Validate and convert the mint addresses to PublicKey
+        wallet = load_wallet_secret_key()
         from_token_decimals = await get_token_decimals(from_token_mint)
         to_token_decimals = await get_token_decimals(to_token_mint)
 
-        # Convert the input amount to the smallest unit of the "from token"
         input_amount_smallest_units = int(input_amount * (10**from_token_decimals))
 
         print(
             f"Fetching swap quote for {input_amount} tokens ({input_amount_smallest_units} smallest units)..."
         )
-        # Fetch the actual swap quote from Jupiter API
         quote = await fetch_swap_quote(
             from_token_mint, to_token_mint, input_amount_smallest_units, slippage_bps
         )
-
-        # Extract the best route from the quote
         out_amount_smallest_units = int(quote["outAmount"])
-        swap_usd_value = float(quote["swapUsdValue"])  # Total USD value of the output
+        swap_usd_value = float(quote["swapUsdValue"])
         price_impact_pct = float(quote.get("priceImpactPct", 0))
-
-        # Convert output amount to human-readable format
         output_token_amount = out_amount_smallest_units / (10**to_token_decimals)
 
         # Conversion rate
@@ -223,12 +162,12 @@ async def swap_tokens(from_token_mint, to_token_mint, input_amount, slippage_bps
         )
         print(f"- Slippage Tolerance: {slippage_bps / 100:.2f}%")
 
-        confirm = (
-            input("Do you want to proceed with the swap? (yes/no): ").strip().lower()
-        )
-        if confirm != "yes":
-            print("Swap cancelled.")
-            return
+        # confirm = (
+        #     input("Do you want to proceed with the swap? (yes/no): ").strip().lower()
+        # )
+        # if confirm != "yes":
+        #     print("Swap cancelled.")
+        #     return
 
         print("Executing swap...")
         transaction_signature = await execute_swap(quote, wallet)
@@ -237,3 +176,55 @@ async def swap_tokens(from_token_mint, to_token_mint, input_amount, slippage_bps
 
     except ValueError as e:
         print(f"Error: {e}")
+
+
+async def execute_swap(quote, wallet):
+    """
+    Execute a swap transaction using the Jupiter Aggregator.
+
+    Args:
+        quote (dict): The best swap quote from Jupiter API.
+        wallet (Keypair): Wallet Keypair object for signing the transaction.
+
+    Returns:
+        str: The transaction signature.
+    """
+    swap_url = f"{JUPITER_API_URL}/swap"
+    payload = {
+        "quoteResponse": quote,
+        "userPublicKey": str(wallet.pubkey()),  # Ensure pubkey is a string
+        "wrapAndUnwrapSol": True,
+    }
+
+    try:
+        response = requests.post(
+            swap_url, json=payload, headers={"Content-Type": "application/json"}
+        )
+        if response.status_code != 200:
+            raise RuntimeError(f"Error fetching swap transaction: {response.text}")
+        swap_data = response.json()
+        swap_transaction = swap_data.get("swapTransaction")
+
+        if not swap_transaction:
+            print(
+                f"Swap transaction is missing. Full response: {json.dumps(swap_data, indent=4)}"
+            )
+            raise RuntimeError("No swapTransaction provided by the /swap endpoint.")
+        client = Client(endpoint=SOLANA_CLUSTER_URL)
+        # Decode and deserialize the transaction
+        raw_transaction = VersionedTransaction.from_bytes(
+            base64.b64decode(swap_transaction)
+        )
+        signature = wallet.sign_message(
+            message.to_bytes_versioned(raw_transaction.message)
+        )
+        signed_txn = VersionedTransaction.populate(raw_transaction.message, [signature])
+
+        opts = TxOpts(skip_preflight=False, preflight_commitment=Processed)
+        result = client.send_raw_transaction(txn=bytes(signed_txn), opts=opts)
+
+        transaction_id = json.loads(result.to_json())["result"]
+        print(f"Transaction sent: https://explorer.solana.com/tx/{transaction_id}")
+        return transaction_id
+    except Exception as e:
+        raise Exception(f"poop fart {e}")
