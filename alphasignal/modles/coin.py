@@ -10,5 +10,5 @@ class Coin(BaseModel):
     last_price_max: float
     sell_mode: SellMode
     sell_value: float
-    time_purchased: datetime
-    buy_in_value: float
+    time_added: datetime
+    balance: float

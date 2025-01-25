@@ -1,7 +1,7 @@
 import sqlite3
 from typing import List
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from alphasignal.modles.coin import Coin
 from alphasignal.modles.enums import SellMode
@@ -23,7 +23,7 @@ def initialize_database() -> None:
             sell_value REAL,
             time_added TEXT,
             time_sold TEXT,
-            profit REAL,
+            balance REAL,
             is_active BOOLEAN DEFAULT 1
         );
         """)
@@ -33,33 +33,22 @@ def create_coin(
     mint_address: str,
     sell_mode: SellMode,
     sell_value: float,
-    buy_in_value: float
+    buy_in_value: float,
+    balance: float
 ) -> None:
     with get_connection() as conn:
         cursor = conn.cursor()
-        time_added = datetime.utcnow().isoformat()
+        time_added = datetime.now(timezone.utc).isoformat()
         coin_id = str(uuid.uuid4())
         try:
-            # Check if an active coin with the same mint_address already exists
-            cursor.execute(
-                """
-                SELECT COUNT(*) FROM tracked_coins
-                WHERE mint_address = ? AND is_active = 1
-                """,
-                (mint_address,)
-            )
-            if cursor.fetchone()[0] > 0:
-                print(f"An active coin with mint_address '{mint_address}' already exists in the database.")
-                return
-
             cursor.execute(
                 """
                 INSERT INTO tracked_coins (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
-                    time_added, time_sold, profit, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, 1)
+                    time_added, time_sold, balance, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 1)
                 """,
-                (coin_id, mint_address, buy_in_value, sell_mode.value, sell_value, time_added)
+                (coin_id, mint_address, buy_in_value, sell_mode.value, sell_value, time_added, balance)
             )
             conn.commit()
             print(f"Coin with mint_address '{mint_address}' added successfully.")
@@ -72,7 +61,7 @@ def get_active_coins() -> List[Coin]:
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, mint_address, last_price_max, sell_mode, sell_value, time_added, buy_in_value
+            SELECT id, mint_address, last_price_max, sell_mode, sell_value, time_added, balance
             FROM tracked_coins
             WHERE is_active = 1
             """
@@ -86,10 +75,23 @@ def get_active_coins() -> List[Coin]:
                 sell_mode=SellMode(row[3]),
                 sell_value=row[4],
                 time_added=datetime.fromisoformat(row[5]),
-                buy_in_value=row[6]
+                balance=row[6]
             )
             for row in rows
         ]
+
+def calculate_remaining_balance(mint_address: str, total_balance: float) -> float:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT SUM(balance) FROM tracked_coins
+            WHERE mint_address = ? AND is_active = 1
+            """,
+            (mint_address,)
+        )
+        used_balance = cursor.fetchone()[0] or 0.0
+        return total_balance - used_balance
 
 def update_coin_last_price(coin_id: str, new_price: float) -> None:
     with get_connection() as conn:
@@ -101,3 +103,27 @@ def update_coin_last_price(coin_id: str, new_price: float) -> None:
             (new_price, coin_id)
         )
         conn.commit()
+
+def deactivate_coin(coin_id: str) -> None:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE tracked_coins SET is_active = 0 WHERE id = ?
+            """,
+            (coin_id,)
+        )
+        conn.commit()
+        print(f"Coin with ID '{coin_id}' has been deactivated.")
+
+def reactivate_coin(coin_id: str) -> None:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE tracked_coins SET is_active = 1 WHERE id = ?
+            """,
+            (coin_id,)
+        )
+        conn.commit()
+        print(f"Coin with ID '{coin_id}' has been reactivated.")

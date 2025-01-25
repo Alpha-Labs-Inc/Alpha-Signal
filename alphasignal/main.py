@@ -5,10 +5,9 @@ import shutil
 from pathlib import Path
 from alphasignal.commands.account import create_account
 from alphasignal.commands.twitter import follow, unfollow
-from alphasignal.commands.coin_manager import add_coin, get_wallet_tokens, sell
+from alphasignal.commands.coin_manager import add_coin_command, get_tokens_command, get_tracked_coins_command, process_coins, remove_coin_command, sell
 
 
-from alphasignal.commands.wallet import load_wallet_address
 from alphasignal.database.db import initialize_database
 from alphasignal.modles.enums import SellMode
 from alphasignal.wallet.solana_wallet import create_solana_wallet
@@ -25,45 +24,15 @@ def execute_command(command, args):
     elif command == "unfollow":
         unfollow(args[0])
     elif command == "tokens":
-        wallet_address = load_wallet_address()
-        tokens = get_wallet_tokens(wallet_address)
-        total_value = 0.0
-        if not tokens:
-            print("No tokens found in the wallet.")
-            return
-
-        print("\nTokens in your wallet:")
-        for token in tokens:
-            wallet_value = token.balance * token.value
-            total_value += wallet_value
-            print(
-                f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}"
-            )
-        print(f"Total Value: ${total_value:.2f}")
+        get_tokens_command()
     elif command == "add_coin":
-        wallet_address = load_wallet_address()
-        mint_address = input("Enter the mint address of the token: ").strip()
-
-        print("\nChoose a sell mode:")
-        print("1. Time-Based")
-        print("2. Stop-Loss")
-        sell_mode_input = input("Enter 1 or 2: ").strip()
-
-        if sell_mode_input == "1":
-            sell_mode = SellMode.TIME_BASED
-            sell_value = float(input("Enter the sell interval in minutes: ").strip())
-        elif sell_mode_input == "2":
-            sell_mode = SellMode.STOP_LOSS
-            sell_value = float(
-                input(
-                    "Enter the percentage drop to trigger a sell (e.g., 10 for 10%): "
-                ).strip()
-            )
-        else:
-            print("Invalid choice. Operation canceled.")
-            return
-
-        add_coin(wallet_address, mint_address, sell_mode, sell_value)
+        add_coin_command()
+    elif command == "remove_coin":
+        remove_coin_command()
+    elif command == "get_coins":
+        get_tracked_coins_command()
+    elif command == "process":
+        asyncio.run(process_coins())
     elif command == "sell":
         sell(args[0])
     elif command == "make_wallet":
