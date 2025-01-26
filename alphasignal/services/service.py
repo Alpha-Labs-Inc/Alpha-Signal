@@ -1,9 +1,9 @@
 from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
-from alphasignal.database.db import get_active_coins
+from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode
-from alphasignal.services.coin_manager import add_coin, get_remaining_trackable_balance, get_tracked_coins, remove_coin
+from alphasignal.services.coin_manager import CoinManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
 
@@ -39,11 +39,12 @@ async def swap_tokens(from_token, to_token, amt, wallet):
     return True
 
 
-def add_coin_command() -> None:
+async def add_coin_command() -> None:
+    coin_manager = CoinManager()
     wallet_manager = WalletManager()
 
     # Fetch available tokens
-    tokens = wallet_manager.get_tokens()
+    tokens = await wallet_manager.get_tokens()
     if not tokens:
         print("No tokens found in the wallet.")
         return
@@ -66,7 +67,7 @@ def add_coin_command() -> None:
         return
 
     # Calculate remaining balance for the selected token
-    remaining_balance = get_remaining_trackable_balance(
+    remaining_balance = coin_manager.get_remaining_trackable_balance(
         selected_token.mint_address, selected_token.balance
     )
     print(f"Remaining balance available for tracking: {remaining_balance}")
@@ -119,18 +120,19 @@ def add_coin_command() -> None:
         return
 
     # Create the coin in the database
-    add_coin(
+    coin_manager.add_coin(
         mint_address=selected_token.mint_address,
         sell_mode=sell_mode,
         sell_value=sell_value,
-        buy_in_value=selected_token.value,
         balance=tracking_balance,
         tokens=tokens
     )
 
 
 def remove_coin_command() -> None:
-    active_coins = get_active_coins()
+    coin_manager = CoinManager()
+    db = SQLiteDB()
+    active_coins = db.get_active_coins()
     if not active_coins:
         print("No active coins to remove.")
         return
@@ -148,16 +150,27 @@ def remove_coin_command() -> None:
             return
 
         selected_coin = active_coins[choice]
-        remove_coin(selected_coin.id)
+        coin_manager.remove_coin(selected_coin.id)
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
 
 def get_tracked_coins_command() -> List[Coin]:
-    active_coins = get_tracked_coins()
+    coin_manager = CoinManager()
+    active_coins = coin_manager.get_tracked_coins()
 
     print("\nActive Coins:")
     for idx, coin in enumerate(active_coins, start=1):
         print(
             f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Last Max: {coin.last_price_max}"
         )
+
+async def process_coins() -> None:
+    coin_manager = CoinManager()
+
+    await coin_manager.process_coins()
+
+def initialize_database() -> None:
+    db = SQLiteDB()
+
+    db.initialize_database()

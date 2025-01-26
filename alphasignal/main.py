@@ -4,15 +4,15 @@ import os
 import shutil
 from pathlib import Path
 
-from alphasignal.database.db import initialize_database
 from alphasignal.models.enums import SellMode
-from alphasignal.services.coin_manager import process_coins
 from alphasignal.services.service import (
     create_wallet,
     get_swap_quote,
     get_token_value,
     get_wallet_value,
+    initialize_database,
     load_wallet,
+    process_coins,
     swap_tokens,
     add_coin_command,
     get_tracked_coins_command,
@@ -26,7 +26,7 @@ load_dotenv()
 
 def execute_command(command, args, wallet):
     if command == "add_coin":
-        add_coin_command()
+        asyncio.run(add_coin_command())
     elif command == "remove_coin":
         remove_coin_command()
     elif command == "get_coins":
