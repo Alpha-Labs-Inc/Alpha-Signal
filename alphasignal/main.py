@@ -7,6 +7,7 @@ from pathlib import Path
 from alphasignal.models.enums import SellMode
 from alphasignal.services.service import (
     create_wallet,
+    fund,
     get_swap_quote,
     get_token_value,
     get_wallet_value,
@@ -43,6 +44,8 @@ def execute_command(command, args, wallet):
         asyncio.run(get_swap_quote(args[0], args[1], args[2]))
     elif command == "swap":
         asyncio.run(swap_tokens(args[0], args[1], args[2], wallet))
+    elif command == "fund":
+        asyncio.run(fund(args[0], wallet))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
 
@@ -102,6 +105,10 @@ def main():
                 elif command in ["follow", "unfollow"] and len(args) != 1:
                     print(
                         f"Error: '{command}' requires exactly 1 argument: <twitter_handle>"
+                    )
+                elif command == fund and len(args) != 1:
+                    print(
+                        f"Error: '{command}' requires exactly 1 argument: <fund amount>"
                     )
                 elif command == "sell" and len(args) != 1:
                     print("Error: 'sell' requires exactly 1 argument: <mint_address>")

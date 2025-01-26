@@ -1,5 +1,6 @@
 from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
+from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode, SellType
@@ -15,6 +16,17 @@ def create_wallet():
 
 async def get_wallet_value(wallet):
     await wallet.get_wallet_value()
+
+
+async def fund(amt, wallet):
+    try:
+        in_amt = float(amt)
+    except Exception as e:
+        print("In amount must be float.")
+        return
+    solana_client = SolanaClient()
+    await solana_client.fund_wallet(wallet.wallet.public_key, in_amt)
+    print("Funded wallet.")
 
 
 def load_wallet():
