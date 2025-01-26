@@ -1,8 +1,3 @@
-
-
-
-
-
 import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import List
@@ -12,10 +7,12 @@ from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode
 from alphasignal.models.wallet_token import WalletToken
 
+
 class CoinNotFoundError(Exception):
     """Custom exception for when a token is not found in the wallet."""
 
     pass
+
 
 class CoinManager:
     def __init__(self):
@@ -23,7 +20,7 @@ class CoinManager:
 
     def get_tracked_coins(self) -> List[Coin]:
         active_coins = self.db.get_active_coins()
-        
+
         return active_coins
 
     def add_coin(
@@ -32,7 +29,7 @@ class CoinManager:
         sell_mode: SellMode,
         sell_value: float,
         balance: float,
-        tokens: List[WalletToken]
+        tokens: List[WalletToken],
     ) -> None:
         """
         Add a coin to the tracked_coins table after verifying the wallet and fetching current price.
@@ -75,12 +72,9 @@ class CoinManager:
         coin = next((c for c in active_coins if c.id == id), None)
 
         if not coin:
-            raise CoinNotFoundError(
-                f"No active coin found with Id '{id}'."
-            )
+            raise CoinNotFoundError(f"No active coin found with Id '{id}'.")
 
         self.db.deactivate_coin(id)
-
 
     def get_remaining_trackable_balance(self, mint_address: str, total_balance: float):
         """
@@ -91,7 +85,7 @@ class CoinManager:
             total_balance: total balance of the token in the wallet
         """
         used_balance = self.db.get_active_coin_balance_by_mint_address(mint_address)
-        
+
         remaining_balance = total_balance - used_balance
 
         return remaining_balance
@@ -128,7 +122,6 @@ class CoinManager:
         # Wait for all stop-loss tasks to finish
         await asyncio.gather(*tasks)
 
-
     async def determine_sell(self, coin: Coin, interval: int = 10) -> None:
         """
         Monitor the coin's value for the given interval (in seconds) to confirm or cancel a sell decision.
@@ -155,5 +148,7 @@ class CoinManager:
         if decrease_threshold_met:
             print(f"Final sell decision for {coin.mint_address}: Sell confirmed.")
         else:
-            print(f"Sell condition revoked for {coin.mint_address}. Reactivating tracking.")
+            print(
+                f"Sell condition revoked for {coin.mint_address}. Reactivating tracking."
+            )
             self.db.reactivate_coin(coin.id)  # Reactivate the coin

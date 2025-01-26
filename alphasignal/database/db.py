@@ -7,6 +7,7 @@ from alphasignal.models.coin import Coin
 from alphasignal.models.constants import DB_PATH
 from alphasignal.models.enums import SellMode
 
+
 class SQLiteDB:
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
@@ -27,7 +28,6 @@ class SQLiteDB:
         );
         """)
         self.connection.commit()
-
 
     def create_coin(
         self,
@@ -63,7 +63,6 @@ class SQLiteDB:
         except sqlite3.IntegrityError as e:
             print(f"Error adding coin: {e}")
 
-
     def get_active_coins(self) -> List[Coin]:
         cursor = self.connection.cursor()
         cursor.execute(
@@ -85,8 +84,7 @@ class SQLiteDB:
                 balance=row[6],
             )
             for row in rows
-            ]
-
+        ]
 
     def get_active_coin_balance_by_mint_address(self, mint_address: str) -> float:
         cursor = self.connection.cursor()
@@ -100,7 +98,6 @@ class SQLiteDB:
         used_balance = cursor.fetchone()[0] or 0.0
         return used_balance
 
-
     def update_coin_last_price(self, coin_id: str, new_price: float) -> None:
         cursor = self.connection.cursor()
         cursor.execute(
@@ -110,7 +107,6 @@ class SQLiteDB:
             (new_price, coin_id),
         )
         self.connection.commit()
-
 
     def deactivate_coin(self, coin_id: str) -> None:
         cursor = self.connection.cursor()
@@ -122,7 +118,6 @@ class SQLiteDB:
         )
         self.connection.commit()
         print(f"Coin with ID '{coin_id}' has been deactivated.")
-
 
     def reactivate_coin(self, coin_id: str) -> None:
         cursor = self.connection.cursor()

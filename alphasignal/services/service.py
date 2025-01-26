@@ -125,7 +125,7 @@ async def add_coin_command() -> None:
         sell_mode=sell_mode,
         sell_value=sell_value,
         balance=tracking_balance,
-        tokens=tokens
+        tokens=tokens,
     )
 
 
@@ -165,10 +165,12 @@ def get_tracked_coins_command() -> List[Coin]:
             f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Last Max: {coin.last_price_max}"
         )
 
+
 async def process_coins() -> None:
     coin_manager = CoinManager()
 
     await coin_manager.process_coins()
+
 
 def initialize_database() -> None:
     db = SQLiteDB()
