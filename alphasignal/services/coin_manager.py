@@ -130,7 +130,7 @@ class CoinManager:
         # Wait for all stop-loss tasks to finish
         await asyncio.gather(*tasks)
 
-    async def determine_sell(self, coin: Coin, interval: int = 3) -> None:
+    async def determine_sell(self, coin: Coin, interval: int = 10) -> None:
         """
         Monitor the coin's value for the given interval (in seconds) to confirm or cancel a sell decision.
         If the decrease percentage meets or exceeds the coin's sell_value consistently, finalize the sell.
