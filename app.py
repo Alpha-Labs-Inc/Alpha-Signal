@@ -1,6 +1,7 @@
 import asyncio
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk
+from dotenv import load_dotenv
 
 # Import your existing services and models
 from alphasignal.services.service import (
@@ -10,11 +11,8 @@ from alphasignal.services.service import (
     get_token_value,
     get_wallet_value,
     add_coin_command,
-    remove_coin_command,
-    process_coins,
     swap_tokens,
 )
-from dotenv import load_dotenv
 
 
 def async_run(coroutine):
@@ -29,7 +27,7 @@ class TokenManagerApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("AlphaSignal Token Manager")
-        self.geometry("800x600")
+        self.geometry("1000x600")
         self.configure(bg="#1e1e2e")
 
         self.wallet = None
@@ -46,9 +44,19 @@ class TokenManagerApp(tk.Tk):
         self.create_widgets()
 
     def create_widgets(self):
+        # Create a main frame with left and right sections
+        main_frame = ttk.Frame(self, padding=10)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        left_frame = ttk.Frame(main_frame, width=500)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.right_frame = ttk.Frame(main_frame, width=500, relief=tk.SUNKEN)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
         # Wallet Management Section
-        wallet_frame = ttk.LabelFrame(self, text="Wallet Management", padding=20)
-        wallet_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        wallet_frame = ttk.LabelFrame(left_frame, text="Wallet Management", padding=20)
+        wallet_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(wallet_frame, text="Wallet Public Key:").grid(
             row=0, column=0, sticky="w"
@@ -59,23 +67,19 @@ class TokenManagerApp(tk.Tk):
         )
         self.wallet_key_entry.grid(row=0, column=1, pady=10)
 
-        create_wallet_btn = ttk.Button(
-            wallet_frame, text="Create Wallet", command=self.create_wallet
+        ttk.Button(wallet_frame, text="Create Wallet", command=self.create_wallet).grid(
+            row=1, column=0, pady=10, sticky="w"
         )
-        create_wallet_btn.grid(row=1, column=0, pady=10, sticky="w")
-
-        fund_wallet_btn = ttk.Button(
-            wallet_frame, text="Fund Wallet", command=self.fund_wallet
+        ttk.Button(wallet_frame, text="Fund Wallet", command=self.fund_wallet).grid(
+            row=1, column=1, pady=10, sticky="w"
         )
-        fund_wallet_btn.grid(row=1, column=1, pady=10, sticky="w")
-
         ttk.Button(
             wallet_frame, text="Get Wallet Value", command=self.get_wallet_value
         ).grid(row=2, column=0, pady=10, sticky="w")
 
         # Token Management Section
-        token_frame = ttk.LabelFrame(self, text="Token Management", padding=20)
-        token_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+        token_frame = ttk.LabelFrame(left_frame, text="Token Management", padding=20)
+        token_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(token_frame, text="Token Mint Address:").grid(
             row=0, column=0, sticky="w"
@@ -86,19 +90,16 @@ class TokenManagerApp(tk.Tk):
         )
         self.token_mint_entry.grid(row=0, column=1, pady=10)
 
-        get_value_btn = ttk.Button(
+        ttk.Button(
             token_frame, text="Get Token Value", command=self.get_token_value
+        ).grid(row=1, column=0, pady=10, sticky="w")
+        ttk.Button(token_frame, text="Add Token", command=self.add_token).grid(
+            row=1, column=1, pady=10, sticky="w"
         )
-        get_value_btn.grid(row=1, column=0, pady=10, sticky="w")
-
-        add_token_btn = ttk.Button(
-            token_frame, text="Add Token", command=self.add_token
-        )
-        add_token_btn.grid(row=1, column=1, pady=10, sticky="w")
 
         # Swap Section
-        swap_frame = ttk.LabelFrame(self, text="Token Swap", padding=20)
-        swap_frame.grid(row=2, column=0, padx=20, pady=20, sticky="nsew")
+        swap_frame = ttk.LabelFrame(left_frame, text="Token Swap", padding=20)
+        swap_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(swap_frame, text="From Token Mint:").grid(row=0, column=0, sticky="w")
         self.from_token_var = tk.StringVar()
@@ -121,37 +122,57 @@ class TokenManagerApp(tk.Tk):
         )
         self.amount_entry.grid(row=2, column=1, pady=10)
 
-        swap_btn = ttk.Button(swap_frame, text="Swap Tokens", command=self.swap_tokens)
-        swap_btn.grid(row=3, column=0, pady=10, sticky="w")
+        ttk.Button(swap_frame, text="Swap Tokens", command=self.swap_tokens).grid(
+            row=3, column=0, pady=10, sticky="w"
+        )
+        ttk.Button(swap_frame, text="Get Quote", command=self.get_quote).grid(
+            row=3, column=1, pady=10, sticky="w"
+        )
 
-        get_quote_btn = ttk.Button(swap_frame, text="Get Quote", command=self.get_quote)
-        get_quote_btn.grid(row=3, column=1, pady=10, sticky="w")
+        # Add output display
+        self.output_text = tk.Text(
+            self.right_frame,
+            wrap=tk.WORD,
+            state="disabled",
+            bg="#2e2e3e",
+            fg="white",
+            font=("Helvetica", 12),
+        )
+        self.output_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    def update_output(self, message):
+        self.output_text.configure(state="normal")
+        self.output_text.insert(tk.END, message + "\n")
+        self.output_text.configure(state="disabled")
+        self.output_text.see(tk.END)
 
     def create_wallet(self):
         try:
             self.wallet = create_wallet()
             self.wallet_key_var.set(self.wallet.wallet.public_key)
-            messagebox.showinfo("Success", "Wallet created successfully!")
+            self.update_output("Wallet created successfully!")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to create wallet: {e}")
+            self.update_output(f"Failed to create wallet: {e}")
 
     def fund_wallet(self):
         if not self.wallet:
-            messagebox.showwarning(
-                "Warning", "No wallet found. Please create a wallet first."
-            )
+            self.update_output("No wallet found. Please create a wallet first.")
             return
 
         amount = simpledialog.askfloat("Fund Wallet", "Enter amount to fund:")
         if amount:
-            async_run(fund(amount, self.wallet))
-            messagebox.showinfo("Success", "Wallet funded successfully!")
+            async_run(self.async_fund_wallet(amount))
+
+    async def async_fund_wallet(self, amount):
+        try:
+            await fund(amount, self.wallet)
+            self.update_output("Wallet funded successfully!")
+        except Exception as e:
+            self.update_output(f"Failed to fund wallet: {e}")
 
     def get_wallet_value(self):
         if not self.wallet:
-            messagebox.showwarning(
-                "Warning", "No wallet found. Please create a wallet first."
-            )
+            self.update_output("No wallet found. Please create a wallet first.")
             return
 
         async_run(self.fetch_wallet_value())
@@ -165,17 +186,16 @@ class TokenManagerApp(tk.Tk):
                     for token in (wallet_value.wallet_tokens or [])
                 ]
             )
-            messagebox.showinfo(
-                "Wallet Value",
-                f"Total Value: ${wallet_value.total_value:.2f}\n{tokens_info}",
+            self.update_output(
+                f"Total Wallet Value: ${wallet_value.total_value:.2f}\n{tokens_info}"
             )
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to fetch wallet value: {e}")
+            self.update_output(f"Failed to fetch wallet value: {e}")
 
     def get_token_value(self):
         mint_address = self.token_mint_var.get()
         if not mint_address:
-            messagebox.showwarning("Warning", "Please enter a token mint address.")
+            self.update_output("Please enter a token mint address.")
             return
 
         async_run(self.fetch_token_value(mint_address))
@@ -183,38 +203,36 @@ class TokenManagerApp(tk.Tk):
     async def fetch_token_value(self, mint_address):
         try:
             token_value = await get_token_value(mint_address)
-            messagebox.showinfo("Token Value", f"Token Price: ${token_value.price}")
+            self.update_output(f"Token Value: ${token_value.price}")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to fetch token value: {e}")
+            self.update_output(f"Failed to fetch token value: {e}")
 
     def get_quote(self):
         from_token = self.from_token_var.get()
         to_token = self.to_token_var.get()
-        amount = float(self.amount_var.get())
+        amount = self.amount_var.get()
 
         if not (from_token and to_token and amount):
-            messagebox.showwarning(
-                "Warning", "Please fill out all fields to get a quote."
-            )
+            self.update_output("Please fill out all fields to get a quote.")
             return
 
-        async_run(self.fetch_quote(from_token, to_token, amount))
+        async_run(self.fetch_quote(from_token, to_token, float(amount)))
 
     async def fetch_quote(self, from_token, to_token, amount):
         try:
-            quote = await get_swap_quote(from_token, to_token, float(amount))
-            messagebox.showinfo(
-                "Swap Quote",
-                f"Input: {quote.from_token_amt} tokens (~${quote.from_token_amt_usd:.2f})\n"
+            quote = await get_swap_quote(from_token, to_token, amount)
+            self.update_output(
+                f"Swap Quote:\nInput: {quote.from_token_amt} tokens (~${quote.from_token_amt_usd:.2f})\n"
                 f"Output: {quote.to_token_amt} tokens (~${quote.to_token_amt_usd:.2f})\n"
                 f"Conversion Rate: {quote.conversion_rate} tokens per input token\n"
-                f"Price Impact: {quote.price_impact * 100:.2f}%",
+                f"Price Impact: {quote.price_impact * 100:.2f}%"
             )
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to fetch swap quote: {e}")
+            self.update_output(f"Failed to fetch swap quote: {e}")
 
     def add_token(self):
         async_run(add_coin_command())
+        self.update_output("Token added successfully!")
 
     def swap_tokens(self):
         from_token = self.from_token_var.get()
@@ -222,16 +240,20 @@ class TokenManagerApp(tk.Tk):
         amount = self.amount_var.get()
 
         if not (from_token and to_token and amount):
-            messagebox.showwarning(
-                "Warning", "Please fill out all fields for the swap."
-            )
+            self.update_output("Please fill out all fields for the swap.")
             return
 
         try:
-            async_run(swap_tokens(from_token, to_token, float(amount), self.wallet))
-            messagebox.showinfo("Success", "Tokens swapped successfully!")
+            async_run(self.async_swap_tokens(from_token, to_token, float(amount)))
         except Exception as e:
-            messagebox.showerror("Error", f"Swap failed: {e}")
+            self.update_output(f"Swap failed: {e}")
+
+    async def async_swap_tokens(self, from_token, to_token, amount):
+        try:
+            await swap_tokens(from_token, to_token, amount, self.wallet)
+            self.update_output("Tokens swapped successfully!")
+        except Exception as e:
+            self.update_output(f"Swap failed: {e}")
 
 
 if __name__ == "__main__":
