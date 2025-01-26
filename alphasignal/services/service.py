@@ -1,9 +1,15 @@
 from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
+from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import get_active_coins
 from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode
-from alphasignal.services.coin_manager import add_coin, get_remaining_trackable_balance, get_tracked_coins, remove_coin
+from alphasignal.services.coin_manager import (
+    add_coin,
+    get_remaining_trackable_balance,
+    get_tracked_coins,
+    remove_coin,
+)
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
 
@@ -15,6 +21,17 @@ def create_wallet():
 
 async def get_wallet_value(wallet):
     await wallet.get_wallet_value()
+
+
+async def fund(amt, wallet):
+    try:
+        in_amt = float(amt)
+    except Exception as e:
+        print("In amount must be float.")
+        return
+    solana_client = SolanaClient()
+    await solana_client.fund_wallet(wallet.wallet.public_key, in_amt)
+    print("Funded wallet.")
 
 
 def load_wallet():
@@ -125,7 +142,7 @@ def add_coin_command() -> None:
         sell_value=sell_value,
         buy_in_value=selected_token.value,
         balance=tracking_balance,
-        tokens=tokens
+        tokens=tokens,
     )
 
 
