@@ -99,8 +99,6 @@ class WalletManager:
         return tokens
 
     async def get_wallet_value(self):
-        # TODO - ADD SOL VALUE to wallet amount
-
         tokens = await self.get_tokens()
         total_value = 0.0
         if not tokens:
@@ -112,6 +110,6 @@ class WalletManager:
             wallet_value = token.balance * token.value
             total_value += wallet_value
             print(
-                f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}"
+                f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: ${wallet_value:.2f}"
             )
         print(f"Total Value: ${total_value:.2f}")

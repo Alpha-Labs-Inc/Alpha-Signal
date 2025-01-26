@@ -52,7 +52,7 @@ def execute_command(command, args):
     elif command == "make_wallet":
         create_wallet()
     elif command == "value":
-        get_token_value(args[0])
+        asyncio.run(get_token_value(args[0]))
     elif command == "wallet_value":
         asyncio.run(get_wallet_value())
     elif command == "quote":
