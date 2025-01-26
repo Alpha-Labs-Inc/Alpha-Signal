@@ -116,14 +116,14 @@ def main():
                 elif command == "make_wallet":
                     if len(args) == 0:
                         # No arguments, valid
-                        execute_command(command, args)
+                        execute_command(command, args, wallet)
                     elif (
                         len(args) == 2
                         and args[0] == "--fund"
                         and args[1].lower() in ["true", "false"]
                     ):
                         # Valid --fund flag with boolean value
-                        execute_command(command, args)
+                        execute_command(command, args, wallet)
                     else:
                         print(
                             "Error: 'make_wallet' requires no arguments or --fund BOOLEAN as a flag."
@@ -163,6 +163,7 @@ def main():
                                 execute_command(
                                     command,
                                     [from_token_mint, to_token_mint, amount_float],
+                                    wallet,
                                 )
                         except ValueError as e:
                             print(f"Error: <amount> must be a valid number. {e}")

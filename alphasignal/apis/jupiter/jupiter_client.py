@@ -53,9 +53,9 @@ class JupiterClient:
         )
         url = f"{self.jupiter_api_url}/quote"
         params = {
-            "inputMint": from_token.token_mint_address,
-            "outputMint": to_token.token_mint_address,
-            "amount": amount,
+            "inputMint": from_token.token.token_mint_address,
+            "outputMint": to_token.token.token_mint_address,
+            "amount": input_amount_smallest_units,
             "slippageBps": slippage_bps,
             "swapMode": swap_mode,
         }

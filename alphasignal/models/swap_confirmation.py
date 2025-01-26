@@ -2,6 +2,6 @@ from pydantic import BaseModel
 
 
 class SwapConfirmation(BaseModel):
-    from_token_mint_address: float
-    to_token_mint_address: float
+    from_token_mint_address: str
+    to_token_mint_address: str
     transaction_simulator: str

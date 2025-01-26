@@ -6,6 +6,7 @@ from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode, SellType
 from alphasignal.models.swap_confirmation import SwapConfirmation
 from alphasignal.models.token_value import TokenValue
+from alphasignal.models.wallet_value import WalletValue
 from alphasignal.services.coin_manager import CoinManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -16,8 +17,9 @@ def create_wallet():
     return wallet
 
 
-async def get_wallet_value(wallet):
-    await wallet.get_wallet_value()
+async def get_wallet_value(wallet) -> WalletValue:
+    wallet_value = await wallet.get_wallet_value()
+    return wallet_value
 
 
 async def fund(amt, wallet):
@@ -45,7 +47,7 @@ async def get_token_value(token_mint_address):
 async def get_swap_quote(from_token, to_token, amt):
     client = JupiterClient()
     # Gets a quote output pydantic object
-    quote = client.create_quote(from_token, to_token, amt)
+    quote = await client.create_quote(from_token, to_token, amt)
 
     # Display the quote details
     print("Quote details:")
