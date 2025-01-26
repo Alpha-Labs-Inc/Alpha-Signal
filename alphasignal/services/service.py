@@ -2,7 +2,7 @@ from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
-from alphasignal.models.enums import SellMode
+from alphasignal.models.enums import SellMode, SellType
 from alphasignal.services.coin_manager import CoinManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -119,11 +119,29 @@ async def add_coin_command() -> None:
         print("Invalid input. Please enter a valid number.")
         return
 
+    print("Select type mode:")
+    print("1. USDC")
+    print("2. SOL")
+
+    try:
+        sell_type_choice = int(input("Your choice (1 or 2): "))
+        if sell_type_choice == 1:
+            sell_type = SellType.USDC
+        elif sell_type_choice == 2:
+            sell_type = SellType.SOL
+        else:
+            print("Invalid choice. Please try again.")
+            return
+    except ValueError:
+        print("Invalid input. Please enter a valid number.")
+        return
+
     # Create the coin in the database
     coin_manager.add_coin(
         mint_address=selected_token.mint_address,
         sell_mode=sell_mode,
         sell_value=sell_value,
+        sell_type=sell_type,
         balance=tracking_balance,
         tokens=tokens,
     )
@@ -162,7 +180,7 @@ def get_tracked_coins_command() -> List[Coin]:
     print("\nActive Coins:")
     for idx, coin in enumerate(active_coins, start=1):
         print(
-            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Last Max: {coin.last_price_max}"
+            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Sell Type: {coin.sell_type.value}, Last Max: {coin.last_price_max}"
         )
 
 

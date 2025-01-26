@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from alphasignal.models.coin import Coin
 from alphasignal.models.constants import DB_PATH
-from alphasignal.models.enums import SellMode
+from alphasignal.models.enums import SellMode, SellType
 
 
 class SQLiteDB:
@@ -21,9 +21,10 @@ class SQLiteDB:
             last_price_max REAL,
             sell_mode TEXT,
             sell_value REAL,
+            sell_type TEXT,
             time_added TEXT,
             time_sold TEXT,
-            balance REAL,
+            balance REAL, 
             is_active BOOLEAN DEFAULT 1
         );
         """)
@@ -34,6 +35,7 @@ class SQLiteDB:
         mint_address: str,
         sell_mode: SellMode,
         sell_value: float,
+        sell_type: SellType,
         buy_in_value: float,
         balance: float,
     ) -> None:
@@ -45,8 +47,8 @@ class SQLiteDB:
                 """
                 INSERT INTO tracked_coins (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
-                    time_added, time_sold, balance, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 1)
+                    sell_type, time_added, time_sold, balance, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 1)
                 """,
                 (
                     coin_id,
@@ -54,6 +56,7 @@ class SQLiteDB:
                     buy_in_value,
                     sell_mode.value,
                     sell_value,
+                    sell_type.value,
                     time_added,
                     balance,
                 ),
@@ -67,7 +70,7 @@ class SQLiteDB:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT id, mint_address, last_price_max, sell_mode, sell_value, time_added, balance
+            SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance
             FROM tracked_coins
             WHERE is_active = 1
             """
@@ -80,8 +83,9 @@ class SQLiteDB:
                 last_price_max=row[2],
                 sell_mode=SellMode(row[3]),
                 sell_value=row[4],
-                time_added=datetime.fromisoformat(row[5]),
-                balance=row[6],
+                sell_type=SellType(row[5]),
+                time_added=datetime.fromisoformat(row[6]),
+                balance=row[7],
             )
             for row in rows
         ]
@@ -129,3 +133,19 @@ class SQLiteDB:
         )
         self.connection.commit()
         print(f"Coin with ID '{coin_id}' has been reactivated.")
+
+    def update_sell_time_sold(self, coin_id: str):
+        time_sold = datetime.now(timezone.utc).isoformat()
+
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            UPDATE tracked_coins SET time_sold = ? WHERE id = ?
+            """,
+            (
+                time_sold,
+                coin_id,
+            ),
+        )
+        self.connection.commit()
+        print(f"Time sold updated for Coin with ID '{coin_id}'.")
