@@ -1,6 +1,7 @@
 import asyncio
 import tkinter as tk
 from tkinter import ttk
+from tkinter import simpledialog
 from dotenv import load_dotenv
 
 # Import your existing services and models
@@ -27,17 +28,24 @@ class TokenManagerApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("AlphaSignal Token Manager")
-        self.geometry("1000x600")
-        self.configure(bg="#1e1e2e")
+        self.geometry("1200x900")
+        self.configure(bg="#121212")
 
         self.wallet = None
 
         # Styling
         style = ttk.Style(self)
         style.theme_use("clam")
-        style.configure("TButton", font=("Helvetica", 12), padding=10)
         style.configure(
-            "TLabel", font=("Helvetica", 12), foreground="white", background="#1e1e2e"
+            "TButton",
+            font=("Helvetica", 12),
+            padding=10,
+            background="#1F1F1F",
+            foreground="white",
+        )
+        style.map("TButton", background=[("active", "#2D2D2D")])
+        style.configure(
+            "TLabel", font=("Helvetica", 12), foreground="white", background="#121212"
         )
         style.configure("TEntry", font=("Helvetica", 12))
 
@@ -49,13 +57,19 @@ class TokenManagerApp(tk.Tk):
         main_frame.pack(fill=tk.BOTH, expand=True)
 
         left_frame = ttk.Frame(main_frame, width=500)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        self.right_frame = ttk.Frame(main_frame, width=500, relief=tk.SUNKEN)
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.right_frame = ttk.Frame(
+            main_frame, width=500, relief=tk.RIDGE, style="Card.TFrame"
+        )
+        self.right_frame.pack(
+            side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10
+        )
 
         # Wallet Management Section
-        wallet_frame = ttk.LabelFrame(left_frame, text="Wallet Management", padding=20)
+        wallet_frame = ttk.LabelFrame(
+            left_frame, text="Wallet Management", padding=20, style="Card.TLabelframe"
+        )
         wallet_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(wallet_frame, text="Wallet Public Key:").grid(
@@ -78,7 +92,9 @@ class TokenManagerApp(tk.Tk):
         ).grid(row=2, column=0, pady=10, sticky="w")
 
         # Token Management Section
-        token_frame = ttk.LabelFrame(left_frame, text="Token Management", padding=20)
+        token_frame = ttk.LabelFrame(
+            left_frame, text="Token Management", padding=20, style="Card.TLabelframe"
+        )
         token_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(token_frame, text="Token Mint Address:").grid(
@@ -93,12 +109,11 @@ class TokenManagerApp(tk.Tk):
         ttk.Button(
             token_frame, text="Get Token Value", command=self.get_token_value
         ).grid(row=1, column=0, pady=10, sticky="w")
-        ttk.Button(token_frame, text="Add Token", command=self.add_token).grid(
-            row=1, column=1, pady=10, sticky="w"
-        )
 
         # Swap Section
-        swap_frame = ttk.LabelFrame(left_frame, text="Token Swap", padding=20)
+        swap_frame = ttk.LabelFrame(
+            left_frame, text="Token Swap", padding=20, style="Card.TLabelframe"
+        )
         swap_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         ttk.Label(swap_frame, text="From Token Mint:").grid(row=0, column=0, sticky="w")
@@ -134,9 +149,12 @@ class TokenManagerApp(tk.Tk):
             self.right_frame,
             wrap=tk.WORD,
             state="disabled",
-            bg="#2e2e3e",
+            bg="#1F1F1F",
             fg="white",
             font=("Helvetica", 12),
+            relief=tk.FLAT,
+            padx=10,
+            pady=10,
         )
         self.output_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
