@@ -105,6 +105,20 @@ def main():
         wallet = load_wallet()
     except Exception as e:
         print(e)
+        no_wallet = True
+        while no_wallet:
+            user_input = input(
+                "Type make_wallet to create a new wallet\nAlphaSignal>  "
+            ).strip()
+            if user_input.lower() in ["exit", "quit"]:
+                print("Exiting AlphaSignal. Goodbye!")
+                break
+            elif user_input.lower() == "make_wallet":
+                wallet = create_wallet()
+                no_wallet = False
+            else:
+                print("No wallet found, please make a wallet before continuing.")
+
     while True:
         user_input = input("AlphaSignal> ").strip()
         load_dotenv()
