@@ -92,7 +92,7 @@ def get_active_coins() -> List[Coin]:
         ]
 
 
-def calculate_remaining_balance(mint_address: str, total_balance: float) -> float:
+def get_active_coin_balance_by_mint_address(mint_address: str) -> float:
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -103,7 +103,7 @@ def calculate_remaining_balance(mint_address: str, total_balance: float) -> floa
             (mint_address,),
         )
         used_balance = cursor.fetchone()[0] or 0.0
-        return total_balance - used_balance
+        return used_balance
 
 
 def update_coin_last_price(coin_id: str, new_price: float) -> None:

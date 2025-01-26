@@ -3,20 +3,10 @@ import argparse
 import os
 import shutil
 from pathlib import Path
-from alphasignal.commands.account import create_account
-from alphasignal.commands.twitter import follow, unfollow
-from alphasignal.commands.coin_manager import (
-    add_coin_command,
-    get_tokens_command,
-    get_tracked_coins_command,
-    process_coins,
-    remove_coin_command,
-    sell,
-)
-
 
 from alphasignal.database.db import initialize_database
 from alphasignal.models.enums import SellMode
+from alphasignal.services.coin_manager import process_coins
 from alphasignal.services.service import (
     create_wallet,
     get_swap_quote,
@@ -24,6 +14,9 @@ from alphasignal.services.service import (
     get_wallet_value,
     load_wallet,
     swap_tokens,
+    add_coin_command,
+    get_tracked_coins_command,
+    remove_coin_command,
 )
 import asyncio
 from dotenv import load_dotenv
@@ -32,15 +25,7 @@ load_dotenv()
 
 
 def execute_command(command, args, wallet):
-    if command == "create_account":
-        create_account(args[0])
-    elif command == "follow":
-        follow(args[0])
-    elif command == "unfollow":
-        unfollow(args[0])
-    elif command == "tokens":
-        get_tokens_command()
-    elif command == "add_coin":
+    if command == "add_coin":
         add_coin_command()
     elif command == "remove_coin":
         remove_coin_command()
@@ -48,8 +33,6 @@ def execute_command(command, args, wallet):
         get_tracked_coins_command()
     elif command == "process":
         asyncio.run(process_coins())
-    elif command == "sell":
-        sell(args[0])
     elif command == "make_wallet":
         create_wallet()
     elif command == "value":
@@ -62,38 +45,6 @@ def execute_command(command, args, wallet):
         asyncio.run(swap_tokens(args[0], args[1], args[2], wallet))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
-
-
-def start():
-    cwd = Path(os.getcwd())
-
-    # Clone .env.example to .env
-    env_example_path = cwd / ".env.example"
-    env_path = cwd / ".env"
-
-    if not env_path.exists():
-        shutil.copy(env_example_path, env_path)
-        print(".env file created from .env.example")
-
-    # Ask user to input required keys
-    with env_path.open("r") as file:
-        lines = file.readlines()
-
-    new_lines = []
-    for line in lines:
-        if "YOUR_" in line:
-            key = line.split("=")[0]
-            value = input(f"Please enter the value for {key}: ")
-            new_lines.append(f"{key}={value}\n")
-        else:
-            new_lines.append(line)
-
-    with env_path.open("w") as file:
-        file.writelines(new_lines)
-
-    # Create account
-    account_name = input("Enter account name to create: ")
-    create_account(account_name)
 
 
 def main():
@@ -137,8 +88,6 @@ def main():
             )
             print("  sell <mint_address> - Sell a coin.")
             print("  exit or quit - Exit the CLI.")
-        elif user_input.lower() == "start":
-            start()
         else:
             parts = user_input.split()
             command = parts[0]
