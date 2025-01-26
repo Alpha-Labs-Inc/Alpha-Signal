@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from alphasignal.modles.enums import SellMode
+from alphasignal.models.enums import SellMode
 
 
 class Coin(BaseModel):

@@ -16,11 +16,18 @@ from alphasignal.commands.coin_manager import (
 
 
 from alphasignal.database.db import initialize_database
-from alphasignal.modles.enums import SellMode
-from alphasignal.wallet.init_wallet import create_solana_wallet
+from alphasignal.models.enums import SellMode
+from alphasignal.services.service import (
+    create_wallet,
+    get_swap_quote,
+    get_token_value,
+    get_wallet_value,
+    swap_tokens,
+)
 import asyncio
+from dotenv import load_dotenv
 
-from alphasignal.wallet.transfer_solana import swap_tokens
+load_dotenv()
 
 
 def execute_command(command, args):
@@ -43,10 +50,13 @@ def execute_command(command, args):
     elif command == "sell":
         sell(args[0])
     elif command == "make_wallet":
-        if len(args) == 0:
-            asyncio.run(create_solana_wallet())
-        else:
-            asyncio.run(create_solana_wallet(args[1]))
+        create_wallet()
+    elif command == "value":
+        get_token_value(args[0])
+    elif command == "wallet_value":
+        asyncio.run(get_wallet_value())
+    elif command == "quote":
+        asyncio.run(get_swap_quote(args[0], args[1], args[2]))
     elif command == "swap":
         asyncio.run(swap_tokens(args[0], args[1], args[2]))
     else:
@@ -92,6 +102,7 @@ def main():
     )
     while True:
         user_input = input("AlphaSignal> ").strip()
+        load_dotenv()
         if user_input.lower() in ["exit", "quit"]:
             print("Exiting AlphaSignal. Goodbye!")
             break

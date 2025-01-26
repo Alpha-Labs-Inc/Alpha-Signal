@@ -6,13 +6,21 @@ from solders.pubkey import Pubkey
 
 import asyncio
 from alphasignal.commands.wallet import load_wallet_address
-from alphasignal.database.db import calculate_remaining_balance, create_coin, deactivate_coin, get_active_coins, reactivate_coin, update_coin_last_price
-from alphasignal.modles.coin import Coin
-from alphasignal.modles.constants import USDC_MINT_ADDRESS
-from alphasignal.modles.enums import SellMode
-from alphasignal.modles.wallet_token import WalletToken
+from alphasignal.database.db import (
+    calculate_remaining_balance,
+    create_coin,
+    deactivate_coin,
+    get_active_coins,
+    reactivate_coin,
+    update_coin_last_price,
+)
+from alphasignal.models.coin import Coin
+from alphasignal.models.constants import USDC_MINT_ADDRESS
+from alphasignal.models.enums import SellMode
+from alphasignal.models.wallet_token import WalletToken
 
 import requests
+
 
 def get_tokens_command() -> None:
     wallet_address = load_wallet_address()
@@ -26,7 +34,9 @@ def get_tokens_command() -> None:
     for token in tokens:
         wallet_value = token.balance * token.value
         total_value += wallet_value
-        print(f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}")
+        print(
+            f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: {wallet_value:.2f}"
+        )
     print(f"Total Value: ${total_value:.2f}")
 
 
@@ -41,7 +51,9 @@ def add_coin_command() -> None:
 
     print("Available tokens:")
     for idx, token in enumerate(tokens, start=1):
-        print(f"{idx}. {token.token_name} (Mint Address: {token.mint_address}, Balance: {token.balance})")
+        print(
+            f"{idx}. {token.token_name} (Mint Address: {token.mint_address}, Balance: {token.balance})"
+        )
 
     # Let user select a token
     try:
@@ -55,7 +67,9 @@ def add_coin_command() -> None:
         return
 
     # Calculate remaining balance for the selected token
-    remaining_balance = calculate_remaining_balance(selected_token.mint_address, selected_token.balance)
+    remaining_balance = calculate_remaining_balance(
+        selected_token.mint_address, selected_token.balance
+    )
     print(f"Remaining balance available for tracking: {remaining_balance}")
 
     if remaining_balance <= 0:
@@ -111,8 +125,9 @@ def add_coin_command() -> None:
         sell_mode=sell_mode,
         sell_value=sell_value,
         buy_in_value=selected_token.value,
-        balance=tracking_balance
+        balance=tracking_balance,
     )
+
 
 def remove_coin_command() -> None:
     active_coins = get_active_coins()
@@ -122,7 +137,9 @@ def remove_coin_command() -> None:
 
     print("\nActive Coins:")
     for idx, coin in enumerate(active_coins, start=1):
-        print(f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}")
+        print(
+            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}"
+        )
 
     try:
         choice = int(input("\nEnter the number of the coin to remove: ")) - 1
@@ -135,6 +152,7 @@ def remove_coin_command() -> None:
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
+
 def get_tracked_coins_command() -> None:
     active_coins = get_active_coins()
     if not active_coins:
@@ -143,11 +161,16 @@ def get_tracked_coins_command() -> None:
 
     print("\nActive Coins:")
     for idx, coin in enumerate(active_coins, start=1):
-        print(f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Last Max: {coin.last_price_max}")
+        print(
+            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Last Max: {coin.last_price_max}"
+        )
+
 
 class CoinNotFoundError(Exception):
     """Custom exception for when a token is not found in the wallet."""
+
     pass
+
 
 def fetch_coin_value(mint_address: str) -> float:
     """
@@ -159,23 +182,24 @@ def fetch_coin_value(mint_address: str) -> float:
     Returns:
         float: The current value of the token in USD.
     """
-    if(mint_address == USDC_MINT_ADDRESS):
+    if mint_address == USDC_MINT_ADDRESS:
         return 1
-    
-    url = f"https://quote-api.jup.ag/v6/quote?inputMint={mint_address}&outputMint={USDC_MINT_ADDRESS}&amount=10000" # Need to integrate with the decimal of the coin
+
+    url = f"https://quote-api.jup.ag/v6/quote?inputMint={mint_address}&outputMint={USDC_MINT_ADDRESS}&amount=10000"  # Need to integrate with the decimal of the coin
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
-        price = int(data["outAmount"])/10000.0
+        price = int(data["outAmount"]) / 10000.0
         return price
     raise ValueError(f"Unable to fetch price for mint address: {mint_address}")
+
 
 def add_coin(
     wallet_address: str,
     mint_address: str,
     sell_mode: SellMode,
     sell_value: float,
-    balance: float
+    balance: float,
 ) -> None:
     """
     Add a coin to the tracked_coins table after verifying the wallet and fetching current price.
@@ -194,7 +218,9 @@ def add_coin(
     token = next((t for t in tokens if t.mint_address == mint_address), None)
 
     if not token:
-        raise CoinNotFoundError(f"Token with mint address '{mint_address}' not found in wallet '{wallet_address}'.")
+        raise CoinNotFoundError(
+            f"Token with mint address '{mint_address}' not found in wallet '{wallet_address}'."
+        )
 
     # Step 3: Add the coin to the database
     create_coin(
@@ -202,8 +228,9 @@ def add_coin(
         sell_mode=sell_mode,
         sell_value=sell_value,
         buy_in_value=token.value,
-        balance=balance
+        balance=balance,
     )
+
 
 def get_wallet_tokens(wallet_address: str) -> List[WalletToken]:
     """
@@ -216,7 +243,9 @@ def get_wallet_tokens(wallet_address: str) -> List[WalletToken]:
         List[WalletToken]: A list of tokens with their mint addresses, balances, and names.
     """
     client = Client("https://api.mainnet-beta.solana.com")  # Solana RPC endpoint
-    opts = TokenAccountOpts(program_id=Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"))
+    opts = TokenAccountOpts(
+        program_id=Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+    )
     key = Pubkey.from_string(wallet_address)
     response = client.get_token_accounts_by_owner_json_parsed(key, opts)
     if not response.value:
@@ -227,8 +256,12 @@ def get_wallet_tokens(wallet_address: str) -> List[WalletToken]:
         mint_address = token_info.account.data.parsed["info"]["mint"]
         balance = token_info.account.data.parsed["info"]["tokenAmount"]["uiAmount"]
         value = fetch_coin_value(mint_address)
-        tokens.append(WalletToken(mint_address=mint_address, balance=balance, token_name="", value=value))
-    
+        tokens.append(
+            WalletToken(
+                mint_address=mint_address, balance=balance, token_name="", value=value
+            )
+        )
+
     return tokens
 
 
@@ -250,14 +283,19 @@ async def process_coins() -> None:
             if current_value > coin.last_price_max:
                 update_coin_last_price(coin.id, current_value)
             else:
-                decrease_percentage = ((coin.last_price_max - current_value) / coin.last_price_max) * 100
+                decrease_percentage = (
+                    (coin.last_price_max - current_value) / coin.last_price_max
+                ) * 100
                 if decrease_percentage >= coin.sell_value:
-                    print(f"Sell condition detected for {coin.mint_address}: Starting monitoring...")
+                    print(
+                        f"Sell condition detected for {coin.mint_address}: Starting monitoring..."
+                    )
                     deactivate_coin(coin.id)
                     tasks.append(asyncio.create_task(determine_sell(coin)))
-    
+
     # Wait for all stop-loss tasks to finish
     await asyncio.gather(*tasks)
+
 
 async def determine_sell(coin: Coin, interval: int = 10) -> None:
     """
@@ -267,10 +305,14 @@ async def determine_sell(coin: Coin, interval: int = 10) -> None:
     decrease_threshold_met = True
     for _ in range(interval):
         current_value = fetch_coin_value(coin.mint_address)
-        decrease_percentage = ((coin.last_price_max - current_value) / coin.last_price_max) * 100
+        decrease_percentage = (
+            (coin.last_price_max - current_value) / coin.last_price_max
+        ) * 100
 
         if decrease_percentage < coin.sell_value:
-            print(f"Sell condition not met for {coin.mint_address}: Decrease {decrease_percentage:.2f}%")
+            print(
+                f"Sell condition not met for {coin.mint_address}: Decrease {decrease_percentage:.2f}%"
+            )
             decrease_threshold_met = False
             break
 
@@ -282,6 +324,6 @@ async def determine_sell(coin: Coin, interval: int = 10) -> None:
         print(f"Sell condition revoked for {coin.mint_address}. Reactivating tracking.")
         reactivate_coin(coin.id)  # Reactivate the coin
 
+
 def sell(mint_address):
     print(f"Coin with mint address '{mint_address}' sold.")
-
