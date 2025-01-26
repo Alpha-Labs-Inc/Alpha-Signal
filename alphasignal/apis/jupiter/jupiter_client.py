@@ -12,6 +12,7 @@ from solders import message
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.constants import USDC_MINT_ADDRESS
 from alphasignal.models.mint_token import MintToken
+from alphasignal.models.quote_output import QuoteOutput
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
 
@@ -22,8 +23,8 @@ class JupiterClient:
 
     async def fetch_swap_quote(
         self,
-        from_token: MintToken,
-        to_token: MintToken,
+        from_token_mint,
+        to_token_mint,
         amount,
         slippage_bps=50,
         swap_mode="ExactIn",
@@ -41,6 +42,15 @@ class JupiterClient:
         Returns:
             dict: The full swap quote from Jupiter API.
         """
+        from_token = TokenManager(from_token_mint)
+        to_token = TokenManager(to_token_mint)
+        from_token_decimals = await from_token.get_token_decimals()
+
+        input_amount_smallest_units = int(amount * (10**from_token_decimals))
+
+        print(
+            f"Fetching swap quote for {amount} tokens ({input_amount_smallest_units} smallest units)..."
+        )
         url = f"{self.jupiter_api_url}/quote"
         params = {
             "inputMint": from_token.token_mint_address,
@@ -96,22 +106,15 @@ class JupiterClient:
             input_amount = float(input_amount)
         except:
             raise Exception("amount must be float or int")
-        from_token = TokenManager(from_token_mint)
-        to_token = TokenManager(to_token_mint)
-        from_token_decimals = await from_token.get_token_decimals()
-        to_token_decimals = await to_token.get_token_decimals()
 
-        input_amount_smallest_units = int(input_amount * (10**from_token_decimals))
-
-        print(
-            f"Fetching swap quote for {input_amount} tokens ({input_amount_smallest_units} smallest units)..."
-        )
         quote = await self.fetch_swap_quote(
-            from_token.token,
-            to_token.token,
-            input_amount_smallest_units,
+            from_token_mint,
+            to_token_mint,
+            input_amount,
             slippage_bps,
         )
+        out_token = TokenManager(to_token_mint)
+        to_token_decimals = await out_token.get_token_decimals()
         out_amount_smallest_units = int(quote["outAmount"])
         swap_usd_value = float(quote["swapUsdValue"])
         price_impact_pct = float(quote.get("priceImpactPct", 0))
@@ -131,17 +134,16 @@ class JupiterClient:
             input_usd * price_impact_pct
         )  # Price impact as a dollar value
 
-        # Display the quote details
-        print("Quote details:")
-        print(f"- Input: {input_amount:.6f} tokens (~${input_usd:.2f})")
-        print(f"- Output: {output_token_amount:.6f} tokens (~${output_usd:.2f})")
-        print(f"- Conversion Rate: {conversion_rate:.6f} tokens per input token")
-        print(
-            f"- Price Impact: {price_impact_pct * 100:.4f}% (~${price_impact_usd:.2f})"
+        return QuoteOutput(
+            slippage_bps=slippage_bps,
+            from_token_amt=input_amount,
+            to_token_amt=output_token_amount,
+            from_token_amt_usd=input_usd,
+            to_token_amt_usd=output_usd,
+            conversion_rate=conversion_rate,
+            price_impact=price_impact_pct,
+            price_impact_usd=price_impact_usd,
         )
-        print(f"- Slippage Tolerance: {slippage_bps / 100:.2f}%")
-
-        return quote
 
     async def swap_tokens(
         self,
@@ -164,7 +166,7 @@ class JupiterClient:
             str: The transaction signature of the completed swap.
         """
         try:
-            quote = await self.create_quote(
+            quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
             print("Executing swap...")

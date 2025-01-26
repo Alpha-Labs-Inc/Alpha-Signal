@@ -4,6 +4,8 @@ from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode
+from alphasignal.models.swap_confirmation import SwapConfirmation
+from alphasignal.models.token_value import TokenValue
 from alphasignal.services.coin_manager import CoinManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -37,18 +39,39 @@ async def get_token_value(token_mint_address):
     client = JupiterClient()
     price = await client.fetch_token_value(token_mint_address)
     print(f"Price for {token_mint_address}: ${price}")
+    return TokenValue(token_mint_address=token_mint_address, price=price)
 
 
 async def get_swap_quote(from_token, to_token, amt):
     client = JupiterClient()
-    await client.create_quote(from_token, to_token, amt)
+    # Gets a quote output pydantic object
+    quote = client.create_quote(from_token, to_token, amt)
+
+    # Display the quote details
+    print("Quote details:")
+    print(
+        f"- Input: {quote.from_token_amt:.6f} tokens (~${quote.from_token_amt_usd:.2f})"
+    )
+    print(f"- Output: {quote.to_token_amt:.6f} tokens (~${quote.to_token_amt_usd:.2f})")
+    print(f"- Conversion Rate: {quote.conversion_rate:.6f} tokens per input token")
+    print(
+        f"- Price Impact: {quote.price_impact * 100:.4f}% (~${quote.price_impact_usd:.2f})"
+    )
+    print(f"- Slippage Tolerance: {quote.slippage_bps / 100:.2f}%")
+    return quote
 
 
 async def swap_tokens(from_token, to_token, amt, wallet):
     client = JupiterClient()
 
-    await client.swap_tokens(from_token, to_token, amt, wallet.wallet)
-    return True
+    transaction_signature = await client.swap_tokens(
+        from_token, to_token, amt, wallet.wallet
+    )
+    return SwapConfirmation(
+        from_token_mint_address=from_token,
+        to_token_mint_address=to_token,
+        transaction_simulator=transaction_signature,
+    )
 
 
 async def add_coin_command() -> None:

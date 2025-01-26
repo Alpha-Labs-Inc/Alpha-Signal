@@ -57,6 +57,7 @@ def main():
     )
     try:
         wallet = load_wallet()
+        display_wallet_pubkey = wallet.wallet.public_key
     except Exception as e:
         print(e)
         no_wallet = True
