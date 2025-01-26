@@ -5,12 +5,15 @@ from alphasignal.services.wallet_manager import WalletManager
 
 def create_wallet():
     wallet = WalletManager(True)
-    return True
+    return wallet
 
 
-async def get_wallet_value():
-    wallet = WalletManager()
+async def get_wallet_value(wallet):
     await wallet.get_wallet_value()
+
+
+def load_wallet():
+    return WalletManager()
 
 
 async def get_token_value(token_mint_address):
@@ -24,9 +27,8 @@ async def get_swap_quote(from_token, to_token, amt):
     await client.create_quote(from_token, to_token, amt)
 
 
-async def swap_tokens(from_token, to_token, amt):
+async def swap_tokens(from_token, to_token, amt, wallet):
     client = JupiterClient()
-    wallet_client = WalletManager()
 
-    await client.swap_tokens(from_token, to_token, amt, wallet_client.wallet)
+    await client.swap_tokens(from_token, to_token, amt, wallet.wallet)
     return True

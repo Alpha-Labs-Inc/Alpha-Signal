@@ -22,6 +22,7 @@ from alphasignal.services.service import (
     get_swap_quote,
     get_token_value,
     get_wallet_value,
+    load_wallet,
     swap_tokens,
 )
 import asyncio
@@ -30,7 +31,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def execute_command(command, args):
+def execute_command(command, args, wallet):
     if command == "create_account":
         create_account(args[0])
     elif command == "follow":
@@ -54,11 +55,11 @@ def execute_command(command, args):
     elif command == "value":
         asyncio.run(get_token_value(args[0]))
     elif command == "wallet_value":
-        asyncio.run(get_wallet_value())
+        asyncio.run(get_wallet_value(wallet))
     elif command == "quote":
         asyncio.run(get_swap_quote(args[0], args[1], args[2]))
     elif command == "swap":
-        asyncio.run(swap_tokens(args[0], args[1], args[2]))
+        asyncio.run(swap_tokens(args[0], args[1], args[2], wallet))
     else:
         print("Unknown command. Type 'help' for a list of commands.")
 
@@ -100,6 +101,10 @@ def main():
     print(
         "Welcome to the AlphaSignal Interactive CLI. Type 'start' to get started. Type 'help' to see all available commands, or 'exit'/'quit' to quit."
     )
+    try:
+        wallet = load_wallet()
+    except Exception as e:
+        print(e)
     while True:
         user_input = input("AlphaSignal> ").strip()
         load_dotenv()
@@ -192,7 +197,7 @@ def main():
                             print(f"Error: <amount> must be a valid number. {e}")
                             raise e
                 else:
-                    execute_command(command, args)
+                    execute_command(command, args, wallet)
             except Exception as e:
                 print(f"An error occurred: {e}")
 
