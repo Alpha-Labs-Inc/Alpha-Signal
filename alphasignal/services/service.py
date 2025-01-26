@@ -220,6 +220,8 @@ def get_tracked_coins_command() -> List[Coin]:
             f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Sell Type: {coin.sell_type.value}, Last Max: {coin.last_price_max}"
         )
 
+    return active_coins
+
 
 async def process_coins() -> None:
     coin_manager = CoinManager()
