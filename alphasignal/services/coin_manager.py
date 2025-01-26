@@ -4,8 +4,10 @@ from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
-from alphasignal.models.enums import SellMode
+from alphasignal.models.constants import SOL_MINT_ADDRESS, USDC_MINT_ADDRESS
+from alphasignal.models.enums import SellMode, SellType
 from alphasignal.models.wallet_token import WalletToken
+from alphasignal.services.wallet_manager import WalletManager
 
 
 class CoinNotFoundError(Exception):
@@ -17,6 +19,8 @@ class CoinNotFoundError(Exception):
 class CoinManager:
     def __init__(self):
         self.db = SQLiteDB()
+        self.jupiter = JupiterClient()
+        self.wallet = WalletManager()
 
     def get_tracked_coins(self) -> List[Coin]:
         active_coins = self.db.get_active_coins()
@@ -28,6 +32,7 @@ class CoinManager:
         mint_address: str,
         sell_mode: SellMode,
         sell_value: float,
+        sell_type: SellType,
         balance: float,
         tokens: List[WalletToken],
     ) -> None:
@@ -56,6 +61,7 @@ class CoinManager:
             mint_address=mint_address,
             sell_mode=sell_mode,
             sell_value=sell_value,
+            sell_type=sell_type,
             buy_in_value=token.value,
             balance=balance,
         )
@@ -91,17 +97,18 @@ class CoinManager:
         return remaining_balance
 
     async def process_coins(self) -> None:
-        jupiter_clinet = JupiterClient()
         active_coins = self.db.get_active_coins()
         tasks = []
 
         for coin in active_coins:
-            current_value = await jupiter_clinet.fetch_token_value(coin.mint_address)
+            current_value = await self.jupiter.fetch_token_value(coin.mint_address)
 
             if coin.sell_mode == SellMode.TIME_BASED:
                 elapsed_time = datetime.now(timezone.utc) - coin.time_purchased
                 if elapsed_time >= timedelta(minutes=coin.sell_value):
+                    self.db.deactivate_coin(coin.id)
                     print(f"Sell {coin.mint_address}: Time-based trigger reached.")
+                    await self.sell_coin(coin)
                 elif current_value > coin.last_price_max:
                     self.db.update_coin_last_price(coin.id, current_value)
 
@@ -112,6 +119,7 @@ class CoinManager:
                     decrease_percentage = (
                         (coin.last_price_max - current_value) / coin.last_price_max
                     ) * 100
+                    print(decrease_percentage)
                     if decrease_percentage >= coin.sell_value:
                         print(
                             f"Sell condition detected for {coin.mint_address}: Starting monitoring..."
@@ -127,11 +135,10 @@ class CoinManager:
         Monitor the coin's value for the given interval (in seconds) to confirm or cancel a sell decision.
         If the decrease percentage meets or exceeds the coin's sell_value consistently, finalize the sell.
         """
-        jupiter_clinet = JupiterClient()
         decrease_threshold_met = True
 
         for _ in range(interval):
-            current_value = await jupiter_clinet.fetch_token_value(coin.mint_address)
+            current_value = await self.jupiter.fetch_token_value(coin.mint_address)
             decrease_percentage = (
                 (coin.last_price_max - current_value) / coin.last_price_max
             ) * 100
@@ -146,9 +153,29 @@ class CoinManager:
             await asyncio.sleep(1)
 
         if decrease_threshold_met:
-            print(f"Final sell decision for {coin.mint_address}: Sell confirmed.")
+            await self.sell_coin(coin)
         else:
             print(
                 f"Sell condition revoked for {coin.mint_address}. Reactivating tracking."
             )
             self.db.reactivate_coin(coin.id)  # Reactivate the coin
+
+    async def sell_coin(self, coin: Coin):
+        sell_address = None
+
+        if coin.sell_type == SellType.SOL:
+            sell_address = SOL_MINT_ADDRESS
+        elif coin.sell_type == SellType.USDC:
+            sell_address = USDC_MINT_ADDRESS
+
+        # Try to sell the coin
+        try:
+            await self.jupiter.swap_tokens(
+                coin.mint_address, sell_address, coin.balance, self.wallet.wallet
+            )
+        except Exception as e:
+            print(f"There was an error selling {coin.id} reactivating tracking.")
+            self.db.reactivate_coin(coin.id)
+            raise e
+
+        self.db.update_sell_time_sold(coin.id)
