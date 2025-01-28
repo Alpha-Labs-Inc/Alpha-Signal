@@ -8,6 +8,7 @@ from alphasignal.services.service import (
     get_tracked_coins_command,
     load_wallet,
     get_wallet_value,
+    initialize_database,
 )
 
 # Load environment variables
@@ -16,6 +17,7 @@ load_dotenv()
 # Global wallet manager
 wallet = load_wallet()
 coin_manager = CoinManager()
+initialize_database()
 
 
 class AddCoinDialog(tk.Toplevel):
