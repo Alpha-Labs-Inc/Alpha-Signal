@@ -1,5 +1,19 @@
 # React + TypeScript + Vite
 
+To get started, first install dependencies.
+```pnpm install```
+
+Then run dev server.
+```pnpm run dev```
+
+
+To add new components from [Shadcn/ui](https://ui.shadcn.com/) , run:
+```
+pnpm dlx shadcn@latest add [component_from_list]
+```
+
+--- 
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
