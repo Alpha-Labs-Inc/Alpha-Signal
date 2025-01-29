@@ -181,7 +181,7 @@ async def add_coin_command() -> None:
         sell_value=sell_value,
         sell_type=sell_type,
         balance=tracking_balance,
-        tokens=tokens,
+        token_value=selected_token.value,
     )
 
 
