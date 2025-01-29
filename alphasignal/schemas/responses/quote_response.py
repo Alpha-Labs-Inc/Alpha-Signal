@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class QuoteOutput(BaseModel):
+class QuoteResponse(BaseModel):
     slippage_bps: float
     from_token_amt: float
     to_token_amt: float
