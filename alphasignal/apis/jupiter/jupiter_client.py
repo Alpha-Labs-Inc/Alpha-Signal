@@ -12,7 +12,7 @@ from solders import message
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.constants import USDC_MINT_ADDRESS
 from alphasignal.models.mint_token import MintToken
-from alphasignal.models.quote_output import QuoteOutput
+from alphasignal.schemas.quote_output import QuoteOutput
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
 

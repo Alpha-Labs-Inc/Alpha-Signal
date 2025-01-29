@@ -55,9 +55,7 @@ class SolanaClient:
             )
 
     async def fund_wallet(
-        self,
-        recipient_pubkey: Pubkey,
-        amount: float,
+        self, recipient_pubkey: Pubkey, amount: float, from_private_key: str
     ):
         """
         Fund a Solana wallet using `solders`.
@@ -70,8 +68,6 @@ class SolanaClient:
             str: Transaction signature.
         """
         try:
-            from_private_key = os.getenv("FUNDING_WALLET_SECRET_KEY")
-
             # Create client and sender's keypair
             client = AsyncClient(self.solana_cluster_url)
             secret_key = base58.b58decode(from_private_key)
@@ -124,7 +120,7 @@ class SolanaClient:
             await client.close()
 
             # Return transaction signature
-            return response.value
+            return str(recipient_pubkey), amount
         except Exception as e:
             print(e)
             return f"An error occurred: {str(e)}"

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class SwapConfirmation(BaseModel):
+class PayQuoteRequest(BaseModel):
     from_token_mint_address: str
     to_token_mint_address: str
-    transaction_simulator: str
+    amt: float

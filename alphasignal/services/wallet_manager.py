@@ -9,7 +9,7 @@ from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.wallet import Wallet
 from alphasignal.models.wallet_token import WalletToken
-from alphasignal.models.wallet_value import WalletValue
+from alphasignal.schemas.wallet_value import WalletValue
 
 # Constants
 SOLANA_CLUSTER_URL = "https://api.mainnet-beta.solana.com"  # Mainnet cluster URL
@@ -20,12 +20,12 @@ class WalletManager:
         self.make_wallet = make_wallet
         self.wallet_save_file = os.getenv("WALLET_SAVE_FILE")
         if not os.path.exists(self.wallet_save_file) and not self.make_wallet:
-            raise Exception("No wallet found. Please create a wallet first.")
+            raise Exception("No wallet found.")
         elif make_wallet and not os.path.exists(self.wallet_save_file):
             print("Creating Wallet")
             self.wallet = asyncio.run(self.create_wallet())
         else:
-            print("Wallet already found. Loading wallet.")
+            raise Exception("Wallet already found.")
         self.wallet = self.load_wallet()
 
     def load_wallet(self):

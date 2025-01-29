@@ -4,9 +4,9 @@ from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.coin import Coin
 from alphasignal.models.enums import SellMode, SellType
-from alphasignal.models.swap_confirmation import SwapConfirmation
+from alphasignal.schemas.swap_confirmation import SwapConfirmation
 from alphasignal.models.token_value import TokenValue
-from alphasignal.models.wallet_value import WalletValue
+from alphasignal.schemas.wallet_value import WalletValue
 from alphasignal.services.coin_manager import CoinManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -17,20 +17,21 @@ def create_wallet():
     return wallet
 
 
-async def get_wallet_value(wallet) -> WalletValue:
+async def retrieve_wallet_value(wallet) -> WalletValue:
     wallet_value = await wallet.get_wallet_value()
     return wallet_value
 
 
-async def fund(amt, wallet):
+async def fund(amt, wallet, funding_key):
     try:
         in_amt = float(amt)
     except Exception as e:
         print("In amount must be float.")
         return
     solana_client = SolanaClient()
-    await solana_client.fund_wallet(wallet.wallet.public_key, in_amt)
-    print("Funded wallet.")
+    return await solana_client.fund_wallet(
+        wallet.wallet.public_key, in_amt, funding_key
+    )
 
 
 def load_wallet():
