@@ -19,23 +19,24 @@ router = APIRouter()
 
 
 @router.get("/wallet-value")
-def get_wallet_value():
+async def get_wallet_value():
     try:
-        return retrieve_wallet_value()
+        wallet = load_wallet()
+        return await retrieve_wallet_value(wallet=wallet)
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.get("/create-wallet")
 async def get_create_wallet():
     try:
-        wallet = await create_wallet()
+        wallet = create_wallet()
         return PayloadWallet(
-            public_key=wallet.public_key,
-            wallet_keypair=wallet.wallet_keypair,
+            public_key=str(wallet.wallet.public_key),
+            wallet_keypair=str(wallet.wallet.wallet_keypair),
         )
     except Exception as e:
-        raise HTTPException(status_code=406, detail=e)
+        raise HTTPException(status_code=406, detail=str(e))
 
 
 @router.get("/load-wallet")
@@ -43,18 +44,18 @@ def get_load_wallet():
     try:
         wallet = load_wallet()
         return PayloadWallet(
-            public_key=wallet.public_key,
-            wallet_keypair=wallet.wallet_keypair,
+            public_key=str(wallet.wallet.public_key),
+            wallet_keypair=str(wallet.wallet.wallet_keypair),
         )
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        return HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/swap_coins")
-def swap_coins(request: PayQuoteRequest) -> SwapConfirmation:
+@router.post("/swap-coins")
+async def swap_coins(request: PayQuoteRequest) -> SwapConfirmation:
     try:
         wallet = load_wallet()
-        result = swap_tokens(
+        result = await swap_tokens(
             request.from_token_mint_address,
             request.to_token_mint_address,
             request.amt,
@@ -62,29 +63,29 @@ def swap_coins(request: PayQuoteRequest) -> SwapConfirmation:
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/swap-quote")
-def swap_quote(request: PayQuoteRequest) -> QuoteOutput:
+async def swap_quote(request: PayQuoteRequest) -> QuoteOutput:
     try:
-        result = get_swap_quote(
+        result = await get_swap_quote(
             request.from_token_mint_address, request.to_token_mint_address, request.amt
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        return HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/add-funds")
-def add_funds(fund_request: FundRequest) -> FundPayload:
+async def add_funds(fund_request: FundRequest) -> FundPayload:
     try:
         wallet = load_wallet()
-        result = fund(
+        result = await fund(
             amt=fund_request.amt,
             wallet=wallet,
             funding_key=fund_request.funding_private_key,
         )
         return FundPayload(funded_wallet_public_key=result[0], amt=result[1])
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        return HTTPException(status_code=404, detail=str(e))

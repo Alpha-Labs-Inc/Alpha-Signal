@@ -24,7 +24,7 @@ class WalletManager:
         elif make_wallet and not os.path.exists(self.wallet_save_file):
             print("Creating Wallet")
             self.wallet = asyncio.run(self.create_wallet())
-        else:
+        elif os.path.exists(self.wallet_save_file) and make_wallet:
             raise Exception("Wallet already found.")
         self.wallet = self.load_wallet()
 

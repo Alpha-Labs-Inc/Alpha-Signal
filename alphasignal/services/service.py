@@ -73,7 +73,7 @@ async def swap_tokens(from_token, to_token, amt, wallet):
     return SwapConfirmation(
         from_token_mint_address=from_token,
         to_token_mint_address=to_token,
-        transaction_simulator=transaction_signature,
+        transaction_id=transaction_signature,
     )
 
 

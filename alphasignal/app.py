@@ -11,6 +11,7 @@ app.include_router(test_router)
 app.include_router(wallet_router)
 app.include_router(coin_router)
 
+
 if __name__ == "__main__":
     # Use Uvicorn to run the application
     uvicorn.run("alphasignal.app:app", host="127.0.0.1", port=8000, reload=True)
