@@ -38,7 +38,7 @@ class SQLiteDB:
         sell_type: SellType,
         buy_in_value: float,
         balance: float,
-    ) -> None:
+    ) -> str:
         cursor = self.connection.cursor()
         time_added = datetime.now(timezone.utc).isoformat()
         coin_id = str(uuid.uuid4())
@@ -63,6 +63,7 @@ class SQLiteDB:
             )
             self.connection.commit()
             print(f"Coin with mint_address '{mint_address}' added successfully.")
+            return coin_id
         except sqlite3.IntegrityError as e:
             print(f"Error adding coin: {e}")
 

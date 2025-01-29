@@ -10,8 +10,14 @@ from alphasignal.models.wallet_token import WalletToken
 from alphasignal.services.wallet_manager import WalletManager
 
 
-class CoinNotFoundError(Exception):
+class TokenNotFoundError(Exception):
     """Custom exception for when a token is not found in the wallet."""
+
+    pass
+
+
+class TokenBalanceNotAvalible(Exception):
+    """Custom exception for when a token does not have enough balance to be tracked."""
 
     pass
 
@@ -34,8 +40,8 @@ class CoinManager:
         sell_value: float,
         sell_type: SellType,
         balance: float,
-        tokens: List[WalletToken],
-    ) -> None:
+        token_value: float,
+    ) -> str:
         """
         Add a coin to the tracked_coins table after verifying the wallet and fetching current price.
 
@@ -45,26 +51,19 @@ class CoinManager:
             sell_mode (SellMode): The sell mode for the coin (e.g., time-based or stop-loss).
             sell_value (float): The sell value threshold.
             balance (float): Amount of the coin to be added.
-            tokens: tokens avalible in the wallet
-
-        Raises:
-            CoinNotFoundError: If the token is not found in the user's wallet.
+            token_value: value of the token
         """
-        token = next((t for t in tokens if t.mint_address == mint_address), None)
 
-        if not token:
-            raise CoinNotFoundError(
-                f"Token with mint address '{mint_address}' not found in wallet'."
-            )
-
-        self.db.create_coin(
+        id = self.db.create_coin(
             mint_address=mint_address,
             sell_mode=sell_mode,
             sell_value=sell_value,
             sell_type=sell_type,
-            buy_in_value=token.value,
+            buy_in_value=token_value,
             balance=balance,
         )
+
+        return id
 
     def remove_coin(self, id: str) -> None:
         """
@@ -78,7 +77,7 @@ class CoinManager:
         coin = next((c for c in active_coins if c.id == id), None)
 
         if not coin:
-            raise CoinNotFoundError(f"No active coin found with Id '{id}'.")
+            raise TokenNotFoundError(f"No active coin found with Id '{id}'.")
 
         self.db.deactivate_coin(id)
 
