@@ -4,6 +4,6 @@ from alphasignal.models.wallet_token import WalletToken
 from pydantic import BaseModel
 
 
-class WalletValue(BaseModel):
+class WalletValueResponse(BaseModel):
     wallet_tokens: Optional[List[WalletToken]]
     total_value: float

@@ -12,7 +12,7 @@ from solders import message
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.constants import USDC_MINT_ADDRESS
 from alphasignal.models.mint_token import MintToken
-from alphasignal.schemas.quote_output import QuoteOutput
+from alphasignal.schemas.responses.quote_response import QuoteResponse
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
 
@@ -134,7 +134,7 @@ class JupiterClient:
             input_usd * price_impact_pct
         )  # Price impact as a dollar value
 
-        return QuoteOutput(
+        return QuoteResponse(
             slippage_bps=slippage_bps,
             from_token_amt=input_amount,
             to_token_amt=output_token_amount,

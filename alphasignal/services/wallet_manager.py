@@ -9,7 +9,7 @@ from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.wallet import Wallet
 from alphasignal.models.wallet_token import WalletToken
-from alphasignal.schemas.wallet_value import WalletValue
+from alphasignal.schemas.responses.wallet_value_response import WalletValueResponse
 
 # Constants
 SOLANA_CLUSTER_URL = "https://api.mainnet-beta.solana.com"  # Mainnet cluster URL
@@ -115,4 +115,4 @@ class WalletManager:
             )
         print(f"Total Value: ${total_value:.2f}")
 
-        return WalletValue(wallet_tokens=tokens, total_value=total_value)
+        return WalletValueResponse(wallet_tokens=tokens, total_value=total_value)

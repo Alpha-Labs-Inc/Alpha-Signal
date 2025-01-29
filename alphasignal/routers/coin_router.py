@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 from alphasignal.models.enums import SellMode, SellType
-from alphasignal.schemas.add_coin_request import AddCoinRequest
-from alphasignal.schemas.coins_response import CoinsResponse, CoinResponse
+from alphasignal.schemas.requests.add_coin_request import AddCoinRequest
+from alphasignal.schemas.responses.coins_response import CoinsResponse, CoinResponse
 from alphasignal.services.coin_manager import (
     CoinManager,
     TokenBalanceNotAvalible,
