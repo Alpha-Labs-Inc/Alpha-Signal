@@ -1,6 +1,6 @@
-import { Button } from './ui/button'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Avatar, AvatarImage } from './ui/avatar'
+import ManageModal from './manage-modal'
 
 const Header = () => {
   return (
@@ -30,8 +30,7 @@ const Header = () => {
           </div>
         </HoverCardContent>
       </HoverCard>
-
-      <Button>Manage</Button>
+      <ManageModal />
     </div>
   )
 }
