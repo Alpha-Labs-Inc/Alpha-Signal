@@ -22,7 +22,6 @@ class WalletManager:
         if not os.path.exists(self.wallet_save_file) and not self.make_wallet:
             raise Exception("No wallet found.")
         elif make_wallet and not os.path.exists(self.wallet_save_file):
-            print("Creating Wallet")
             self.wallet = asyncio.run(self.create_wallet())
         elif os.path.exists(self.wallet_save_file) and make_wallet:
             raise Exception("Wallet already found.")
@@ -37,14 +36,12 @@ class WalletManager:
             secret_key = base58.b58decode(wallet_data["secret_key"])
             keypair = Keypair.from_seed(secret_key)
             public_key = keypair.pubkey()
-            print(f"Wallet loaded successfully. Public Key: {public_key}")
 
             return Wallet(public_key=public_key, wallet_keypair=keypair)
         except Exception as e:
             raise Exception(f"Error loading wallet keys: {e}")
 
     async def create_wallet(self):
-        print("No existing wallet found. Creating a new wallet...")
         wallet = Keypair()
         public_key = str(wallet.pubkey())
         secret_key = base58.b58encode(wallet.secret()).decode()
@@ -55,9 +52,6 @@ class WalletManager:
 
         with open(self.wallet_save_file, "w") as f:
             json.dump(wallet_data, f, indent=4)  # Save JSON in a readable format
-
-        print(f"Wallet created successfully! Public Key: {public_key}")
-        print(f"Wallet keypair saved to {self.wallet_save_file}")
 
     async def get_tokens(self) -> List[WalletToken]:
         """
@@ -103,16 +97,9 @@ class WalletManager:
         tokens = await self.get_tokens()
         total_value = 0.0
         if not tokens:
-            print("No tokens found in the wallet.")
             return
 
-        print("\nTokens in your wallet:")
         for token in tokens:
             wallet_value = token.balance * token.value
             total_value += wallet_value
-            print(
-                f"- Name: {token.token_name}, Mint Address: {token.mint_address}, Value (USD): ${token.value:.2f}, Balance: {token.balance}, Total Value: ${wallet_value:.2f}"
-            )
-        print(f"Total Value: ${total_value:.2f}")
-
         return WalletValueResponse(wallet_tokens=tokens, total_value=total_value)

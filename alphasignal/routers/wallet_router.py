@@ -35,7 +35,6 @@ async def get_create_wallet():
         wallet = create_wallet()
         return WalletResponse(
             public_key=str(wallet.wallet.public_key),
-            wallet_keypair=str(wallet.wallet.wallet_keypair),
         )
     except Exception as e:
         raise HTTPException(status_code=406, detail=str(e))
@@ -47,7 +46,6 @@ def get_load_wallet():
         wallet = load_wallet()
         return WalletResponse(
             public_key=str(wallet.wallet.public_key),
-            wallet_keypair=str(wallet.wallet.wallet_keypair),
         )
     except Exception as e:
         return HTTPException(status_code=404, detail=str(e))
