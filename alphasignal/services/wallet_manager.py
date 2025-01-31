@@ -61,26 +61,29 @@ class WalletManager:
             List[WalletToken]: A list of tokens with their mint addresses, balances, and names.
         """
         # Solana RPC endpoint
-        solana_client = SolanaClient()
-        jupiter_client = JupiterClient()
-        sol_bal = solana_client.get_sol_balance(self.wallet)
-        response = solana_client.get_owner_token_accounts(self.wallet)
-        if not response.value and sol_bal == 0:
-            return []
-        solana_mint = "So11111111111111111111111111111111111111112"
-        tokens = []
-        for token_info in response.value:
-            mint_address = token_info.account.data.parsed["info"]["mint"]
-            tokens.append(
-                WalletToken(
-                    mint_address=mint_address,
-                    balance=token_info.account.data.parsed["info"]["tokenAmount"][
-                        "uiAmount"
-                    ],
-                    token_name="",
-                    value=await jupiter_client.fetch_token_value(mint_address),
+        try:
+            solana_client = SolanaClient()
+            jupiter_client = JupiterClient()
+            sol_bal = solana_client.get_sol_balance(self.wallet)
+            response = solana_client.get_owner_token_accounts(self.wallet)
+            if not response.value and sol_bal == 0:
+                return []
+            solana_mint = "So11111111111111111111111111111111111111112"
+            tokens = []
+            for token_info in response.value:
+                mint_address = token_info.account.data.parsed["info"]["mint"]
+                tokens.append(
+                    WalletToken(
+                        mint_address=mint_address,
+                        balance=token_info.account.data.parsed["info"]["tokenAmount"][
+                            "uiAmount"
+                        ],
+                        token_name="",
+                        value=await jupiter_client.fetch_token_value(mint_address),
+                    )
                 )
-            )
+        except Exception as e:
+            raise e
 
         tokens.append(
             WalletToken(
