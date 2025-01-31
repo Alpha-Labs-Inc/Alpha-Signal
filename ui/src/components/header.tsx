@@ -31,7 +31,7 @@ const Header = () => {
         </HoverCardContent>
       </HoverCard>
 
-      <Button>Wallet</Button>
+      <Button>Manage</Button>
     </div>
   )
 }
