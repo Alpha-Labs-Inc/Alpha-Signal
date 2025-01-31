@@ -3,7 +3,7 @@ from typing import List
 import uuid
 from datetime import datetime, timezone
 
-from alphasignal.models.coin import Coin
+from alphasignal.models.order import Order
 from alphasignal.models.constants import DB_PATH
 from alphasignal.models.enums import SellMode, SellType
 
@@ -15,7 +15,7 @@ class SQLiteDB:
     def initialize_database(self) -> None:
         cursor = self.connection.cursor()
         cursor.executescript("""
-        CREATE TABLE IF NOT EXISTS tracked_coins (
+        CREATE TABLE IF NOT EXISTS tracked_orders (
             id TEXT PRIMARY KEY,
             mint_address TEXT NOT NULL,
             last_price_max REAL,
@@ -30,7 +30,7 @@ class SQLiteDB:
         """)
         self.connection.commit()
 
-    def create_coin(
+    def create_order(
         self,
         mint_address: str,
         sell_mode: SellMode,
@@ -41,17 +41,17 @@ class SQLiteDB:
     ) -> str:
         cursor = self.connection.cursor()
         time_added = datetime.now(timezone.utc).isoformat()
-        coin_id = str(uuid.uuid4())
+        order_id = str(uuid.uuid4())
         try:
             cursor.execute(
                 """
-                INSERT INTO tracked_coins (
+                INSERT INTO tracked_orders (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
                     sell_type, time_added, time_sold, balance, is_active
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 1)
                 """,
                 (
-                    coin_id,
+                    order_id,
                     mint_address,
                     buy_in_value,
                     sell_mode.value,
@@ -62,23 +62,23 @@ class SQLiteDB:
                 ),
             )
             self.connection.commit()
-            print(f"Coin with mint_address '{mint_address}' added successfully.")
-            return coin_id
+            print(f"Order with mint_address '{mint_address}' added successfully.")
+            return order_id
         except sqlite3.IntegrityError as e:
-            print(f"Error adding coin: {e}")
+            print(f"Error adding order: {e}")
 
-    def get_active_coins(self) -> List[Coin]:
+    def get_active_orders(self) -> List[Order]:
         cursor = self.connection.cursor()
         cursor.execute(
             """
             SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance
-            FROM tracked_coins
+            FROM tracked_orders
             WHERE is_active = 1
             """
         )
         rows = cursor.fetchall()
         return [
-            Coin(
+            Order(
                 id=row[0],
                 mint_address=row[1],
                 last_price_max=row[2],
@@ -91,11 +91,11 @@ class SQLiteDB:
             for row in rows
         ]
 
-    def get_active_coin_balance_by_mint_address(self, mint_address: str) -> float:
+    def get_active_order_balance_by_mint_address(self, mint_address: str) -> float:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT SUM(balance) FROM tracked_coins
+            SELECT SUM(balance) FROM tracked_orders
             WHERE mint_address = ? AND is_active = 1
             """,
             (mint_address,),
@@ -103,50 +103,50 @@ class SQLiteDB:
         used_balance = cursor.fetchone()[0] or 0.0
         return used_balance
 
-    def update_coin_last_price(self, coin_id: str, new_price: float) -> None:
+    def update_order_last_price(self, order_id: str, new_price: float) -> None:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_coins SET last_price_max = ? WHERE id = ?
+            UPDATE tracked_orders SET last_price_max = ? WHERE id = ?
             """,
-            (new_price, coin_id),
+            (new_price, order_id),
         )
         self.connection.commit()
 
-    def deactivate_coin(self, coin_id: str) -> None:
+    def deactivate_order(self, order_id: str) -> None:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_coins SET is_active = 0 WHERE id = ?
+            UPDATE tracked_orders SET is_active = 0 WHERE id = ?
             """,
-            (coin_id,),
+            (order_id,),
         )
         self.connection.commit()
-        print(f"Coin with ID '{coin_id}' has been deactivated.")
+        print(f"Order with ID '{order_id}' has been deactivated.")
 
-    def reactivate_coin(self, coin_id: str) -> None:
+    def reactivate_order(self, order_id: str) -> None:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_coins SET is_active = 1 WHERE id = ?
+            UPDATE tracked_orders SET is_active = 1 WHERE id = ?
             """,
-            (coin_id,),
+            (order_id,),
         )
         self.connection.commit()
-        print(f"Coin with ID '{coin_id}' has been reactivated.")
+        print(f"Order with ID '{order_id}' has been reactivated.")
 
-    def update_sell_time_sold(self, coin_id: str):
+    def update_sell_time_sold(self, order_id: str):
         time_sold = datetime.now(timezone.utc).isoformat()
 
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_coins SET time_sold = ? WHERE id = ?
+            UPDATE tracked_orders SET time_sold = ? WHERE id = ?
             """,
             (
                 time_sold,
-                coin_id,
+                order_id,
             ),
         )
         self.connection.commit()
-        print(f"Time sold updated for Coin with ID '{coin_id}'.")
+        print(f"Time sold updated for Order with ID '{order_id}'.")

@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
   TableBody,
@@ -8,35 +7,37 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from './ui/table'
+import axios from 'axios'
+import { useQuery } from '@tanstack/react-query'
+import Loader from './loader'
 
 interface WalletToken {
-  name: string;
-  mint_address: string;
-  balance: number;
-  value: number;
+  name: string
+  mint_address: string
+  balance: number
+  value: number
+}
+
+const fetchWalletData = async (): Promise<{
+  wallet_tokens: WalletToken[]
+  total_value: number
+}> => {
+  const { data } = await axios.get('http://localhost:8000/wallet-value')
+  return data
 }
 
 const TableView = () => {
-  const [walletTokens, setWalletTokens] = useState<WalletToken[]>([]);
-  const [totalValue, setTotalValue] = useState(0);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['wallet-data'],
+    queryFn: fetchWalletData,
+  })
 
-  useEffect(() => {
-    const fetchWalletData = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/wallet-value");
-        if (!response.ok) throw new Error("Failed to fetch wallet data");
+  if (isLoading) return <Loader />
+  if (error) return <div>Error loading data</div>
 
-        const data: { wallet_tokens: WalletToken[]; total_value: number } = await response.json();
-        setWalletTokens(data.wallet_tokens || []);
-        setTotalValue(data.total_value || 0);
-      } catch (error) {
-        console.error("Error fetching wallet data:", error);
-      }
-    };
-
-    fetchWalletData();
-  }, []);
+  const walletTokens = data?.wallet_tokens || []
+  const totalValue = data?.total_value || 0
 
   return (
     <Card>
@@ -84,7 +85,7 @@ const TableView = () => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TableView;
+export default TableView
