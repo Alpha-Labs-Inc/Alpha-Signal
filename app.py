@@ -11,7 +11,7 @@ from alphasignal.services.service import (
     get_swap_quote,
     get_token_value,
     get_wallet_value,
-    add_coin_command,
+    add_order_command,
     swap_tokens,
 )
 
@@ -249,7 +249,7 @@ class TokenManagerApp(tk.Tk):
             self.update_output(f"Failed to fetch swap quote: {e}")
 
     def add_token(self):
-        async_run(add_coin_command())
+        async_run(add_order_command())
         self.update_output("Token added successfully!")
 
     def swap_tokens(self):

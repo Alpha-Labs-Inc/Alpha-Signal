@@ -2,14 +2,14 @@ from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
-from alphasignal.models.coin import Coin
+from alphasignal.models.order import Order
 from alphasignal.models.enums import SellMode, SellType
 from alphasignal.schemas.responses.swap_confirmation_response import (
     SwapConfirmationResponse,
 )
 from alphasignal.models.token_value import TokenValue
 from alphasignal.schemas.responses.wallet_value_response import WalletValueResponse
-from alphasignal.services.coin_manager import CoinManager
+from alphasignal.services.order_manager import OrderManager
 from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
 
@@ -65,8 +65,8 @@ async def swap_tokens(from_token, to_token, amt, wallet):
     )
 
 
-async def add_coin_command() -> None:
-    coin_manager = CoinManager()
+async def add_order_command() -> None:
+    order_manager = OrderManager()
     wallet_manager = WalletManager()
 
     # Fetch available tokens
@@ -93,7 +93,7 @@ async def add_coin_command() -> None:
         return
 
     # Calculate remaining balance for the selected token
-    remaining_balance = coin_manager.get_remaining_trackable_balance(
+    remaining_balance = order_manager.get_remaining_trackable_balance(
         selected_token.mint_address, selected_token.balance
     )
     print(f"Remaining balance available for tracking: {remaining_balance}")
@@ -162,8 +162,8 @@ async def add_coin_command() -> None:
         print("Invalid input. Please enter a valid number.")
         return
 
-    # Create the coin in the database
-    coin_manager.add_coin(
+    # Create the order in the database
+    order_manager.add_order(
         mint_address=selected_token.mint_address,
         sell_mode=sell_mode,
         sell_value=sell_value,
@@ -173,49 +173,49 @@ async def add_coin_command() -> None:
     )
 
 
-def remove_coin_command() -> None:
-    coin_manager = CoinManager()
+def remove_order_command() -> None:
+    order_manager = OrderManager()
     db = SQLiteDB()
-    active_coins = db.get_active_coins()
-    if not active_coins:
-        print("No active coins to remove.")
+    active_orders = db.get_active_orders()
+    if not active_orders:
+        print("No active orders to remove.")
         return
 
-    print("\nActive Coins:")
-    for idx, coin in enumerate(active_coins, start=1):
+    print("\nActive Orders:")
+    for idx, order in enumerate(active_orders, start=1):
         print(
-            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}"
+            f"{idx}. Mint Address: {order.mint_address}, Balance: {order.balance}, Sell Mode: {order.sell_mode.value}"
         )
 
     try:
-        choice = int(input("\nEnter the number of the coin to remove: ")) - 1
-        if choice < 0 or choice >= len(active_coins):
+        choice = int(input("\nEnter the number of the order to remove: ")) - 1
+        if choice < 0 or choice >= len(active_orders):
             print("Invalid choice. Aborting.")
             return
 
-        selected_coin = active_coins[choice]
-        coin_manager.remove_coin(selected_coin.id)
+        selected_order = active_orders[choice]
+        order_manager.remove_order(selected_order.id)
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
 
-def get_tracked_coins_command() -> List[Coin]:
-    coin_manager = CoinManager()
-    active_coins = coin_manager.get_tracked_coins()
+def get_tracked_orders_command() -> List[Order]:
+    order_manager = OrderManager()
+    active_orders = order_manager.get_tracked_orders()
 
-    print("\nActive Coins:")
-    for idx, coin in enumerate(active_coins, start=1):
+    print("\nActive Orders:")
+    for idx, order in enumerate(active_orders, start=1):
         print(
-            f"{idx}. Mint Address: {coin.mint_address}, Balance: {coin.balance}, Sell Mode: {coin.sell_mode.value}, Sell Trigger Value: {coin.sell_value}, Sell Type: {coin.sell_type.value}, Last Max: {coin.last_price_max}"
+            f"{idx}. Mint Address: {order.mint_address}, Balance: {order.balance}, Sell Mode: {order.sell_mode.value}, Sell Trigger Value: {order.sell_value}, Sell Type: {order.sell_type.value}, Last Max: {order.last_price_max}"
         )
 
-    return active_coins
+    return active_orders
 
 
-async def process_coins() -> None:
-    coin_manager = CoinManager()
+async def process_orders() -> None:
+    order_manager = OrderManager()
 
-    await coin_manager.process_coins()
+    await order_manager.process_orders()
 
 
 def initialize_database() -> None:

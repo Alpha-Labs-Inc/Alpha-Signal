@@ -3,9 +3,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from dotenv import load_dotenv
 from alphasignal.models.enums import SellMode, SellType
-from alphasignal.services.coin_manager import CoinManager
+from alphasignal.services.order_manager import OrderManager
 from alphasignal.services.service import (
-    get_tracked_coins_command,
+    get_tracked_orders_command,
     load_wallet,
     get_wallet_value,
     initialize_database,
@@ -16,14 +16,14 @@ load_dotenv()
 
 # Global wallet manager
 wallet = load_wallet()
-coin_manager = CoinManager()
+order_manager = OrderManager()
 initialize_database()
 
 
-class AddCoinDialog(tk.Toplevel):
+class AddOrderDialog(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("🎃 Add Coin 🎃")
+        self.title("🎃 Add Order 🎃")
         self.geometry("500x600")
         self.configure(bg="#1a1a1a")
 
@@ -90,7 +90,7 @@ class AddCoinDialog(tk.Toplevel):
             widget.destroy()
 
         # Fetch remaining balance
-        remaining_balance = coin_manager.get_remaining_trackable_balance(
+        remaining_balance = order_manager.get_remaining_trackable_balance(
             self.selected_token.mint_address, self.selected_token.balance
         )
 
@@ -252,7 +252,7 @@ class AddCoinDialog(tk.Toplevel):
         tk.Button(
             self,
             text="USDC",
-            command=lambda: self.finalize_add_coin(SellType.USDC),
+            command=lambda: self.finalize_add_order(SellType.USDC),
             bg="#ff7518",
             fg="#1a1a1a",
             font=("Chiller", 14),
@@ -261,16 +261,16 @@ class AddCoinDialog(tk.Toplevel):
         tk.Button(
             self,
             text="SOL",
-            command=lambda: self.finalize_add_coin(SellType.SOL),
+            command=lambda: self.finalize_add_order(SellType.SOL),
             bg="#ff7518",
             fg="#1a1a1a",
             font=("Chiller", 14),
         ).pack(pady=5)
 
-    def finalize_add_coin(self, sell_type):
+    def finalize_add_order(self, sell_type):
         self.sell_type = sell_type
 
-        coin_manager.add_coin(
+        order_manager.add_order(
             mint_address=self.selected_token.mint_address,
             sell_mode=self.sell_mode,
             sell_value=self.sell_value,
@@ -279,7 +279,7 @@ class AddCoinDialog(tk.Toplevel):
             tokens=self.tokens,
         )
 
-        tk.messagebox.showinfo("Success", "Coin added successfully!")
+        tk.messagebox.showinfo("Success", "Order added successfully!")
         self.destroy()
 
 
@@ -293,7 +293,7 @@ class WalletApp(tk.Tk):
         # Halloween header
         self.header_label = tk.Label(
             self,
-            text="🎃 Halloween Wallet & Tracked Coins 🎃",
+            text="🎃 Halloween Wallet & Tracked Orders 🎃",
             font=("Chiller", 24, "bold"),
             fg="#ff7518",  # Pumpkin orange
             bg="#1a1a1a",
@@ -311,8 +311,8 @@ class WalletApp(tk.Tk):
         )
         self.total_label.pack(pady=10)
 
-        # Tracked coins table
-        self.create_tracked_coins_table()
+        # Tracked orders table
+        self.create_tracked_orders_table()
 
         # Start the asyncio loop for updating data
         self.loop = asyncio.get_event_loop()
@@ -357,8 +357,8 @@ class WalletApp(tk.Tk):
 
         self.wallet_tree.pack(fill="both", expand=True)
 
-    def create_tracked_coins_table(self):
-        """Creates the tracked coins table."""
+    def create_tracked_orders_table(self):
+        """Creates the tracked orders table."""
         self.tracked_table_frame = tk.Frame(self, bg="#1a1a1a")
         self.tracked_table_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -393,17 +393,17 @@ class WalletApp(tk.Tk):
 
         self.tracked_tree.pack(fill="both", expand=True)
 
-        # Add a button below the Tracked Coins table
-        add_coin_button = tk.Button(
+        # Add a button below the Tracked Orders table
+        add_order_button = tk.Button(
             self,
-            text="Add Coin 🎃",
-            command=lambda: AddCoinDialog(self),
+            text="Add Order 🎃",
+            command=lambda: AddOrderDialog(self),
             bg="#ff7518",
             fg="#1a1a1a",
             font=("Chiller", 14),
             relief="raised",
         )
-        add_coin_button.pack(pady=10)
+        add_order_button.pack(pady=10)
 
     async def update_wallet_data(self):
         """Fetch and display the latest wallet data."""
@@ -431,29 +431,29 @@ class WalletApp(tk.Tk):
         # Update the total value label
         self.total_label.config(text=f"Total Wallet Value: ${total_value:.2f}")
 
-    async def update_tracked_coins_data(self):
-        """Fetch and display the latest tracked coins data."""
-        tracked_coins = get_tracked_coins_command()
+    async def update_tracked_orders_data(self):
+        """Fetch and display the latest tracked orders data."""
+        tracked_orders = get_tracked_orders_command()
 
-        # Clear the tracked coins table
+        # Clear the tracked orders table
         for row in self.tracked_tree.get_children():
             self.tracked_tree.delete(row)
 
-        # Populate the tracked coins table
-        for coin in tracked_coins:
+        # Populate the tracked orders table
+        for order in tracked_orders:
             self.tracked_tree.insert(
                 "",
                 "end",
                 values=(
-                    coin.mint_address,
-                    f"{coin.balance:.2f}",
-                    coin.sell_mode.value,
-                    f"{coin.sell_value:.2f}",
-                    coin.sell_type.value,
-                    f"{coin.last_price_max:.2f}",
+                    order.mint_address,
+                    f"{order.balance:.2f}",
+                    order.sell_mode.value,
+                    f"{order.sell_value:.2f}",
+                    order.sell_type.value,
+                    f"{order.last_price_max:.2f}",
                     "❌ Remove",
                 ),
-                tags=(coin.id,),  # Tag row with the coin ID
+                tags=(order.id,),  # Tag row with the order ID
             )
 
         # Bind click events to handle the remove button
@@ -468,23 +468,23 @@ class WalletApp(tk.Tk):
 
         # Check if the click was in the "Remove" column
         if region == "cell" and column == "#7" and row_id:
-            # Get the coin ID from the row tags
-            coin_id = self.tracked_tree.item(row_id, "tags")[0]
-            self.remove_tracked_coin(coin_id)
+            # Get the order ID from the row tags
+            order_id = self.tracked_tree.item(row_id, "tags")[0]
+            self.remove_tracked_order(order_id)
 
-    def remove_tracked_coin(self, coin_id: str):
-        """Remove a tracked coin and refresh the table."""
+    def remove_tracked_order(self, order_id: str):
+        """Remove a tracked order and refresh the table."""
         try:
-            coin_manager.remove_coin(coin_id)
-            messagebox.showinfo("Success", "Coin removed successfully!")
+            order_manager.remove_order(order_id)
+            messagebox.showinfo("Success", "Order removed successfully!")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to remove coin: {e}")
+            messagebox.showerror("Error", f"Failed to remove order: {e}")
 
     async def refresh_data(self):
-        """Refresh wallet and tracked coins data every 30 seconds."""
+        """Refresh wallet and tracked orders data every 30 seconds."""
         while True:
             await self.update_wallet_data()
-            await self.update_tracked_coins_data()
+            await self.update_tracked_orders_data()
             await asyncio.sleep(10)
 
     def run(self):
