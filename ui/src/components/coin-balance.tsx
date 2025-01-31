@@ -9,20 +9,31 @@ import {
 } from './ui/table'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
-import { Progress } from './ui/progress'
+import Loader from './loader'
 
-const fetchCoinData = async () => {
+interface Coin {
+  id: string
+  mint_address: string
+  last_price_max: number
+  sell_mode: string
+  sell_value: number
+  sell_type: string
+  time_added: string
+  balance: number
+}
+
+const fetchCoinData = async (): Promise<Coin[]> => {
   const { data } = await axios.get('http://127.0.0.1:8000/coin/tracked')
   return data.coins
 }
 
 const CoinBalance = () => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading } = useQuery<Coin[]>({
     queryKey: ['coin-data'],
     queryFn: fetchCoinData,
   })
 
-  if (isLoading) return <Progress value={10} />
+  if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>
 
   return (
@@ -43,13 +54,12 @@ const CoinBalance = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((coin) => (
+            {data?.map((coin) => (
               <TableRow key={coin.id}>
                 <TableCell className="text-left">{coin.mint_address}</TableCell>
                 <TableCell>{coin.last_price_max}</TableCell>
                 <TableCell>{coin.sell_mode}</TableCell>
                 <TableCell>{coin.sell_value}</TableCell>
-
                 <TableCell>{coin.time_added}</TableCell>
                 <TableCell className="text-right">{coin.balance}</TableCell>
               </TableRow>
