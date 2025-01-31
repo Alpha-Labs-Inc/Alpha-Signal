@@ -171,3 +171,5 @@ cython_debug/
 
 wallet_keypair.json
 ui/package-lock.json
+
+*.db
