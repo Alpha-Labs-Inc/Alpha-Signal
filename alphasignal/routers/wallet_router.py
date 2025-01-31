@@ -48,7 +48,7 @@ def get_load_wallet():
             public_key=str(wallet.wallet.public_key),
         )
     except Exception as e:
-        return HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/swap-coins")

@@ -170,3 +170,4 @@ cython_debug/
 .pypirc
 
 wallet_keypair.json
+ui/package-lock.json
