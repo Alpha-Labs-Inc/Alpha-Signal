@@ -1,7 +1,9 @@
 # import ngrok python sdk
+from dotenv import load_dotenv
 import ngrok
 import time
 
+load_dotenv()
 
 listener = ngrok.forward(
     "127.0.0.1:8000",
