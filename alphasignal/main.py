@@ -13,11 +13,11 @@ from alphasignal.services.service import (
     get_wallet_value,
     initialize_database,
     load_wallet,
-    process_coins,
+    process_orders,
     swap_tokens,
-    add_coin_command,
-    get_tracked_coins_command,
-    remove_coin_command,
+    add_order_command,
+    get_tracked_orders_command,
+    remove_order_command,
 )
 import asyncio
 from dotenv import load_dotenv
@@ -26,14 +26,14 @@ load_dotenv()
 
 
 def execute_command(command, args, wallet):
-    if command == "add_coin":
-        asyncio.run(add_coin_command())
-    elif command == "remove_coin":
-        remove_coin_command()
-    elif command == "get_coins":
-        get_tracked_coins_command()
+    if command == "add_order":
+        asyncio.run(add_order_command())
+    elif command == "remove_order":
+        remove_order_command()
+    elif command == "get_orders":
+        get_tracked_orders_command()
     elif command == "process":
-        asyncio.run(process_coins())
+        asyncio.run(process_orders())
     elif command == "make_wallet":
         create_wallet()
     elif command == "value":
@@ -88,9 +88,9 @@ def main():
             print("  unfollow <twitter_handle> - Unfollow a Twitter account.")
             print("  tokens - Get current wallet details.")
             print(
-                "  add_coin <mint_address> - Add a coin in your wallet to be tracked."
+                "  add_order <mint_address> - Add a order in your wallet to be tracked."
             )
-            print("  sell <mint_address> - Sell a coin.")
+            print("  sell <mint_address> - Sell a order.")
             print("  exit or quit - Exit the CLI.")
         else:
             parts = user_input.split()

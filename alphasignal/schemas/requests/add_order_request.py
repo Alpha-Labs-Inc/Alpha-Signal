@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class AddCoinRequest(BaseModel):
+class AddOrderRequest(BaseModel):
     mint_address: str
     sell_mode: str
     sell_value: float

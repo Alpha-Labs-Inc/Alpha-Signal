@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 
-class CoinResponse(BaseModel):
+class OrderResponse(BaseModel):
     id: str
     mint_address: str
     last_price_max: float
@@ -14,5 +14,5 @@ class CoinResponse(BaseModel):
     balance: float
 
 
-class CoinsResponse(BaseModel):
-    coins: List[CoinResponse]
+class OrdersResponse(BaseModel):
+    orders: List[OrderResponse]
