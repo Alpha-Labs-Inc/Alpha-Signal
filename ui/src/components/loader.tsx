@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react'
-import { Progress } from './ui/progress'
+import { useEffect, useState } from 'react'
 
 const Loader = () => {
-  const [progress, setProgress] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 10))
-    }, 300)
+      setLoading((prev) => !prev) // Toggles state if needed
+    }, 2000) // Adjust timing if needed
+
     return () => clearInterval(interval)
   }, [])
 
-  return <Progress value={progress} />
+  return (
+    <div className='flex w-full justify-center'><div className="w-12 h-12 border-4 border-transparent border-t-white rounded-full animate-spin" /></div>
+  )
 }
 
 export default Loader
