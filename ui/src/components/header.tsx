@@ -1,13 +1,17 @@
 import { Button } from './ui/button'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
+import { Avatar, AvatarImage } from './ui/avatar'
 
 const Header = () => {
   return (
     <div className="w-full flex justify-between items-center w-100">
       <HoverCard>
-        <HoverCardTrigger asChild>
-          <span className="text-lg font-medium hover:underline cursor-pointer">
+        <HoverCardTrigger asChild className="flex items-center space-x-2">
+          <span className=" text-lg font-medium hover:underline cursor-pointer">
             Alpha-Sigma
+            <Avatar>
+              <AvatarImage src="../assets/logo.jpg" alt="logo" />
+            </Avatar>
           </span>
         </HoverCardTrigger>
         <HoverCardContent className="w-80">
