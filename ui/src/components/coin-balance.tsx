@@ -11,7 +11,7 @@ import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import Loader from './loader'
 
-interface Coin {
+interface Orders {
   id: string
   mint_address: string
   last_price_max: number
@@ -22,13 +22,13 @@ interface Coin {
   balance: number
 }
 
-const fetchCoinData = async (): Promise<Coin[]> => {
-  const { data } = await axios.get('http://127.0.0.1:8000/coin/tracked')
-  return data.coins
+const fetchCoinData = async (): Promise<Orders[]> => {
+  const { data } = await axios.get('http://127.0.0.1:8000/order/tracked')
+  return data.orders
 }
 
 const CoinBalance = () => {
-  const { data, error, isLoading } = useQuery<Coin[]>({
+  const { data, error, isLoading } = useQuery<Orders[]>({
     queryKey: ['coin-data'],
     queryFn: fetchCoinData,
   })
@@ -54,6 +54,11 @@ const CoinBalance = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {data?.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6}>No orders at this time</TableCell>
+              </TableRow>
+            )}
             {data?.map((coin) => (
               <TableRow key={coin.id}>
                 <TableCell className="text-left">{coin.mint_address}</TableCell>
