@@ -37,7 +37,7 @@ async def get_tracked_coins():
 @router.post("/coin/add", response_model=str)
 async def add_coin(request: AddCoinRequest):
     coin_manager = CoinManager()
-    tokens = coin_manager.wallet.get_tokens()
+    tokens = await coin_manager.wallet.get_tokens()
     token = next((t for t in tokens if t.mint_address == request.mint_address), None)
 
     if not token:
@@ -49,7 +49,7 @@ async def add_coin(request: AddCoinRequest):
         request.mint_address, token.balance
     )
 
-    if request.balance < remaining_balance:
+    if request.balance > remaining_balance:
         raise TokenBalanceNotAvalible(
             f"Token with mint address '{request.mint_address}' only has an avalible balance of {remaining_balance}'."
         )
