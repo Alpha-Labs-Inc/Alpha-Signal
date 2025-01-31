@@ -11,11 +11,10 @@ from alphasignal.services.coin_manager import (
 
 router = APIRouter()
 
-coin_manager = CoinManager()
-
 
 @router.get("/coin/tracked", response_model=CoinsResponse)
 async def get_tracked_coins():
+    coin_manager = CoinManager()
     coins_return = []
     tracked_coins = coin_manager.get_tracked_coins()
 
@@ -37,6 +36,7 @@ async def get_tracked_coins():
 
 @router.post("/coin/add", response_model=str)
 async def add_coin(request: AddCoinRequest):
+    coin_manager = CoinManager()
     tokens = coin_manager.wallet.get_tokens()
     token = next((t for t in tokens if t.mint_address == request.mint_address), None)
 
@@ -68,6 +68,7 @@ async def add_coin(request: AddCoinRequest):
 
 @router.get("/coin/balance/{mint_address}", response_model=float)
 async def get_avalible_balance(mint_address: str):
+    coin_manager = CoinManager()
     tokens = coin_manager.wallet.get_tokens()
     token = next((t for t in tokens if t.mint_address == mint_address), None)
 
@@ -85,6 +86,7 @@ async def get_avalible_balance(mint_address: str):
 
 @router.delete("/coin/remove/{coin_id}", response_model=bool)
 async def remove_coin(coin_id: str):
+    coin_manager = CoinManager()
     coin_manager.remove_coin(coin_id)
 
     return True
@@ -92,5 +94,6 @@ async def remove_coin(coin_id: str):
 
 @router.post("/coin/process", response_model=bool)
 async def process_coins():
+    coin_manager = CoinManager()
     coin_manager.process_coins()
     return True
