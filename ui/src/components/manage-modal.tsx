@@ -16,19 +16,23 @@ const ManageModal = () => {
         <Button>Manage</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader className="slate-btn-override">
+        <DialogHeader>
           <DialogTitle>Manage your wallet</DialogTitle>
-          <DialogDescription>temp text</DialogDescription>
+          <DialogDescription>Temp text</DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="account" className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="password">Password</TabsTrigger>
+        <Tabs defaultValue="wallet" className="w-[600px]">
+          <TabsList>
+            <TabsTrigger value="wallet">Wallet Management</TabsTrigger>
+            <TabsTrigger value="management">Token Management</TabsTrigger>
+            <TabsTrigger value="swap">Token Swap</TabsTrigger>
           </TabsList>
-          <TabsContent value="account">
+          <TabsContent value="wallet">
             Make changes to your account here.
           </TabsContent>
-          <TabsContent value="password">Change your password here.</TabsContent>
+          <TabsContent value="management">
+            Change your password here.
+          </TabsContent>
+          <TabsContent value="swap">swap</TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
