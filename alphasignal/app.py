@@ -6,6 +6,7 @@ from alphasignal.routers.coin_router import router as coin_router
 from alphasignal.services.service import initialize_database
 
 load_dotenv()
+initialize_database()
 
 app = FastAPI(docs_url="/api/docs")
 
