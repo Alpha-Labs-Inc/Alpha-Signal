@@ -48,9 +48,6 @@ class JupiterClient:
 
         input_amount_smallest_units = int(amount * (10**from_token_decimals))
 
-        print(
-            f"Fetching swap quote for {amount} tokens ({input_amount_smallest_units} smallest units)..."
-        )
         url = f"{self.jupiter_api_url}/quote"
         params = {
             "inputMint": from_token.token.token_mint_address,
@@ -169,12 +166,10 @@ class JupiterClient:
             quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
-            print("Executing swap...")
             transaction_signature = await self.execute_swap(quote, wallet)
-            print(f"Swap completed! Transaction signature: {transaction_signature}")
             return transaction_signature
         except ValueError as e:
-            print(f"Error: {e}")
+            raise Exception(f"Error: {e}")
 
     async def execute_swap(
         self,
@@ -226,7 +221,6 @@ class JupiterClient:
             result = client.send_raw_transaction(txn=bytes(signed_txn), opts=opts)
 
             transaction_id = json.loads(result.to_json())["result"]
-            print(f"Transaction sent: https://explorer.solana.com/tx/{transaction_id}")
             return transaction_id
         except Exception as e:
             raise Exception(f"Error swapping tokens: {e}")

@@ -122,5 +122,4 @@ class SolanaClient:
             # Return transaction signature
             return str(recipient_pubkey), amount
         except Exception as e:
-            print(e)
             return f"An error occurred: {str(e)}"

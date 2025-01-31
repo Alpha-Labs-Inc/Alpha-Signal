@@ -28,8 +28,7 @@ async def fund(amt, wallet, funding_key):
     try:
         in_amt = float(amt)
     except Exception as e:
-        print("In amount must be float.")
-        return
+        raise Exception("In amount must be float.")
     solana_client = SolanaClient()
     return await solana_client.fund_wallet(
         wallet.wallet.public_key, in_amt, funding_key
@@ -43,7 +42,6 @@ def load_wallet():
 async def get_token_value(token_mint_address):
     client = JupiterClient()
     price = await client.fetch_token_value(token_mint_address)
-    print(f"Price for {token_mint_address}: ${price}")
     return TokenValue(token_mint_address=token_mint_address, price=price)
 
 
@@ -51,18 +49,6 @@ async def get_swap_quote(from_token, to_token, amt):
     client = JupiterClient()
     # Gets a quote output pydantic object
     quote = await client.create_quote(from_token, to_token, amt)
-
-    # Display the quote details
-    print("Quote details:")
-    print(
-        f"- Input: {quote.from_token_amt:.6f} tokens (~${quote.from_token_amt_usd:.2f})"
-    )
-    print(f"- Output: {quote.to_token_amt:.6f} tokens (~${quote.to_token_amt_usd:.2f})")
-    print(f"- Conversion Rate: {quote.conversion_rate:.6f} tokens per input token")
-    print(
-        f"- Price Impact: {quote.price_impact * 100:.4f}% (~${quote.price_impact_usd:.2f})"
-    )
-    print(f"- Slippage Tolerance: {quote.slippage_bps / 100:.2f}%")
     return quote
 
 
