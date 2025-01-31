@@ -18,7 +18,7 @@ SOLANA_CLUSTER_URL = "https://api.mainnet-beta.solana.com"  # Mainnet cluster UR
 class WalletManager:
     def __init__(self, make_wallet: bool = False):
         self.make_wallet = make_wallet
-        self.wallet_save_file = os.getenv("WALLET_SAVE_FILE")
+        self.wallet_save_file = os.getenv("WALLET_SAVE_FILE", "wallet_keypair.json")
         if not os.path.exists(self.wallet_save_file) and not self.make_wallet:
             raise Exception("No wallet found.")
         elif make_wallet and not os.path.exists(self.wallet_save_file):
