@@ -475,7 +475,7 @@ class WalletApp(tk.Tk):
     def remove_tracked_order(self, order_id: str):
         """Remove a tracked order and refresh the table."""
         try:
-            order_manager.remove_order(order_id)
+            order_manager.cancel_order(order_id)
             messagebox.showinfo("Success", "Order removed successfully!")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to remove order: {e}")

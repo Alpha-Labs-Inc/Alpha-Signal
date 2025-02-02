@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
 from alphasignal.routers.wallet_router import router as wallet_router
-from alphasignal.routers.order_router import router as order_router
+from alphasignal.routers.orders_router import router as order_router
 from alphasignal.services.service import initialize_database
 from fastapi.middleware.cors import CORSMiddleware
 

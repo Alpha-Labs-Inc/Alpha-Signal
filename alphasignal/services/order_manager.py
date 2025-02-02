@@ -5,7 +5,7 @@ from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.order import Order
 from alphasignal.models.constants import SOL_MINT_ADDRESS, USDC_MINT_ADDRESS
-from alphasignal.models.enums import SellMode, SellType
+from alphasignal.models.enums import OrderStatus, SellMode, SellType
 from alphasignal.models.wallet_token import WalletToken
 from alphasignal.services.wallet_manager import WalletManager
 
@@ -28,10 +28,10 @@ class OrderManager:
         self.jupiter = JupiterClient()
         self.wallet = WalletManager()
 
-    def get_tracked_orders(self) -> List[Order]:
-        active_orders = self.db.get_active_orders()
+    def get_orders(self, status: OrderStatus) -> List[Order]:
+        orders = self.db.get_orders(status)
 
-        return active_orders
+        return orders
 
     def add_order(
         self,
@@ -65,21 +65,21 @@ class OrderManager:
 
         return id
 
-    def remove_order(self, id: str) -> None:
+    def cancel_order(self, id: str) -> None:
         """
-        Removes the order from being tracked
+        Cancels the order
 
         Args:
             id: id of the order
         """
-        active_orders = self.db.get_active_orders()
+        active_orders = self.db.get_orders(OrderStatus.ACTIVE)
 
         order = next((c for c in active_orders if c.id == id), None)
 
         if not order:
             raise TokenNotFoundError(f"No active order found with Id '{id}'.")
 
-        self.db.deactivate_order(id)
+        self.db.set_order_status(id, OrderStatus.CANCELED)
 
     def get_remaining_trackable_balance(self, mint_address: str, total_balance: float):
         """
@@ -96,7 +96,7 @@ class OrderManager:
         return remaining_balance
 
     async def process_orders(self) -> None:
-        active_orders = self.db.get_active_orders()
+        active_orders = self.db.get_orders(OrderStatus.ACTIVE)
         tasks = []
 
         for order in active_orders:
@@ -105,7 +105,7 @@ class OrderManager:
             if order.sell_mode == SellMode.TIME_BASED:
                 elapsed_time = datetime.now(timezone.utc) - order.time_purchased
                 if elapsed_time >= timedelta(minutes=order.sell_value):
-                    self.db.deactivate_order(order.id)
+                    self.db.set_order_status(order.id, OrderStatus.PROCESSING)
                     print(f"Sell {order.mint_address}: Time-based trigger reached.")
                     await self.sell_order(order)
                 elif current_value > order.last_price_max:
@@ -118,12 +118,11 @@ class OrderManager:
                     decrease_percentage = (
                         (order.last_price_max - current_value) / order.last_price_max
                     ) * 100
-                    print(decrease_percentage)
                     if decrease_percentage >= order.sell_value:
                         print(
                             f"Sell condition detected for {order.mint_address}: Starting monitoring..."
                         )
-                        self.db.deactivate_order(order.id)
+                        self.db.set_order_status(order.id, OrderStatus.PROCESSING)
                         tasks.append(asyncio.create_task(self.determine_sell(order)))
 
         # Wait for all stop-loss tasks to finish
@@ -157,7 +156,7 @@ class OrderManager:
             print(
                 f"Sell condition revoked for {order.mint_address}. Reactivating tracking."
             )
-            self.db.reactivate_order(order.id)  # Reactivate the order
+            self.db.set_order_status(order.id, OrderStatus.ACTIVE)
 
     async def sell_order(self, order: Order):
         sell_address = None
@@ -169,12 +168,19 @@ class OrderManager:
 
         # Try to sell the order
         try:
-            await self.jupiter.swap_tokens(
+            transaction_id = await self.jupiter.swap_tokens(
                 order.mint_address, sell_address, order.balance, self.wallet.wallet
             )
         except Exception as e:
             print(f"There was an error selling {order.id} reactivating tracking.")
-            self.db.reactivate_order(order.id)
+            self.db.set_order_status(order.id, OrderStatus.ACTIVE)
             raise e
 
-        self.db.update_sell_time_sold(order.id)
+        try:
+            # User the transaction id to get the profit from the swap
+            profit = ""
+            self.db.complete_order(order.id, profit)
+        except:
+            self.db.complete_order(order.id)
+            print(f"There was an error getting the profit for {order.id}.")
+            raise e

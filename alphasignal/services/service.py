@@ -3,7 +3,7 @@ from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.order import Order
-from alphasignal.models.enums import SellMode, SellType
+from alphasignal.models.enums import OrderStatus, SellMode, SellType
 from alphasignal.schemas.responses.swap_confirmation_response import (
     SwapConfirmationResponse,
 )
@@ -176,7 +176,7 @@ async def add_order_command() -> None:
 def remove_order_command() -> None:
     order_manager = OrderManager()
     db = SQLiteDB()
-    active_orders = db.get_active_orders()
+    active_orders = db.get_orders(OrderStatus.ACTIVE)
     if not active_orders:
         print("No active orders to remove.")
         return
@@ -194,14 +194,14 @@ def remove_order_command() -> None:
             return
 
         selected_order = active_orders[choice]
-        order_manager.remove_order(selected_order.id)
+        order_manager.cancel_order(selected_order.id)
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
 
 def get_tracked_orders_command() -> List[Order]:
     order_manager = OrderManager()
-    active_orders = order_manager.get_tracked_orders()
+    active_orders = order_manager.get_orders(OrderStatus.ACTIVE)
 
     print("\nActive Orders:")
     for idx, order in enumerate(active_orders, start=1):
