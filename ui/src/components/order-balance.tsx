@@ -22,15 +22,15 @@ interface Orders {
   balance: number
 }
 
-const fetchCoinData = async (): Promise<Orders[]> => {
-  const { data } = await axios.get('http://127.0.0.1:8000/order/tracked')
+const fetchOrderData = async (): Promise<Orders[]> => {
+  const { data } = await axios.get('http://127.0.0.1:8000/orders/0')
   return data.orders
 }
 
-const CoinBalance = () => {
+const OrderBalance = () => {
   const { data, error, isLoading } = useQuery<Orders[]>({
-    queryKey: ['coin-data'],
-    queryFn: fetchCoinData,
+    queryKey: ['order-data'],
+    queryFn: fetchOrderData,
   })
 
   if (isLoading) return <Loader />
@@ -39,7 +39,7 @@ const CoinBalance = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Coin Balance</CardTitle>
+        <CardTitle>Order Balance</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -59,14 +59,14 @@ const CoinBalance = () => {
                 <TableCell colSpan={6}>No orders at this time</TableCell>
               </TableRow>
             )}
-            {data?.map((coin) => (
-              <TableRow key={coin.id}>
-                <TableCell className="text-left">{coin.mint_address}</TableCell>
-                <TableCell>{coin.last_price_max}</TableCell>
-                <TableCell>{coin.sell_mode}</TableCell>
-                <TableCell>{coin.sell_value}</TableCell>
-                <TableCell>{coin.time_added}</TableCell>
-                <TableCell className="text-right">{coin.balance}</TableCell>
+            {data?.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell className="text-left">{order.mint_address}</TableCell>
+                <TableCell>{order.last_price_max}</TableCell>
+                <TableCell>{order.sell_mode}</TableCell>
+                <TableCell>{order.sell_value}</TableCell>
+                <TableCell>{order.time_added}</TableCell>
+                <TableCell className="text-right">{order.balance}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -76,4 +76,4 @@ const CoinBalance = () => {
   )
 }
 
-export default CoinBalance
+export default OrderBalance
