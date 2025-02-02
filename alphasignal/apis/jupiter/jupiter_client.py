@@ -8,6 +8,7 @@ from solana.rpc.commitment import Processed
 from solana.rpc.types import TxOpts
 from solders.transaction import VersionedTransaction
 from solders import message
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.constants import USDC_MINT_ADDRESS
@@ -21,6 +22,9 @@ class JupiterClient:
     def __init__(self):
         self.jupiter_api_url = os.getenv("JUPITER_API_URL")
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def fetch_swap_quote(
         self,
         from_token_mint,
@@ -67,6 +71,9 @@ class JupiterClient:
 
         return quote
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def fetch_token_value(self, token_mint_address) -> float:
         """
         Fetch the current value of a coin in USD from the Jupiter API.
@@ -88,9 +95,7 @@ class JupiterClient:
             data = response.json()
             price = float(data["swapUsdValue"])
             return price
-        raise ValueError(
-            f"Unable to fetch price for mint address: {token_mint_address}"
-        )
+        raise Exception(f"Unable to fetch price for mint address: {token_mint_address}")
 
     async def create_quote(
         self,
@@ -142,6 +147,9 @@ class JupiterClient:
             price_impact_usd=price_impact_usd,
         )
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def swap_tokens(
         self,
         from_token_mint,

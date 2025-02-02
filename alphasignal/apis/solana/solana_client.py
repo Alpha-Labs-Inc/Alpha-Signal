@@ -2,6 +2,7 @@ import os
 import base58
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.api import Client
+from tenacity import retry, stop_after_attempt
 from alphasignal.models.wallet import Wallet
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
@@ -18,6 +19,7 @@ class SolanaClient:
         self.solana_cluster_url = os.getenv("SOLANA_CLUSTER_URL")
         self.client = Client(self.solana_cluster_url)
 
+    @retry(stop=stop_after_attempt(3))
     async def get_acc_info(self, token: MintToken):
         async with AsyncClient(self.solana_cluster_url) as async_client:
             try:
@@ -54,6 +56,7 @@ class SolanaClient:
                 f"Error fetching SOL balance for wallet {wallet.public_key}: {e}"
             )
 
+    @retry(stop=stop_after_attempt(3))
     async def fund_wallet(
         self, recipient_pubkey: Pubkey, amount: float, from_private_key: str
     ):
