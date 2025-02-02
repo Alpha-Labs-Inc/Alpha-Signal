@@ -19,7 +19,7 @@ def create_wallet():
     return wallet
 
 
-async def retrieve_wallet_value(wallet) -> WalletValueResponse:
+async def retrieve_wallet_value(wallet: WalletManager) -> WalletValueResponse:
     wallet_value = await wallet.get_wallet_value()
     return wallet_value
 

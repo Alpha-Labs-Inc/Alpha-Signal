@@ -10,7 +10,7 @@ from alphasignal.services.service import (
     fund,
     get_swap_quote,
     get_token_value,
-    get_wallet_value,
+    retrieve_wallet_value,
     initialize_database,
     load_wallet,
     process_orders,
@@ -39,7 +39,7 @@ def execute_command(command, args, wallet):
     elif command == "value":
         asyncio.run(get_token_value(args[0]))
     elif command == "wallet_value":
-        asyncio.run(get_wallet_value(wallet))
+        asyncio.run(retrieve_wallet_value(wallet))
     elif command == "quote":
         asyncio.run(get_swap_quote(args[0], args[1], args[2]))
     elif command == "swap":
