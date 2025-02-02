@@ -7,8 +7,8 @@ const Header = () => {
     <div className="w-full flex justify-between items-center w-100">
       <HoverCard>
         <HoverCardTrigger asChild className="flex items-center space-x-2">
-          <span className=" text-lg font-medium hover:underline cursor-pointer">
-            Alpha-Sigma
+          <span className=" text-3xl hover:underline cursor-pointer font-bold">
+            Alpha Signal
             <Avatar>
               <AvatarImage src="../assets/logo.jpg" alt="logo" />
             </Avatar>
@@ -23,7 +23,7 @@ const Header = () => {
               </p>
               <div className="flex items-center pt-2">
                 <span className="text-xs text-muted-foreground">
-                  Find us at @alphasigma on X
+                  Find us at @AlphaSignalCrypto on X
                 </span>
               </div>
             </div>
