@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from alphasignal.models.enums import SellMode, SellType
+from alphasignal.models.enums import OrderStatus, SellMode, SellType
 from alphasignal.schemas.requests.add_order_request import AddOrderRequest
 from alphasignal.schemas.responses.orders_response import OrdersResponse, OrderResponse
 from alphasignal.services.order_manager import (
@@ -12,11 +12,11 @@ from alphasignal.services.order_manager import (
 router = APIRouter()
 
 
-@router.get("/order/tracked", response_model=OrdersResponse)
-async def get_tracked_orders():
+@router.get("/orders/{status}", response_model=OrdersResponse)
+async def get_tracked_orders(status: int):
     order_manager = OrderManager()
     orders_return = []
-    tracked_orders = order_manager.get_tracked_orders()
+    tracked_orders = order_manager.get_orders(OrderStatus(status))
 
     for order in tracked_orders:
         current_order = OrderResponse(
@@ -28,13 +28,15 @@ async def get_tracked_orders():
             sell_type=order.sell_type.value,
             time_added=order.time_added,
             balance=order.balance,
+            status=order.status.value,
+            profit=order.profit,
         )
         orders_return.append(current_order)
 
     return OrdersResponse(orders=orders_return)
 
 
-@router.post("/order/add", response_model=str)
+@router.post("/orders/add", response_model=str)
 async def add_order(request: AddOrderRequest):
     order_manager = OrderManager()
     tokens = await order_manager.wallet.get_tokens()
@@ -66,10 +68,10 @@ async def add_order(request: AddOrderRequest):
     return id
 
 
-@router.get("/order/balance/{mint_address}", response_model=float)
+@router.get("/orders/balance/{mint_address}", response_model=float)
 async def get_avalible_balance(mint_address: str):
     order_manager = OrderManager()
-    tokens = order_manager.wallet.get_tokens()
+    tokens = await order_manager.wallet.get_tokens()
     token = next((t for t in tokens if t.mint_address == mint_address), None)
 
     if not token:
@@ -84,16 +86,16 @@ async def get_avalible_balance(mint_address: str):
     return remaining_balance
 
 
-@router.delete("/order/remove/{order_id}", response_model=bool)
-async def remove_order(order_id: str):
+@router.delete("/orders/cancel/{order_id}", response_model=bool)
+async def cancel_order(order_id: str):
     order_manager = OrderManager()
-    order_manager.remove_order(order_id)
+    order_manager.cancel_order(order_id)
 
     return True
 
 
-@router.post("/order/process", response_model=bool)
+@router.post("/orders/process", response_model=bool)
 async def process_orders():
     order_manager = OrderManager()
-    order_manager.process_orders()
+    await order_manager.process_orders()
     return True

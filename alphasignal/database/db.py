@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from alphasignal.models.order import Order
 from alphasignal.models.constants import DB_PATH
-from alphasignal.models.enums import SellMode, SellType
+from alphasignal.models.enums import OrderStatus, SellMode, SellType
 
 
 class SQLiteDB:
@@ -25,7 +25,8 @@ class SQLiteDB:
             time_added TEXT,
             time_sold TEXT,
             balance REAL, 
-            is_active BOOLEAN DEFAULT 1
+            order_status INTEGER DEFAULT 0,
+            profit TEXT
         );
         """)
         self.connection.commit()
@@ -47,8 +48,8 @@ class SQLiteDB:
                 """
                 INSERT INTO tracked_orders (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
-                    sell_type, time_added, time_sold, balance, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 1)
+                    sell_type, time_added, time_sold, balance, order_status, profit
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 0, NULL)
                 """,
                 (
                     order_id,
@@ -67,14 +68,15 @@ class SQLiteDB:
         except sqlite3.IntegrityError as e:
             print(f"Error adding order: {e}")
 
-    def get_active_orders(self) -> List[Order]:
+    def get_orders(self, status: OrderStatus) -> List[Order]:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance
+            SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance, order_status, profit
             FROM tracked_orders
-            WHERE is_active = 1
-            """
+            WHERE order_status = ?
+            """,
+            (status.value,),
         )
         rows = cursor.fetchall()
         return [
@@ -87,6 +89,8 @@ class SQLiteDB:
                 sell_type=SellType(row[5]),
                 time_added=datetime.fromisoformat(row[6]),
                 balance=row[7],
+                status=OrderStatus(row[8]),
+                profit=row[9],
             )
             for row in rows
         ]
@@ -96,9 +100,9 @@ class SQLiteDB:
         cursor.execute(
             """
             SELECT SUM(balance) FROM tracked_orders
-            WHERE mint_address = ? AND is_active = 1
+            WHERE mint_address = ? AND order_status = ?
             """,
-            (mint_address,),
+            (mint_address, OrderStatus.ACTIVE.value),
         )
         used_balance = cursor.fetchone()[0] or 0.0
         return used_balance
@@ -113,40 +117,34 @@ class SQLiteDB:
         )
         self.connection.commit()
 
-    def deactivate_order(self, order_id: str) -> None:
+    def set_order_status(self, order_id: str, status: OrderStatus) -> None:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_orders SET is_active = 0 WHERE id = ?
+            UPDATE tracked_orders SET order_status = ? WHERE id = ?
             """,
-            (order_id,),
+            (
+                status.value,
+                order_id,
+            ),
         )
         self.connection.commit()
-        print(f"Order with ID '{order_id}' has been deactivated.")
+        print(f"Order with ID '{order_id}' has been canceled.")
 
-    def reactivate_order(self, order_id: str) -> None:
-        cursor = self.connection.cursor()
-        cursor.execute(
-            """
-            UPDATE tracked_orders SET is_active = 1 WHERE id = ?
-            """,
-            (order_id,),
-        )
-        self.connection.commit()
-        print(f"Order with ID '{order_id}' has been reactivated.")
-
-    def update_sell_time_sold(self, order_id: str):
+    def complete_order(self, order_id: str, profit: str = None):
         time_sold = datetime.now(timezone.utc).isoformat()
 
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            UPDATE tracked_orders SET time_sold = ? WHERE id = ?
+            UPDATE tracked_orders SET order_status = ?, time_sold = ?, profit = ? WHERE id = ?
             """,
             (
+                OrderStatus.COMPLETE.value,
                 time_sold,
+                profit,
                 order_id,
             ),
         )
         self.connection.commit()
-        print(f"Time sold updated for Order with ID '{order_id}'.")
+        print(f"Completed Order with ID '{order_id}'.")

@@ -1,7 +1,8 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
-from alphasignal.models.enums import SellMode, SellType
+from alphasignal.models.enums import OrderStatus, SellMode, SellType
 
 
 class Order(BaseModel):
@@ -13,3 +14,5 @@ class Order(BaseModel):
     sell_type: SellType
     time_added: datetime
     balance: float
+    status: OrderStatus
+    profit: Optional[str]

@@ -9,3 +9,10 @@ class SellMode(Enum):
 class SellType(Enum):
     USDC = "USDC"
     SOL = "SOL"
+
+
+class OrderStatus(Enum):
+    ACTIVE = 0
+    PROCESSING = 1
+    COMPLETE = 2
+    CANCELED = 3
