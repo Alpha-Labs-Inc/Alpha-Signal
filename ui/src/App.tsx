@@ -4,6 +4,7 @@ import Header from './components/header'
 import TableView from './components/wallet-table'
 import OrderBalance from './components/order-balance'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { Toaster } from './components/ui/toaster'
 
 function App() {
   const queryClient = new QueryClient()
@@ -12,6 +13,7 @@ function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
+          <Toaster />
           <div className="container">
             <Header />
 
