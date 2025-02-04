@@ -105,7 +105,10 @@ const Header = () => {
       <div className="ml-auto flex items-center space-x-4">
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="mr-4 text-base hover:underline cursor-pointer">
+            <div
+              onClick={() => navigate('/')}
+              className="mr-4 text-base hover:underline cursor-pointer"
+            >
               Wallet
             </div>
           </HoverCardTrigger>
