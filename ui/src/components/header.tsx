@@ -60,12 +60,16 @@ const Header = () => {
     }
   };
 
+  const navigate = useNavigate()
   return (
     <div className="w-full flex justify-between items-center px-4 py-3">
       {/* Alpha Signal Logo & Hover */}
       <HoverCard>
         <HoverCardTrigger asChild className="flex items-center space-x-2 cursor-pointer">
-          <span className="text-3xl hover:underline font-bold flex items-center">
+          <span
+            onClick={() => navigate('/')}
+            className="text-3xl hover:underline font-bold flex items-center"
+          >
             Alpha Signal
             <Avatar className="ml-2">
               <AvatarImage src="../assets/logo.jpg" alt="logo" />
@@ -131,7 +135,15 @@ const Header = () => {
 
         {/* Manage Modal Button (same size as Wallet) */}
         <div className="w-[120px] h-[40px] flex items-center justify-center">
-          <ManageModal />
+          <div>
+            <span
+              onClick={() => navigate('/order-history')}
+              className=" mr-4 text-base hover:underline cursor-pointer "
+            >
+              Order History
+            </span>
+            <ManageModal />
+          </div>
         </div>
       </div>
     </div>

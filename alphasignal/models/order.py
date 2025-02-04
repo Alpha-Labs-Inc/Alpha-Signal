@@ -16,3 +16,4 @@ class Order(BaseModel):
     balance: float
     status: OrderStatus
     profit: Optional[str]
+    slippage: float

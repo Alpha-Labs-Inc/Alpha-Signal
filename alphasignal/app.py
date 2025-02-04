@@ -3,6 +3,7 @@ from fastapi import FastAPI
 import uvicorn
 from alphasignal.routers.wallet_router import router as wallet_router
 from alphasignal.routers.orders_router import router as order_router
+from alphasignal.routers.config_router import router as config_router
 from alphasignal.services.service import initialize_database
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,6 +21,7 @@ app = FastAPI(docs_url="/api/docs")
 # Include the test router
 app.include_router(wallet_router)
 app.include_router(order_router)
+app.include_router(config_router)
 
 app.add_middleware(
     CORSMiddleware,

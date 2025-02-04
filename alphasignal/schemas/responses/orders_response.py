@@ -14,6 +14,7 @@ class OrderResponse(BaseModel):
     balance: float
     status: int
     profit: Optional[str]
+    slippage: float
 
 
 class OrdersResponse(BaseModel):

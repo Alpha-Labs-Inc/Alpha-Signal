@@ -174,6 +174,7 @@ async def add_order_command() -> None:
         sell_type=sell_type,
         balance=tracking_balance,
         token_value=selected_token.value,
+        slippage=50,
     )
 
 

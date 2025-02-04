@@ -1,7 +1,11 @@
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.configs import AutoBuyConfig, AutoSellConfig
-from alphasignal.models.constants import TYPE_TO_MINT
+from alphasignal.models.constants import (
+    AUTO_BUY_CONFIG_PATH,
+    AUTO_SELL_CONFIG_PATH,
+    TYPE_TO_MINT,
+)
 from alphasignal.models.enums import AmountType
 from alphasignal.services.order_manager import OrderManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -26,12 +30,8 @@ class AutoManager:
             mint_address (str): The mint address of the token.
         """
 
-        buy_config = load_config(
-            "/alphasignal/config/auto_buy_config.json", AutoBuyConfig
-        )
-        sell_config = load_config(
-            "/alphasignal/config/auto_sell_config.json", AutoSellConfig
-        )
+        buy_config = load_config(AUTO_BUY_CONFIG_PATH, AutoBuyConfig)
+        sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
         tokens = await self.wallet.get_tokens()
 
@@ -62,6 +62,7 @@ class AutoManager:
             to_token_mint=mint_address,
             input_amount=swap_balance,
             wallet=self.wallet,
+            slippage_bps=buy_config.slippage,
         )
 
         final_balance = 0 if amount is None else float(amount)
@@ -75,6 +76,7 @@ class AutoManager:
             sell_type=sell_config.sell_type,
             balance=final_balance,
             token_value=self.jupiter.fetch_token_value(mint_address),
+            slippage=sell_config.slippage,
         )
 
         return order_id

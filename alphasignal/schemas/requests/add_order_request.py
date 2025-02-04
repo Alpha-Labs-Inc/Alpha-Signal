@@ -7,3 +7,4 @@ class AddOrderRequest(BaseModel):
     sell_value: float
     sell_type: str
     balance: float
+    slippage: float
