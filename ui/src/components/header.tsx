@@ -40,10 +40,10 @@ const Header = () => {
     const fetchSolValue = async () => {
       try {
         const { data } = await axios.get('http://localhost:8000/sol-value')
-        if (data?.sol_balance !== undefined && data?.usd_value !== undefined) {
+        if (data?.balance !== undefined && data?.usd_balance !== undefined) {
           setWalletData({
-            sol_balance: data.sol_balance,
-            usd_value: data.usd_value,
+            sol_balance: data.balance,
+            usd_value: data.usd_balance,
           })
         } else {
           setWalletData({ sol_balance: 0, usd_value: 0 })
@@ -143,7 +143,7 @@ const Header = () => {
             <p className="text-sm mt-2">
               SOL Balance:{' '}
               <span className="font-bold">
-                {walletData?.sol_balance.toFixed(2)}
+                {walletData?.sol_balance}
               </span>
             </p>
             <p className="text-sm">
