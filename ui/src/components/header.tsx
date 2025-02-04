@@ -1,17 +1,18 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
-import { Avatar, AvatarImage } from './ui/avatar'
 import ManageModal from './manage-modal'
+import { useNavigate } from 'react-router-dom'
 
 const Header = () => {
+  const navigate = useNavigate()
   return (
     <div className="w-full flex justify-between items-center w-100">
       <HoverCard>
         <HoverCardTrigger asChild className="flex items-center space-x-2">
-          <span className=" text-3xl hover:underline cursor-pointer font-bold">
+          <span
+            onClick={() => navigate('/')}
+            className=" text-3xl hover:underline cursor-pointer font-bold"
+          >
             Alpha Signal
-            <Avatar>
-              <AvatarImage src="../assets/logo.jpg" alt="logo" />
-            </Avatar>
           </span>
         </HoverCardTrigger>
         <HoverCardContent className="w-80">
@@ -30,7 +31,15 @@ const Header = () => {
           </div>
         </HoverCardContent>
       </HoverCard>
-      <ManageModal />
+      <div>
+        <span
+          onClick={() => navigate('/order-history')}
+          className=" mr-4 text-base hover:underline cursor-pointer "
+        >
+          Order History
+        </span>
+        <ManageModal />
+      </div>
     </div>
   )
 }
