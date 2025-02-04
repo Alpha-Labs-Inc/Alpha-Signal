@@ -132,7 +132,10 @@ const TableView = () => {
                     <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {token.mint_address}
                     </div>
-                    <Button className="ml-2 p-1 rounded relative z-20">
+                    <Button
+                      variant={'ghost'}
+                      className="ml-2 p-1 rounded relative z-20"
+                    >
                       {copiedToken === token.mint_address ? (
                         <FiCheck className="w-4 h-4 text-white" />
                       ) : (
