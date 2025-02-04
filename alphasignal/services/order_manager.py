@@ -41,6 +41,7 @@ class OrderManager:
         sell_type: SellType,
         balance: float,
         token_value: float,
+        slippage: float,
     ) -> str:
         """
         Add a order to the tracked_orders table after verifying the wallet and fetching current price.
@@ -51,6 +52,7 @@ class OrderManager:
             sell_value (float): The sell value threshold.
             balance (float): Amount of the order to be added.
             token_value: value of the token
+            slippage: allowed slippage
         """
 
         id = self.db.create_order(
@@ -60,6 +62,7 @@ class OrderManager:
             sell_type=sell_type,
             buy_in_value=token_value,
             balance=balance,
+            slippage=slippage,
         )
 
         return id
@@ -168,7 +171,11 @@ class OrderManager:
         # Try to sell the order
         try:
             amount = await self.jupiter.swap_tokens(
-                order.mint_address, sell_address, order.balance, self.wallet.wallet
+                order.mint_address,
+                sell_address,
+                order.balance,
+                self.wallet.wallet,
+                order.slippage,
             )
         except Exception as e:
             print(f"There was an error selling {order.id} reactivating tracking.")

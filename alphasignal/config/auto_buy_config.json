@@ -1,5 +1,6 @@
 {
     "buy_type": "SOL",
     "amount_type": "percent",
-    "amount": 10
+    "amount": 10,
+    "slippage": 300
 }
