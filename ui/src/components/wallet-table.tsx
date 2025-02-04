@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
 import { Button } from './ui/button'
-import { FiCheck } from 'react-icons/fi' // Import only FiCheck from react-icons
+import { FiCheck } from 'react-icons/fi'
 
 interface WalletToken {
   token_name?: string
@@ -41,7 +41,6 @@ const TableView = () => {
   })
 
   const { toast } = useToast()
-
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
 
   const copyToClipboard = (text: string) => {
@@ -74,14 +73,14 @@ const TableView = () => {
   const totalValue = data?.total_value || 0
 
   return (
-    <Card>
+    <Card className="{walletTokens.length > 0 ? 'rounded-lg' : 'bg-transparent'} shadow-md">
       <CardHeader className="relative flex items-center justify-center">
         <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg">
           Wallet
         </CardTitle>
         <Button
           onClick={() => refetch()}
-          className="ml-auto flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
+          className="ml-auto flex items-center justify-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
           disabled={isFetching}
         >
           {isFetching ? (
@@ -113,7 +112,7 @@ const TableView = () => {
                       <img
                         src={token.image}
                         alt={token.token_name || 'Token'}
-                        className="w-12 h-12 rounded-lg border-2 border-white"
+                        className="w-12 h-12 rounded-lg"
                       />
                     )}
                   </TableCell>
@@ -133,10 +132,7 @@ const TableView = () => {
                     <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {token.mint_address}
                     </div>
-                    <Button
-                      variant={'ghost'}
-                      className="ml-2 p-1 rounded relative z-20"
-                    >
+                    <Button className="ml-2 p-1 rounded relative z-20">
                       {copiedToken === token.mint_address ? (
                         <FiCheck className="w-4 h-4 text-white" />
                       ) : (

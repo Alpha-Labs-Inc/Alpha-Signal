@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Avatar, AvatarImage } from './ui/avatar'
-import { ClipboardCopy } from 'lucide-react'
 import ManageModal from './manage-modal'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
 
 const Header = () => {
+  const { toast } = useToast()
   const [walletData, setWalletData] = useState<{
     sol_balance: number
     usd_value: number
@@ -15,7 +16,7 @@ const Header = () => {
   const [fullWalletKey, setFullWalletKey] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
-  const [showTooltip, setShowTooltip] = useState(false) // Tooltip visibility
+  const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
     const fetchWalletKey = async () => {
@@ -62,6 +63,11 @@ const Header = () => {
     if (fullWalletKey) {
       navigator.clipboard.writeText(fullWalletKey)
       setCopied(true)
+      toast({
+        title: 'Address Copied',
+        description: `The address ${fullWalletKey} has been copied to your clipboard.`,
+        duration: 2000,
+      })
       setTimeout(() => setCopied(false), 2000)
     }
   }
@@ -69,16 +75,9 @@ const Header = () => {
   const navigate = useNavigate()
   return (
     <div className="w-full flex justify-between items-center px-4 py-3">
-      {/* Alpha Signal Logo & Hover */}
       <HoverCard>
-        <HoverCardTrigger
-          asChild
-          className="flex items-center space-x-2 cursor-pointer"
-        >
-          <span
-            onClick={() => navigate('/')}
-            className="text-3xl hover:underline font-bold flex items-center"
-          >
+        <HoverCardTrigger asChild className="flex items-center space-x-2 cursor-pointer">
+          <span onClick={() => navigate('/')} className="text-3xl hover:underline font-bold flex items-center">
             Alpha Signal
             <Avatar className="ml-2">
               <AvatarImage src="../assets/logo.jpg" alt="logo" />
@@ -89,76 +88,42 @@ const Header = () => {
           <div className="flex flex-col space-y-2">
             <h4 className="text-sm font-semibold">Alpha Labs Inc</h4>
             <p className="text-sm">AI Algorithmic Trading for the Blockchain</p>
-            <span className="text-xs text-muted-foreground">
-              Find us at @AlphaSignalCrypto on X
-            </span>
+            <span className="text-xs text-muted-foreground">Find us at @AlphaSignalCrypto on X</span>
           </div>
         </HoverCardContent>
       </HoverCard>
 
-      {/* Right-Aligned Wallet Button & Manage Modal */}
       <div className="ml-auto flex items-center space-x-4">
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="mr-4 text-base hover:underline cursor-pointer">
-              Wallet
-            </div>
+            <div className="mr-4 text-base hover:underline cursor-pointer">Wallet</div>
           </HoverCardTrigger>
-          <HoverCardContent className="">
+          <HoverCardContent>
             <h4 className="text-lg font-semibold">Wallet Info</h4>
 
-            {/* Wallet Key Section with Custom Tooltip */}
             <div className="flex items-center justify-center space-x-2 relative mt-2">
-              <span
-                className="text-sm text-gray-300 cursor-pointer"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-              >
+              <span className="text-sm text-gray-300 cursor-pointer" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
                 {walletKey}
               </span>
 
-              {/* Tooltip that shows full wallet key */}
               {showTooltip && fullWalletKey && (
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded-md px-2 py-1 shadow-md whitespace-nowrap">
                   {fullWalletKey}
                 </div>
               )}
 
-              {/* Copy Button */}
-              <button
-                onClick={copyToClipboard}
-                className="p-1 bg-gray-700 rounded-md hover:bg-gray-600 transition"
-              >
-                <ClipboardCopy
-                  size={16}
-                  className={copied ? 'text-green-500' : 'text-white'}
-                />
+              <button onClick={copyToClipboard} className="ml-2 p-1 rounded relative z-20">
+                <img src="/copy.svg" alt="Copy" className="w-4 h-4 filter invert brightness-0" />
               </button>
             </div>
 
-            <p className="text-sm mt-2">
-              SOL Balance:{' '}
-              <span className="font-bold">
-                {walletData?.sol_balance.toFixed(2)}
-              </span>
-            </p>
-            <p className="text-sm">
-              USD Value:{' '}
-              <span className="font-bold">
-                ${walletData?.usd_value.toFixed(2)}
-              </span>
-            </p>
+            <p className="text-sm mt-2">SOL Balance: <span className="font-bold">{walletData?.sol_balance.toFixed(2)}</span></p>
+            <p className="text-sm">USD Value: <span className="font-bold">${walletData?.usd_value.toFixed(2)}</span></p>
           </HoverCardContent>
         </HoverCard>
 
-        {/* Manage Modal Button (same size as Wallet) */}
         <div>
-          <span
-            onClick={() => navigate('/order-history')}
-            className=" mr-4 text-base hover:underline cursor-pointer "
-          >
-            Order History
-          </span>
+          <span onClick={() => navigate('/order-history')} className="mr-4 text-base hover:underline cursor-pointer">Order History</span>
           <ManageModal />
         </div>
       </div>
