@@ -30,6 +30,7 @@ async def get_tracked_orders(status: int):
             balance=order.balance,
             status=order.status.value,
             profit=order.profit,
+            slippage=order.slippage,
         )
         orders_return.append(current_order)
 
@@ -63,6 +64,7 @@ async def add_order(request: AddOrderRequest):
         SellType(request.sell_type),
         request.balance,
         token.value,
+        request.slippage,
     )
 
     return id

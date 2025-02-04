@@ -1,5 +1,6 @@
 {
     "sell_mode": "stop_loss",
     "sell_type": "SOL",
-    "sell_value": 10
+    "sell_value": 10,
+    "slippage": 300
 }

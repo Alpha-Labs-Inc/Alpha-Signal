@@ -27,7 +27,8 @@ class SQLiteDB:
             time_sold TEXT,
             balance REAL, 
             order_status INTEGER DEFAULT 0,
-            profit TEXT
+            profit TEXT,
+            slippage REAL,
         );
         """)
         cursor.executescript("""
@@ -105,6 +106,7 @@ class SQLiteDB:
         sell_type: SellType,
         buy_in_value: float,
         balance: float,
+        slippage: float,
     ) -> str:
         cursor = self.connection.cursor()
         time_added = datetime.now(timezone.utc).isoformat()
@@ -115,7 +117,7 @@ class SQLiteDB:
                 INSERT INTO tracked_orders (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
                     sell_type, time_added, time_sold, balance, order_status, profit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 0, NULL)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 0, NULL, ?)
                 """,
                 (
                     order_id,
@@ -126,6 +128,7 @@ class SQLiteDB:
                     sell_type.value,
                     time_added,
                     balance,
+                    slippage,
                 ),
             )
             self.connection.commit()
@@ -138,7 +141,7 @@ class SQLiteDB:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance, order_status, profit
+            SELECT id, mint_address, last_price_max, sell_mode, sell_value, sell_type, time_added, balance, order_status, profit, slippage
             FROM tracked_orders
             WHERE order_status = ?
             """,
@@ -157,6 +160,7 @@ class SQLiteDB:
                 balance=row[7],
                 status=OrderStatus(row[8]),
                 profit=row[9],
+                slippage=row[10],
             )
             for row in rows
         ]
