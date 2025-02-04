@@ -5,8 +5,10 @@ import os
 import json
 from solders.keypair import Keypair
 
+from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
+from alphasignal.database.db import SQLiteDB
 from alphasignal.models.wallet import Wallet
 from alphasignal.models.wallet_token import WalletToken
 from alphasignal.schemas.responses.wallet_value_response import WalletValueResponse
@@ -61,9 +63,12 @@ class WalletManager:
             List[WalletToken]: A list of tokens with their mint addresses, balances, and names.
         """
         # Solana RPC endpoint
+        sql_db = SQLiteDB()
         try:
             solana_client = SolanaClient()
             jupiter_client = JupiterClient()
+            dexscreener_client = DexscreenerClient()
+
             sol_bal = solana_client.get_sol_balance(self.wallet)
             response = solana_client.get_owner_token_accounts(self.wallet)
             if not response.value and sol_bal == 0:
@@ -72,27 +77,67 @@ class WalletManager:
             tokens = []
             for token_info in response.value:
                 mint_address = token_info.account.data.parsed["info"]["mint"]
+                token_data = sql_db.get_token_info(mint_address)
+                if token_data is None:
+                    token_data = dexscreener_client.get_token_pairs(mint_address)
+                val = await jupiter_client.fetch_token_value(mint_address)
+                bal = float(
+                    token_info.account.data.parsed["info"]["tokenAmount"]["uiAmount"]
+                )
+                usd_bal = float(val) * float(bal)
+                if token_data is None:
+                    tokens.append(
+                        WalletToken(
+                            mint_address=mint_address,
+                            balance=bal,
+                            token_name="",
+                            value=val,
+                            usd_balance=usd_bal,
+                        )
+                    )
+                else:
+                    tokens.append(
+                        WalletToken(
+                            token_name=token_data.name,
+                            token_ticker=token_data.ticker,
+                            image=token_data.image,
+                            mint_address=mint_address,
+                            balance=bal,
+                            value=val,
+                            usd_balance=usd_bal,
+                        )
+                    )
+            sol_info = sql_db.get_token_info(solana_mint)
+            if sol_info is None:
+                sol_info = dexscreener_client.get_token_pairs(solana_mint)
+            if sol_info is None:
+                val = await jupiter_client.fetch_token_value(solana_mint)
+                usd_bal = float(val) * float(sol_bal)
                 tokens.append(
                     WalletToken(
-                        mint_address=mint_address,
-                        balance=token_info.account.data.parsed["info"]["tokenAmount"][
-                            "uiAmount"
-                        ],
-                        token_name="",
-                        value=await jupiter_client.fetch_token_value(mint_address),
+                        mint_address=solana_mint,
+                        balance=sol_bal,
+                        token_name="Solana",
+                        value=float(val),
+                        usd_balance=usd_bal,
+                    )
+                )
+            else:
+                val = await jupiter_client.fetch_token_value(solana_mint)
+                usd_bal = float(val) * float(sol_bal)
+                tokens.append(
+                    WalletToken(
+                        token_ticker=sol_info.ticker,
+                        image=sol_info.image,
+                        mint_address=solana_mint,
+                        balance=sol_bal,
+                        token_name="Solana",
+                        value=val,
+                        usd_balance=usd_bal,
                     )
                 )
         except Exception as e:
             raise e
-
-        tokens.append(
-            WalletToken(
-                mint_address=solana_mint,
-                balance=sol_bal,
-                token_name="Solana",
-                value=await jupiter_client.fetch_token_value(solana_mint),
-            )
-        )
 
         return tokens
 

@@ -1,10 +1,13 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
 class WalletToken(BaseModel):
+    token_name: Optional[str]
+    token_ticker: Optional[str]
+    image: Optional[HttpUrl]
     mint_address: str
     balance: float
     value: float
-    token_name: Optional[str] = None  # Default to None if name is unavailable
+    usd_balance: Optional[float]

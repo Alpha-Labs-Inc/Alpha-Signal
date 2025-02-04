@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from alphasignal.models.order import Order
 from alphasignal.models.constants import DB_PATH
 from alphasignal.models.enums import OrderStatus, SellMode, SellType
+from alphasignal.models.token_info import TokenInfo
 
 
 class SQLiteDB:
@@ -29,7 +30,72 @@ class SQLiteDB:
             profit TEXT
         );
         """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS token_info (
+            mint_address TEXT PRIMARY KEY,
+            name TEXT,
+            ticker TEXT,
+            image TEXT
+        );
+        """)
         self.connection.commit()
+
+    def add_token_info(
+        self,
+        mint_address,
+        name,
+        ticker,
+        image,
+    ):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO token_info (mint_address, name, ticker, image)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(mint_address) DO UPDATE SET
+                    name=excluded.name,
+                    ticker=excluded.ticker,
+                    image=excluded.image;
+            """,
+                (
+                    mint_address,
+                    name,
+                    ticker,
+                    image,
+                ),
+            )
+
+            self.connection.commit()
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+
+    def get_token_info(self, mint_address):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                SELECT mint_address, name, ticker, image
+                FROM token_info
+                WHERE mint_address = ?;
+            """,
+                (mint_address,),
+            )
+
+            row = cursor.fetchone()
+
+            if row:
+                return TokenInfo(
+                    mint_address=row[0],
+                    name=row[1],
+                    ticker=row[2],
+                    image=row[3] if row[3] else None,
+                )
+            return None
+
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+        return None
 
     def create_order(
         self,

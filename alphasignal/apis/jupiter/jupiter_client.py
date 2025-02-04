@@ -85,7 +85,7 @@ class JupiterClient:
             float: The current value of the token in USD.
         """
         if token_mint_address == USDC_MINT_ADDRESS:
-            return 1
+            return float(1.0000)
         token_manager = TokenManager(token_mint_address=token_mint_address)
         decimals = await token_manager.get_token_decimals()
         input_amount_smallest_units = int(1 * (10**decimals))
