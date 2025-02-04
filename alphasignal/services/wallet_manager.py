@@ -109,7 +109,7 @@ class WalletManager:
 
         except Exception as e:
             raise e
-
+        tokens = sorted(tokens, key=lambda t: t.usd_balance, reverse=True)
         return tokens
 
     async def get_wallet_value(self):
