@@ -36,7 +36,7 @@ async def get_auto_buy_config():
     return response
 
 
-@router.get("/config/auto-buy", response_model=AutoSellConfigResponse)
+@router.get("/config/auto-sell", response_model=AutoSellConfigResponse)
 async def get_auto_sell_config():
     sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
