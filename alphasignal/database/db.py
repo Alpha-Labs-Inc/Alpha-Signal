@@ -28,7 +28,7 @@ class SQLiteDB:
             balance REAL, 
             order_status INTEGER DEFAULT 0,
             profit TEXT,
-            slippage REAL,
+            slippage REAL
         );
         """)
         cursor.executescript("""
