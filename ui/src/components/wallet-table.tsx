@@ -9,12 +9,12 @@ import {
   TableRow,
 } from './ui/table'
 import axios from 'axios'
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast'
 import { useQuery } from '@tanstack/react-query'
 import { RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
 import { Button } from './ui/button'
-import { FiCheck } from 'react-icons/fi' // Import only FiCheck from react-icons
+import { FiCheck } from 'react-icons/fi'
 
 interface WalletToken {
   token_name?: string
@@ -41,8 +41,7 @@ const TableView = () => {
   })
 
   const { toast } = useToast()
-
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null)
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard
@@ -50,11 +49,11 @@ const TableView = () => {
       .then(() => {
         setCopiedToken(text)
         toast({
-        title: 'Address Copied',
-        description: `The address ${text} has been copied to your clipboard.`,
-        duration: 2000,
-      });
-      setTimeout(() => setCopiedToken(null), 2000)
+          title: 'Address Copied',
+          description: `The address ${text} has been copied to your clipboard.`,
+          duration: 2000,
+        })
+        setTimeout(() => setCopiedToken(null), 2000)
       })
       .catch((err) => console.error('Failed to copy:', err))
   }
@@ -74,14 +73,14 @@ const TableView = () => {
   const totalValue = data?.total_value || 0
 
   return (
-    <Card>
+    <Card className="{walletTokens.length > 0 ? 'rounded-lg' : 'bg-transparent'} shadow-md">
       <CardHeader className="relative flex items-center justify-center">
         <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg">
           Wallet
         </CardTitle>
         <Button
           onClick={() => refetch()}
-          className="ml-auto flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
+          className="ml-auto flex items-center justify-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
           disabled={isFetching}
         >
           {isFetching ? (
@@ -113,7 +112,7 @@ const TableView = () => {
                       <img
                         src={token.image}
                         alt={token.token_name || 'Token'}
-                        className="w-12 h-12 rounded-lg border-2 border-white"
+                        className="w-12 h-12 rounded-lg"
                       />
                     )}
                   </TableCell>
@@ -125,20 +124,28 @@ const TableView = () => {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-left cursor-pointer relative group" onClick={() => copyToClipboard(token.mint_address)}>
+                  <TableCell
+                    className="text-left cursor-pointer relative group"
+                    onClick={() => copyToClipboard(token.mint_address)}
+                  >
                     <span>{formatMintAddress(token.mint_address)}</span>
-                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-250%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {token.mint_address}
                     </div>
-                    <button
-                      className="ml-2 p-1 rounded relative z-20"
+                    <Button
+                      variant={'ghost'}
+                      className="bg-inherit ml-2 p-1 rounded relative z-20"
                     >
                       {copiedToken === token.mint_address ? (
-                      <FiCheck className="w-4 h-4 text-white" />
+                        <FiCheck className="w-4 h-4 text-white" />
                       ) : (
-                      <img src="/copy.svg" alt="Copy" className="w-4 h-4 filter invert brightness-0" />
+                        <img
+                          src="/copy.svg"
+                          alt="Copy"
+                          className="w-4 h-4 filter invert brightness-0"
+                        />
                       )}
-                    </button>
+                    </Button>
                   </TableCell>
                   <TableCell className="text-left">
                     {formatNumber(token.balance)}

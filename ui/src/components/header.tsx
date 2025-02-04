@@ -1,72 +1,86 @@
-import { useState, useEffect } from 'react';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
-import { Avatar, AvatarImage } from './ui/avatar';
-import { ClipboardCopy } from 'lucide-react';
-import ManageModal from './manage-modal';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
+import { Avatar, AvatarImage } from './ui/avatar'
+import ManageModal from './manage-modal'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
+import { Button } from './ui/button'
 
 const Header = () => {
-  const [walletData, setWalletData] = useState<{ sol_balance: number; usd_value: number } | null>(null);
-  const [walletKey, setWalletKey] = useState<string | null>(null);
-  const [fullWalletKey, setFullWalletKey] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false); // Tooltip visibility
+  const { toast } = useToast()
+  const [walletData, setWalletData] = useState<{
+    sol_balance: number
+    usd_value: number
+  } | null>(null)
+  const [walletKey, setWalletKey] = useState<string | null>(null)
+  const [fullWalletKey, setFullWalletKey] = useState<string | null>(null)
+  const [, setLoading] = useState(true)
+  const [, setCopied] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
     const fetchWalletKey = async () => {
       try {
-        const { data } = await axios.get('http://localhost:8000/load-wallet');
+        const { data } = await axios.get('http://localhost:8000/load-wallet')
         if (data?.public_key) {
-          setFullWalletKey(data.public_key);
-          setWalletKey(`${data.public_key.slice(0, 3)}...${data.public_key.slice(-3)}`);
+          setFullWalletKey(data.public_key)
+          setWalletKey(
+            `${data.public_key.slice(0, 3)}...${data.public_key.slice(-3)}`
+          )
         } else {
-          setWalletKey('N/A');
+          setWalletKey('N/A')
         }
       } catch (error) {
-        console.error('Error fetching wallet key:', error);
-        setWalletKey('Error');
+        console.error('Error fetching wallet key:', error)
+        setWalletKey('Error')
       }
-    };
+    }
 
     const fetchSolValue = async () => {
       try {
-        const { data } = await axios.get('http://localhost:8000/sol-value');
-        if (data?.sol_balance !== undefined && data?.usd_value !== undefined) {
+        const { data } = await axios.get('http://localhost:8000/sol-value')
+        if (data?.balance !== undefined && data?.usd_balance !== undefined) {
           setWalletData({
-            sol_balance: data.sol_balance,
-            usd_value: data.usd_value,
-          });
+            sol_balance: data.balance,
+            usd_value: data.usd_balance,
+          })
         } else {
-          setWalletData({ sol_balance: 0, usd_value: 0 });
+          setWalletData({ sol_balance: 0, usd_value: 0 })
         }
       } catch (error) {
-        console.error('Error fetching SOL value:', error);
-        setWalletData({ sol_balance: 0, usd_value: 0 });
+        console.error('Error fetching SOL value:', error)
+        setWalletData({ sol_balance: 0, usd_value: 0 })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchWalletKey();
-    fetchSolValue();
-  }, []);
+    fetchWalletKey()
+    fetchSolValue()
+  }, [])
 
   const copyToClipboard = () => {
     if (fullWalletKey) {
-      navigator.clipboard.writeText(fullWalletKey);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(fullWalletKey)
+      setCopied(true)
+      toast({
+        title: 'Address Copied',
+        description: `The address ${fullWalletKey} has been copied to your clipboard.`,
+        duration: 2000,
+      })
+      setTimeout(() => setCopied(false), 2000)
     }
-  };
+  }
 
   const navigate = useNavigate()
   return (
     <div className="w-full flex justify-between items-center px-4 py-3">
-      {/* Alpha Signal Logo & Hover */}
       <HoverCard>
-        <HoverCardTrigger asChild className="flex items-center space-x-2 cursor-pointer">
+        <HoverCardTrigger
+          asChild
+          className="flex items-center space-x-2 cursor-pointer"
+        >
           <span
             onClick={() => navigate('/')}
             className="text-3xl hover:underline font-bold flex items-center"
@@ -88,18 +102,19 @@ const Header = () => {
         </HoverCardContent>
       </HoverCard>
 
-      {/* Right-Aligned Wallet Button & Manage Modal */}
       <div className="ml-auto flex items-center space-x-4">
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="px-6 py-2 bg-white text-black text-center rounded-md cursor-pointer shadow-md border border-gray-300 hover:bg-gray-100 transition w-[120px] h-[40px] flex items-center justify-center">
+            <div
+              onClick={() => navigate('/')}
+              className="mr-4 text-base hover:underline cursor-pointer"
+            >
               Wallet
             </div>
           </HoverCardTrigger>
-          <HoverCardContent className="w-64 p-4 border rounded-lg shadow-md bg-gray-900 text-white text-center">
+          <HoverCardContent>
             <h4 className="text-lg font-semibold">Wallet Info</h4>
 
-            {/* Wallet Key Section with Custom Tooltip */}
             <div className="flex items-center justify-center space-x-2 relative mt-2">
               <span
                 className="text-sm text-gray-300 cursor-pointer"
@@ -109,46 +124,52 @@ const Header = () => {
                 {walletKey}
               </span>
 
-              {/* Tooltip that shows full wallet key */}
               {showTooltip && fullWalletKey && (
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded-md px-2 py-1 shadow-md whitespace-nowrap">
                   {fullWalletKey}
                 </div>
               )}
 
-              {/* Copy Button */}
-              <button
+              <Button
                 onClick={copyToClipboard}
-                className="p-1 bg-gray-700 rounded-md hover:bg-gray-600 transition"
+                variant={'ghost'}
+                className="bg-inherit ml-2 p-1 rounded relative z-20"
               >
-                <ClipboardCopy size={16} className={copied ? 'text-green-500' : 'text-white'} />
-              </button>
+                <img
+                  src="/copy.svg"
+                  alt="Copy"
+                  className="w-4 h-4 filter invert brightness-0"
+                />
+              </Button>
             </div>
 
             <p className="text-sm mt-2">
-              SOL Balance: <span className="font-bold">{walletData?.sol_balance.toFixed(2)}</span>
+              SOL Balance:{' '}
+              <span className="font-bold">
+                {walletData?.sol_balance}
+              </span>
             </p>
             <p className="text-sm">
-              USD Value: <span className="font-bold">${walletData?.usd_value.toFixed(2)}</span>
+              USD Value:{' '}
+              <span className="font-bold">
+                ${walletData?.usd_value.toFixed(2)}
+              </span>
             </p>
           </HoverCardContent>
         </HoverCard>
 
-        {/* Manage Modal Button (same size as Wallet) */}
-        <div className="w-[120px] h-[40px] flex items-center justify-center">
-          <div>
-            <span
-              onClick={() => navigate('/order-history')}
-              className=" mr-4 text-base hover:underline cursor-pointer "
-            >
-              Order History
-            </span>
-            <ManageModal />
-          </div>
+        <div>
+          <span
+            onClick={() => navigate('/order-history')}
+            className="mr-4 text-base hover:underline cursor-pointer"
+          >
+            Order History
+          </span>
+          <ManageModal />
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
