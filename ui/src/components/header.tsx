@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from './ui/avatar';
 import { ClipboardCopy } from 'lucide-react';
 import ManageModal from './manage-modal';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [walletData, setWalletData] = useState<{ sol_balance: number; usd_value: number } | null>(null);
