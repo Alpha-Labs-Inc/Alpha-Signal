@@ -1,6 +1,16 @@
 from enum import Enum
 
 
+class AmountType(Enum):
+    PERCENT = "percent"
+    AMOUNT = "amount"
+
+
+class BuyType(Enum):
+    USDC = "USDC"
+    SOL = "SOL"
+
+
 class SellMode(Enum):
     TIME_BASED = "time_based"
     STOP_LOSS = "stop_loss"
