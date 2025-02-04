@@ -134,7 +134,7 @@ const TableView = () => {
                     </div>
                     <Button
                       variant={'ghost'}
-                      className="ml-2 p-1 rounded relative z-20"
+                      className="bg-inherit ml-2 p-1 rounded relative z-20"
                     >
                       {copiedToken === token.mint_address ? (
                         <FiCheck className="w-4 h-4 text-white" />

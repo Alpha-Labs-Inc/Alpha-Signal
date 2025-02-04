@@ -5,6 +5,7 @@ import ManageModal from './manage-modal'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
+import { Button } from './ui/button'
 
 const Header = () => {
   const { toast } = useToast()
@@ -14,8 +15,8 @@ const Header = () => {
   } | null>(null)
   const [walletKey, setWalletKey] = useState<string | null>(null)
   const [fullWalletKey, setFullWalletKey] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [copied, setCopied] = useState(false)
+  const [, setLoading] = useState(true)
+  const [, setCopied] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
@@ -76,8 +77,14 @@ const Header = () => {
   return (
     <div className="w-full flex justify-between items-center px-4 py-3">
       <HoverCard>
-        <HoverCardTrigger asChild className="flex items-center space-x-2 cursor-pointer">
-          <span onClick={() => navigate('/')} className="text-3xl hover:underline font-bold flex items-center">
+        <HoverCardTrigger
+          asChild
+          className="flex items-center space-x-2 cursor-pointer"
+        >
+          <span
+            onClick={() => navigate('/')}
+            className="text-3xl hover:underline font-bold flex items-center"
+          >
             Alpha Signal
             <Avatar className="ml-2">
               <AvatarImage src="../assets/logo.jpg" alt="logo" />
@@ -88,7 +95,9 @@ const Header = () => {
           <div className="flex flex-col space-y-2">
             <h4 className="text-sm font-semibold">Alpha Labs Inc</h4>
             <p className="text-sm">AI Algorithmic Trading for the Blockchain</p>
-            <span className="text-xs text-muted-foreground">Find us at @AlphaSignalCrypto on X</span>
+            <span className="text-xs text-muted-foreground">
+              Find us at @AlphaSignalCrypto on X
+            </span>
           </div>
         </HoverCardContent>
       </HoverCard>
@@ -96,13 +105,19 @@ const Header = () => {
       <div className="ml-auto flex items-center space-x-4">
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="mr-4 text-base hover:underline cursor-pointer">Wallet</div>
+            <div className="mr-4 text-base hover:underline cursor-pointer">
+              Wallet
+            </div>
           </HoverCardTrigger>
           <HoverCardContent>
             <h4 className="text-lg font-semibold">Wallet Info</h4>
 
             <div className="flex items-center justify-center space-x-2 relative mt-2">
-              <span className="text-sm text-gray-300 cursor-pointer" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
+              <span
+                className="text-sm text-gray-300 cursor-pointer"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              >
                 {walletKey}
               </span>
 
@@ -112,18 +127,41 @@ const Header = () => {
                 </div>
               )}
 
-              <button onClick={copyToClipboard} className="ml-2 p-1 rounded relative z-20">
-                <img src="/copy.svg" alt="Copy" className="w-4 h-4 filter invert brightness-0" />
-              </button>
+              <Button
+                onClick={copyToClipboard}
+                variant={'ghost'}
+                className="bg-inherit ml-2 p-1 rounded relative z-20"
+              >
+                <img
+                  src="/copy.svg"
+                  alt="Copy"
+                  className="w-4 h-4 filter invert brightness-0"
+                />
+              </Button>
             </div>
 
-            <p className="text-sm mt-2">SOL Balance: <span className="font-bold">{walletData?.sol_balance.toFixed(2)}</span></p>
-            <p className="text-sm">USD Value: <span className="font-bold">${walletData?.usd_value.toFixed(2)}</span></p>
+            <p className="text-sm mt-2">
+              SOL Balance:{' '}
+              <span className="font-bold">
+                {walletData?.sol_balance.toFixed(2)}
+              </span>
+            </p>
+            <p className="text-sm">
+              USD Value:{' '}
+              <span className="font-bold">
+                ${walletData?.usd_value.toFixed(2)}
+              </span>
+            </p>
           </HoverCardContent>
         </HoverCard>
 
         <div>
-          <span onClick={() => navigate('/order-history')} className="mr-4 text-base hover:underline cursor-pointer">Order History</span>
+          <span
+            onClick={() => navigate('/order-history')}
+            className="mr-4 text-base hover:underline cursor-pointer"
+          >
+            Order History
+          </span>
           <ManageModal />
         </div>
       </div>
