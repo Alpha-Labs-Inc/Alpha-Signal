@@ -1,3 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
+import { Orders } from './order-balance'
+import axios from 'axios'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
@@ -7,48 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table'
-import axios from 'axios'
-import { useQuery } from '@tanstack/react-query'
-import Loader from './loader'
-import { Button } from './ui/button'
 
-export interface Orders {
-  id: string
-  mint_address: string
-  last_price_max: number
-  sell_mode: string
-  sell_value: number
-  sell_type: string
-  time_added: string
-  balance: number
-}
+const OrderHistory = () => {
+  const fetchOrderData = async (): Promise<Orders[]> => {
+    const { data } = await axios.get('http://127.0.0.1:8000/orders/2')
+    return data.orders
+  }
 
-const fetchOrderData = async (): Promise<Orders[]> => {
-  const { data } = await axios.get('http://127.0.0.1:8000/orders/0')
-  return data.orders
-}
-
-const cancelOrder = async (orderId: string) => {
-  await axios.delete(`http://127.0.0.1:8000/orders/cancel/${orderId}`)
-}
-
-const OrderBalance = () => {
-  const { data, error, isLoading, refetch } = useQuery<Orders[]>({
-    queryKey: ['order-data'],
+  const { data } = useQuery<Orders[]>({
+    queryKey: ['order-history-data'],
     queryFn: fetchOrderData,
   })
-
-  if (isLoading) return <Loader />
-  if (error) return <div>Error loading data</div>
-
-  const handleCancel = (orderId: string) => {
-    cancelOrder(orderId).then(() => refetch())
-  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Order Balance</CardTitle>
+        <CardTitle>Orders Completed</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -60,7 +37,6 @@ const OrderBalance = () => {
               <TableHead>Sell Value</TableHead>
               <TableHead>Time Added</TableHead>
               <TableHead className="text-right">Balance</TableHead>
-              <TableHead>Actions</TableHead> {/* Add header for actions */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -80,15 +56,6 @@ const OrderBalance = () => {
                 <TableCell>{order.sell_value}</TableCell>
                 <TableCell>{order.time_added}</TableCell>
                 <TableCell className="text-right">{order.balance}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleCancel(order.id)}
-                  >
-                    Cancel
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -98,4 +65,4 @@ const OrderBalance = () => {
   )
 }
 
-export default OrderBalance
+export default OrderHistory

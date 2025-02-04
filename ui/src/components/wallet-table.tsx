@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,13 +17,13 @@ import { Button } from './ui/button'
 import { FiCheck } from 'react-icons/fi' // Import only FiCheck from react-icons
 
 interface WalletToken {
-  token_name?: string;
-  token_ticker?: string;
-  image?: string;
-  mint_address: string;
-  balance: number;
-  value: number;
-  usd_balance?: number;
+  token_name?: string
+  token_ticker?: string
+  image?: string
+  mint_address: string
+  balance: number
+  value: number
+  usd_balance?: number
 }
 
 const fetchWalletData = async (): Promise<{
@@ -46,20 +45,23 @@ const TableView = () => {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedToken(text);
-      toast({
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopiedToken(text)
+        toast({
         title: 'Address Copied',
         description: `The address ${text} has been copied to your clipboard.`,
         duration: 2000,
       });
-      setTimeout(() => setCopiedToken(null), 2000);
-    }).catch(err => console.error('Failed to copy:', err));
+      setTimeout(() => setCopiedToken(null), 2000)
+      })
+      .catch((err) => console.error('Failed to copy:', err))
   }
 
   const formatNumber = (num: number): string => {
-    return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`;
-  };
+    return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`
+  }
 
   const formatMintAddress = (address: string): string => {
     return `${address.slice(0, 6)}...${address.slice(-6)}`
@@ -82,7 +84,11 @@ const TableView = () => {
           className="ml-auto flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
           disabled={isFetching}
         >
-          {isFetching ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
+          {isFetching ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <RefreshCcw size={18} />
+          )}
         </Button>
       </CardHeader>
 
@@ -134,9 +140,15 @@ const TableView = () => {
                       )}
                     </button>
                   </TableCell>
-                  <TableCell className="text-left">{formatNumber(token.balance)}</TableCell>
-                  <TableCell className="text-right">${formatNumber(token.value)}</TableCell>
-                  <TableCell className="text-right">${token.usd_balance?.toFixed(2) || "0.00"}</TableCell>
+                  <TableCell className="text-left">
+                    {formatNumber(token.balance)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    ${formatNumber(token.value)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    ${token.usd_balance?.toFixed(2) || '0.00'}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
