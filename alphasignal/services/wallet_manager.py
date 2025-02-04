@@ -107,35 +107,35 @@ class WalletManager:
                             usd_balance=usd_bal,
                         )
                     )
-            sol_info = sql_db.get_token_info(solana_mint)
-            if sol_info is None:
-                sol_info = dexscreener_client.get_token_pairs(solana_mint)
-            if sol_info is None:
-                val = await jupiter_client.fetch_token_value(solana_mint)
-                usd_bal = float(val) * float(sol_bal)
-                tokens.append(
-                    WalletToken(
-                        mint_address=solana_mint,
-                        balance=sol_bal,
-                        token_name="Solana",
-                        value=float(val),
-                        usd_balance=usd_bal,
-                    )
-                )
-            else:
-                val = await jupiter_client.fetch_token_value(solana_mint)
-                usd_bal = float(val) * float(sol_bal)
-                tokens.append(
-                    WalletToken(
-                        token_ticker=sol_info.ticker,
-                        image=sol_info.image,
-                        mint_address=solana_mint,
-                        balance=sol_bal,
-                        token_name="Solana",
-                        value=val,
-                        usd_balance=usd_bal,
-                    )
-                )
+            # sol_info = sql_db.get_token_info(solana_mint)
+            # if sol_info is None:
+            #     sol_info = dexscreener_client.get_token_pairs(solana_mint)
+            # if sol_info is None:
+            #     val = await jupiter_client.fetch_token_value(solana_mint)
+            #     usd_bal = float(val) * float(sol_bal)
+            #     tokens.append(
+            #         WalletToken(
+            #             mint_address=solana_mint,
+            #             balance=sol_bal,
+            #             token_name="Solana",
+            #             value=float(val),
+            #             usd_balance=usd_bal,
+            #         )
+            #     )
+            # else:
+            #     val = await jupiter_client.fetch_token_value(solana_mint)
+            #     usd_bal = float(val) * float(sol_bal)
+            #     tokens.append(
+            #         WalletToken(
+            #             token_ticker=sol_info.ticker,
+            #             image=sol_info.image,
+            #             mint_address=solana_mint,
+            #             balance=sol_bal,
+            #             token_name="Solana",
+            #             value=val,
+            #             usd_balance=usd_bal,
+            #         )
+            #     )
         except Exception as e:
             raise e
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
@@ -10,7 +11,9 @@ import {
 } from './ui/table'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
+import { ClipboardCopy, RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
+import { Button } from './ui/button' // Assuming you have a Button component
 
 interface WalletToken {
   token_name?: string;
@@ -19,7 +22,7 @@ interface WalletToken {
   mint_address: string;
   balance: number;
   value: number;
-  usd_balance?: number;  // <-- Added this
+  usd_balance?: number;
 }
 
 const fetchWalletData = async (): Promise<{
@@ -30,20 +33,28 @@ const fetchWalletData = async (): Promise<{
   return data
 }
 
-const copyToClipboard = (text: string) => {
-  navigator.clipboard.writeText(text).catch(err => console.error('Failed to copy:', err));
-}
-
-const formatNumber = (num: number | undefined): string => {
-  if (num === undefined) return "0.00";
-  return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`;
-};
-
 const TableView = () => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['wallet-data'],
     queryFn: fetchWalletData,
   })
+
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedToken(text);
+      setTimeout(() => setCopiedToken(null), 2000);
+    }).catch(err => console.error('Failed to copy:', err));
+  }
+
+  const formatNumber = (num: number): string => {
+    return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`;
+  };
+
+  const formatMintAddress = (address: string): string => {
+    return `${address.slice(0, 6)}...${address.slice(-6)}`
+  }
 
   if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>
@@ -53,8 +64,15 @@ const TableView = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex justify-between items-center">
         <CardTitle>Wallet</CardTitle>
+        <Button
+          onClick={() => refetch()}
+          className="ml-auto flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
+          disabled={isFetching}
+        >
+          {isFetching ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -65,7 +83,7 @@ const TableView = () => {
               <TableHead>Mint Address</TableHead>
               <TableHead>Balance</TableHead>
               <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">USD Balance</TableHead> {/* <-- Added Column */}
+              <TableHead className="text-right">USD Balance</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,34 +99,34 @@ const TableView = () => {
                       />
                     )}
                   </TableCell>
-                  <TableCell className="font-medium text-left">
-                    <span className="relative group cursor-pointer">
-                      {token.token_ticker}
-                      {token.token_name && (
-                        <span className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-auto px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                          {token.token_name}
-                        </span>
-                      )}
-                    </span>
+                  <TableCell className="font-medium text-left relative group cursor-pointer">
+                    <span>{token.token_ticker}</span>
+                    {token.token_name && (
+                      <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {token.token_name}
+                      </div>
+                    )}
                   </TableCell>
-                  <TableCell className="text-left cursor-pointer relative group" onClick={() => copyToClipboard(token.mint_address)}>
-                    {token.mint_address}
-                    <span className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-auto px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      Click to copy
-                    </span>
+                  <TableCell className="text-left cursor-pointer relative group">
+                    <span>{formatMintAddress(token.mint_address)}</span>
+                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      {token.mint_address}
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(token.mint_address)}
+                      className="ml-2 p-1 rounded bg-gray-200 hover:bg-gray-300 relative z-20"
+                    >
+                      <ClipboardCopy size={16} className={copiedToken === token.mint_address ? 'text-gray-500' : 'text-black'} />
+                    </button>
                   </TableCell>
                   <TableCell className="text-left">{formatNumber(token.balance)}</TableCell>
-                  <TableCell className="text-right">
-                    ${formatNumber(token.value)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ${token.usd_balance?.toFixed(2) || "0.00"} {/* <-- Added USD Balance */}
-                  </TableCell>
+                  <TableCell className="text-right">${formatNumber(token.value)}</TableCell>
+                  <TableCell className="text-right">${token.usd_balance?.toFixed(2) || "0.00"}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={6} className="text-center">
                   No tokens found.
                 </TableCell>
               </TableRow>
