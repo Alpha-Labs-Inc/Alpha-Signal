@@ -168,14 +168,27 @@ class JupiterClient:
             slippage_bps (int): Slippage tolerance in basis points (default: 50 bps = 0.5%).
 
         Returns:
-            str: The transaction signature of the completed swap.
+            amount: The amount of coin we got from the swap
         """
         try:
             quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
+
             transaction_signature = await self.execute_swap(quote, wallet)
-            return transaction_signature
+
+            try:
+                route_plan = quote.get("routePlan", [])
+                if not route_plan:
+                    raise ValueError("routePlan is empty or missing")
+
+                last_route = route_plan[-1]  # Get the last route in the array
+                return last_route.get("outAmount", None)
+
+            except Exception as e:
+                print(f"Error extracting outAmount from quote: {e}")
+                return None
+
         except ValueError as e:
             raise Exception(f"Error: {e}")
 

@@ -46,7 +46,6 @@ class OrderManager:
         Add a order to the tracked_orders table after verifying the wallet and fetching current price.
 
         Args:
-            wallet_address (str): The Solana wallet address.
             mint_address (str): The mint address of the token.
             sell_mode (SellMode): The sell mode for the order (e.g., time-based or stop-loss).
             sell_value (float): The sell value threshold.
@@ -168,7 +167,7 @@ class OrderManager:
 
         # Try to sell the order
         try:
-            transaction_id = await self.jupiter.swap_tokens(
+            amount = await self.jupiter.swap_tokens(
                 order.mint_address, sell_address, order.balance, self.wallet.wallet
             )
         except Exception as e:
@@ -178,9 +177,10 @@ class OrderManager:
 
         try:
             # User the transaction id to get the profit from the swap
-            profit = ""
+            final_balance = 0 if amount is None else float(amount)
+            profit = final_balance * self.jupiter.fetch_token_value(sell_address)
             self.db.complete_order(order.id, profit)
-        except:
+        except Exception as e:
             self.db.complete_order(order.id)
             print(f"There was an error getting the profit for {order.id}.")
             raise e

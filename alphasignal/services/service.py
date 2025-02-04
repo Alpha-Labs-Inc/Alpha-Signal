@@ -55,13 +55,11 @@ async def get_swap_quote(from_token, to_token, amt):
 async def swap_tokens(from_token, to_token, amt, wallet):
     client = JupiterClient()
 
-    transaction_signature = await client.swap_tokens(
-        from_token, to_token, amt, wallet.wallet
-    )
+    amount = await client.swap_tokens(from_token, to_token, amt, wallet.wallet)
     return SwapConfirmationResponse(
         from_token_mint_address=from_token,
         to_token_mint_address=to_token,
-        transaction_id=transaction_signature,
+        amount=amount,
     )
 
 
