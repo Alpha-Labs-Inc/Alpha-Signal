@@ -4,6 +4,7 @@ from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.order import Order
 from alphasignal.models.enums import OrderStatus, SellMode, SellType
+from alphasignal.models.wallet_token import WalletToken
 from alphasignal.schemas.responses.swap_confirmation_response import (
     SwapConfirmationResponse,
 )
@@ -17,6 +18,11 @@ from alphasignal.services.wallet_manager import WalletManager
 def create_wallet():
     wallet = WalletManager(True)
     return wallet
+
+
+async def retrieve_sol_value(wallet: WalletManager) -> WalletToken:
+    sol_value = await wallet.get_sol_value()
+    return sol_value
 
 
 async def retrieve_wallet_value(wallet: WalletManager) -> WalletValueResponse:

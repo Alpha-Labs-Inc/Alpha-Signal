@@ -11,6 +11,7 @@ from alphasignal.services.service import (
     fund,
     get_swap_quote,
     load_wallet,
+    retrieve_sol_value,
     retrieve_wallet_value,
     swap_tokens,
 )
@@ -25,6 +26,15 @@ async def get_wallet_value():
     try:
         wallet = load_wallet()
         return await retrieve_wallet_value(wallet=wallet)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/sol-value")
+async def get_sol_value():
+    try:
+        wallet = load_wallet()
+        return await retrieve_sol_value(wallet=wallet)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 

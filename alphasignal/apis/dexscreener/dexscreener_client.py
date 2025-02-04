@@ -16,7 +16,7 @@ class DexscreenerClient:
     def __init__(self):
         self.sql_db = SQLiteDB()
 
-    def get_token_pairs(self, token_address: str):
+    async def get_token_pairs(self, token_address: str):
         """
         Fetches token pair data from the Dexscreener API.
 

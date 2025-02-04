@@ -69,17 +69,16 @@ class WalletManager:
             jupiter_client = JupiterClient()
             dexscreener_client = DexscreenerClient()
 
-            sol_bal = solana_client.get_sol_balance(self.wallet)
             response = solana_client.get_owner_token_accounts(self.wallet)
-            if not response.value and sol_bal == 0:
+            if not response.value:
                 return []
-            solana_mint = "So11111111111111111111111111111111111111112"
+
             tokens = []
             for token_info in response.value:
                 mint_address = token_info.account.data.parsed["info"]["mint"]
                 token_data = sql_db.get_token_info(mint_address)
                 if token_data is None:
-                    token_data = dexscreener_client.get_token_pairs(mint_address)
+                    token_data = await dexscreener_client.get_token_pairs(mint_address)
                 val = await jupiter_client.fetch_token_value(mint_address)
                 bal = float(
                     token_info.account.data.parsed["info"]["tokenAmount"]["uiAmount"]
@@ -107,35 +106,7 @@ class WalletManager:
                             usd_balance=usd_bal,
                         )
                     )
-            # sol_info = sql_db.get_token_info(solana_mint)
-            # if sol_info is None:
-            #     sol_info = dexscreener_client.get_token_pairs(solana_mint)
-            # if sol_info is None:
-            #     val = await jupiter_client.fetch_token_value(solana_mint)
-            #     usd_bal = float(val) * float(sol_bal)
-            #     tokens.append(
-            #         WalletToken(
-            #             mint_address=solana_mint,
-            #             balance=sol_bal,
-            #             token_name="Solana",
-            #             value=float(val),
-            #             usd_balance=usd_bal,
-            #         )
-            #     )
-            # else:
-            #     val = await jupiter_client.fetch_token_value(solana_mint)
-            #     usd_bal = float(val) * float(sol_bal)
-            #     tokens.append(
-            #         WalletToken(
-            #             token_ticker=sol_info.ticker,
-            #             image=sol_info.image,
-            #             mint_address=solana_mint,
-            #             balance=sol_bal,
-            #             token_name="Solana",
-            #             value=val,
-            #             usd_balance=usd_bal,
-            #         )
-            #     )
+
         except Exception as e:
             raise e
 
@@ -151,3 +122,41 @@ class WalletManager:
             wallet_value = token.balance * token.value
             total_value += wallet_value
         return WalletValueResponse(wallet_tokens=tokens, total_value=total_value)
+
+    async def get_sol_value(self):
+        try:
+            sql_db = SQLiteDB()
+            solana_client = SolanaClient()
+            jupiter_client = JupiterClient()
+            dexscreener_client = DexscreenerClient()
+            solana_mint = "So11111111111111111111111111111111111111112"
+            sol_bal = solana_client.get_sol_balance(self.wallet)
+            val = await jupiter_client.fetch_token_value(solana_mint)
+            sol_info = sql_db.get_token_info(solana_mint)
+            usd_bal = float(val) * float(sol_bal)
+            if sol_info is None:
+                sol_info = await dexscreener_client.get_token_pairs(solana_mint)
+            if sol_info is None:
+                return WalletToken(
+                    mint_address=solana_mint,
+                    balance=sol_bal,
+                    token_name="Solana",
+                    value=val,
+                    usd_balance=usd_bal,
+                )
+
+            else:
+                val = await jupiter_client.fetch_token_value(solana_mint)
+                usd_bal = float(val) * float(sol_bal)
+
+                return WalletToken(
+                    token_ticker=sol_info.ticker,
+                    image=sol_info.image,
+                    mint_address=solana_mint,
+                    balance=sol_bal,
+                    token_name="Solana",
+                    value=val,
+                    usd_balance=usd_bal,
+                )
+        except Exception as e:
+            raise e
