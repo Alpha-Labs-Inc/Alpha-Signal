@@ -129,7 +129,7 @@ const TableView = () => {
                     onClick={() => copyToClipboard(token.mint_address)}
                   >
                     <span>{formatMintAddress(token.mint_address)}</span>
-                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-200%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                    <div className="absolute left-1/2 transform -translate-x-1/2 translate-y-[-250%] px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {token.mint_address}
                     </div>
                     <Button
