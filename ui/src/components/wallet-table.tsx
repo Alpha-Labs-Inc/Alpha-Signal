@@ -64,8 +64,10 @@ const TableView = () => {
 
   return (
     <Card>
-      <CardHeader className="flex justify-between items-center">
-        <CardTitle>Wallet</CardTitle>
+      <CardHeader className="relative flex items-center justify-center">
+        <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg">
+          Wallet
+        </CardTitle>
         <Button
           onClick={() => refetch()}
           className="ml-auto flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
@@ -74,6 +76,7 @@ const TableView = () => {
           {isFetching ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
         </Button>
       </CardHeader>
+
       <CardContent>
         <Table>
           <TableHeader>
