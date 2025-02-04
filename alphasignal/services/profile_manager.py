@@ -11,10 +11,11 @@ class ProfileManager:
     def __init__(self):
         self.db = SQLiteDB()
         # Load the configurations
+
+    def add_profile(self, platform: str, signal: str) -> str:
         self.buy_config = load_config(AUTO_BUY_CONFIG_PATH, AutoBuyConfig)
         self.sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
-    def add_profile(self, platform: str, signal: str) -> str:
         # Default the rest of the arguments from the configs
         profile_id = self.db.add_profile(
             platform=platform,
