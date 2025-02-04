@@ -5,8 +5,22 @@ from datetime import datetime, timezone
 
 from alphasignal.models.order import Order
 from alphasignal.models.constants import DB_PATH
-from alphasignal.models.enums import OrderStatus, SellMode, SellType
+from alphasignal.models.enums import (
+    AmountType,
+    BuyType,
+    OrderStatus,
+    Platform,
+    SellMode,
+    SellType,
+)
+from alphasignal.models.profile import Profile
 from alphasignal.models.token_info import TokenInfo
+
+
+class ProfileNotFoundError(Exception):
+    def __init__(self, profile_id: str):
+        super().__init__(f"Profile with ID '{profile_id}' not found.")
+        self.profile_id = profile_id
 
 
 class SQLiteDB:
@@ -37,6 +51,22 @@ class SQLiteDB:
             name TEXT,
             ticker TEXT,
             image TEXT
+        );
+        """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS profile (
+            id TEXT PRIMARY KEY,
+            platform TEXT,
+            signal TEXT,
+            is_active BOOLEAN,
+            buy_type TEXT,
+            buy_amount_type TEXT,
+            buy_amount REAL,
+            buy_slippage REAL
+            sell_mode TEXT,
+            sell_type TEXT,
+            sell_value REAL,
+            sell_slippage REAL
         );
         """)
         self.connection.commit()
@@ -218,3 +248,156 @@ class SQLiteDB:
         )
         self.connection.commit()
         print(f"Completed Order with ID '{order_id}'.")
+
+    def add_profile(
+        self,
+        platform: Platform,
+        signal: str,
+        buy_type: str,
+        buy_amount_type: str,
+        buy_amount: float,
+        buy_slippage: float,
+        sell_mode: str,
+        sell_type: str,
+        sell_value: float,
+        sell_slippage: float,
+    ) -> str:
+        # Generate a unique ID based on platform and signal using hashlib
+        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{signal}"))
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO profile (
+                    id, platform, signal, is_active, buy_type, buy_amount_type, 
+                    buy_amount, buy_slippage, sell_mode, sell_type, 
+                    sell_value, sell_slippage
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    profile_id,
+                    platform.value,
+                    signal,
+                    True,  # Default to active
+                    buy_type,
+                    buy_amount_type,
+                    buy_amount,
+                    buy_slippage,
+                    sell_mode,
+                    sell_type,
+                    sell_value,
+                    sell_slippage,
+                ),
+            )
+            self.connection.commit()
+            print(
+                f"Profile with platform '{platform}' and signal '{signal}' added successfully."
+            )
+            return profile_id
+        except sqlite3.Error as e:
+            print(f"Error adding profile: {e}")
+            return None
+
+    def deactivate_profile(self, profile_id: str) -> None:
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                UPDATE profile SET is_active = ? WHERE id = ?
+                """,
+                (False, profile_id),
+            )
+            self.connection.commit()
+            print(f"Profile with ID '{profile_id}' has been deactivated.")
+        except sqlite3.Error as e:
+            print(f"Error deactivating profile: {e}")
+
+    def activate_profile(self, profile_id: str) -> None:
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                UPDATE profile SET is_active = ? WHERE id = ?
+                """,
+                (True, profile_id),
+            )
+            self.connection.commit()
+            print(f"Profile with ID '{profile_id}' has been activated.")
+        except sqlite3.Error as e:
+            print(f"Error activating profile: {e}")
+
+    def update_profile(
+        self,
+        profile_id: str,
+        buy_type: str,
+        buy_amount_type: str,
+        buy_amount: float,
+        buy_slippage: float,
+        sell_mode: str,
+        sell_type: str,
+        sell_value: float,
+        sell_slippage: float,
+    ) -> None:
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                UPDATE profile SET 
+                    buy_type = ?, 
+                    buy_amount_type = ?, 
+                    buy_amount = ?, 
+                    buy_slippage = ?, 
+                    sell_mode = ?, 
+                    sell_type = ?, 
+                    sell_value = ?, 
+                    sell_slippage = ?
+                WHERE id = ?
+                """,
+                (
+                    buy_type,
+                    buy_amount_type,
+                    buy_amount,
+                    buy_slippage,
+                    sell_mode,
+                    sell_type,
+                    sell_value,
+                    sell_slippage,
+                    profile_id,
+                ),
+            )
+            self.connection.commit()
+            print(f"Profile with ID '{profile_id}' has been updated.")
+        except sqlite3.Error as e:
+            print(f"Error updating profile: {e}")
+
+    def get_profile_data(self, profile_id: str) -> Profile:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, platform, signal, is_active, buy_type, buy_amount_type, 
+                   buy_amount, buy_slippage, sell_mode, sell_type, 
+                   sell_value, sell_slippage
+            FROM profile
+            WHERE id = ?;
+            """,
+            (profile_id,),
+        )
+        row = cursor.fetchone()
+        if row:
+            # Return the profile as a Pydantic model
+            return Profile(
+                id=row[0],
+                platform=row[1],
+                signal=row[2],
+                is_active=bool(row[3]),
+                buy_type=BuyType(row[4]),
+                buy_amount_type=AmountType(row[5]),
+                buy_amount=row[6],
+                buy_slippage=row[7],
+                sell_mode=SellMode(row[8]),
+                sell_type=SellType(row[9]),
+                sell_value=row[10],
+                sell_slippage=row[11],
+            )
+        # Raise an exception if the profile is not found
+        raise ProfileNotFoundError(profile_id)

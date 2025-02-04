@@ -26,3 +26,7 @@ class OrderStatus(Enum):
     PROCESSING = 1
     COMPLETE = 2
     CANCELED = 3
+
+
+class Platform(Enum):
+    TWITTER = "twitter"
