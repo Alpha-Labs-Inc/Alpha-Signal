@@ -6,6 +6,7 @@ import OrderBalance from './components/order-balance'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { Toaster } from './components/ui/toaster'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import OrderHistory from './components/order-history'
 
 function App() {
   const queryClient = new QueryClient()
@@ -30,7 +31,7 @@ function App() {
           <div className="container mx-auto p-4 m-4">
             <Routes>
               <Route path="/" element={homeNode} />
-              <Route path="/order-history" element={<>historic shit</>} />
+              <Route path="/order-history" element={<OrderHistory />} />
               {/* Add more routes here */}
             </Routes>
           </div>
