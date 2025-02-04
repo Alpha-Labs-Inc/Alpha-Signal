@@ -8,8 +8,9 @@ import {
   TableRow,
 } from './ui/table'
 import axios from 'axios'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Loader from './loader'
+import { Button } from './ui/button'
 
 interface Orders {
   id: string
@@ -27,14 +28,23 @@ const fetchOrderData = async (): Promise<Orders[]> => {
   return data.orders
 }
 
+const cancelOrder = async (orderId: string) => {
+  await axios.delete(`http://127.0.0.1:8000/orders/cancel/${orderId}`)
+}
+
 const OrderBalance = () => {
-  const { data, error, isLoading } = useQuery<Orders[]>({
+  const { data, error, isLoading, refetch } = useQuery<Orders[]>({
     queryKey: ['order-data'],
     queryFn: fetchOrderData,
   })
 
   if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>
+
+  const handleCancel = (orderId: string) => {
+    cancelOrder(orderId).then(() =>
+      refetch())
+  }
 
   return (
     <Card>
@@ -51,12 +61,13 @@ const OrderBalance = () => {
               <TableHead>Sell Value</TableHead>
               <TableHead>Time Added</TableHead>
               <TableHead className="text-right">Balance</TableHead>
+              <TableHead>Actions</TableHead> {/* Add header for actions */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {data?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6}>No orders at this time</TableCell>
+                <TableCell colSpan={7}>No orders at this time</TableCell> {/* Updated colSpan */}
               </TableRow>
             )}
             {data?.map((order) => (
@@ -67,6 +78,15 @@ const OrderBalance = () => {
                 <TableCell>{order.sell_value}</TableCell>
                 <TableCell>{order.time_added}</TableCell>
                 <TableCell className="text-right">{order.balance}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleCancel(order.id)}
+                  >
+                    Cancel
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
