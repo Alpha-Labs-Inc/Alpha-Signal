@@ -12,6 +12,7 @@ const Header = () => {
   const [walletData, setWalletData] = useState<{
     sol_balance: number
     usd_value: number
+    percent_change_24hr: number
   } | null>(null)
   const [walletKey, setWalletKey] = useState<string | null>(null)
   const [fullWalletKey, setFullWalletKey] = useState<string | null>(null)
@@ -40,17 +41,18 @@ const Header = () => {
     const fetchSolValue = async () => {
       try {
         const { data } = await axios.get('http://localhost:8000/sol-value')
-        if (data?.balance !== undefined && data?.usd_balance !== undefined) {
+        if (data?.balance !== undefined && data?.usd_balance !== undefined && data?.percent_change_24hr !== undefined) {
           setWalletData({
             sol_balance: data.balance,
             usd_value: data.usd_balance,
+            percent_change_24hr: data.percent_change_24hr
           })
         } else {
-          setWalletData({ sol_balance: 0, usd_value: 0 })
+          setWalletData({ sol_balance: 0, usd_value: 0, percent_change_24hr: 0 })
         }
       } catch (error) {
         console.error('Error fetching SOL value:', error)
-        setWalletData({ sol_balance: 0, usd_value: 0 })
+        setWalletData({ sol_balance: 0, usd_value: 0, percent_change_24hr: 0 })
       } finally {
         setLoading(false)
       }
@@ -103,7 +105,7 @@ const Header = () => {
       </HoverCard>
 
       <div className="ml-auto flex items-center space-x-4">
-        <HoverCard>
+        <HoverCard >
           <HoverCardTrigger asChild>
             <div
               onClick={() => navigate('/')}
@@ -112,8 +114,22 @@ const Header = () => {
               Wallet
             </div>
           </HoverCardTrigger>
-          <HoverCardContent>
-            <h4 className="text-lg font-semibold">Wallet Info</h4>
+          <HoverCardContent
+            className="shadow-md relative"
+          >
+            <div
+              className="absolute inset-0 rounded-md"
+              style={{
+                background: (walletData?.percent_change_24hr ?? 0) > 0
+                  ? 'rgba(0, 255, 0, 0.02)' // Subtle green overlay
+                  : (walletData?.percent_change_24hr ?? 0) < 0
+                    ? 'rgba(255, 0, 0, 0.02)' // Subtle red overlay
+                    : 'transparent',
+                pointerEvents: 'none', // Ensures the overlay doesn't interfere with interactions
+              }}
+            />
+
+            <h4 className="text-lg font-semibold relative">Wallet Info</h4>
 
             <div className="flex items-center justify-center space-x-2 relative mt-2">
               <span
@@ -153,9 +169,19 @@ const Header = () => {
               USD Value:{' '}
               <span className="font-bold">
                 ${walletData?.usd_value.toFixed(2)}
+                <span className={
+                  (walletData?.percent_change_24hr ?? 0) > 0
+                    ? 'text-green-500'
+                    : (walletData?.percent_change_24hr ?? 0) < 0
+                      ? 'text-red-500'
+                      : 'text-white'
+                }>
+                  ({(walletData?.percent_change_24hr ?? 0).toFixed(2)}%)
+                </span>
               </span>
             </p>
           </HoverCardContent>
+
         </HoverCard>
 
         <div>
