@@ -2,7 +2,7 @@ import uuid
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.configs import AutoBuyConfig, AutoSellConfig
 from alphasignal.models.constants import AUTO_BUY_CONFIG_PATH, AUTO_SELL_CONFIG_PATH
-from alphasignal.models.enums import AmountType, BuyType, SellMode, SellType
+from alphasignal.models.enums import AmountType, BuyType, Platform, SellMode, SellType
 from alphasignal.models.profile import Profile
 from alphasignal.utils.utils import load_config
 
@@ -12,7 +12,7 @@ class ProfileManager:
         self.db = SQLiteDB()
         # Load the configurations
 
-    def add_profile(self, platform: str, signal: str) -> str:
+    def add_profile(self, platform: Platform, signal: str) -> str:
         self.buy_config = load_config(AUTO_BUY_CONFIG_PATH, AutoBuyConfig)
         self.sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
@@ -67,3 +67,9 @@ class ProfileManager:
     def get_profile(self, platform: str, signal: str) -> Profile:
         profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{signal}"))
         return self.db.get_profile_data(profile_id)
+
+    def get_profile_by_id(self, profile_id: str) -> Profile:
+        return self.db.get_profile_data(profile_id)
+
+    def delete_profile(self, profile_id: str) -> None:
+        self.db.delete_profile(profile_id)

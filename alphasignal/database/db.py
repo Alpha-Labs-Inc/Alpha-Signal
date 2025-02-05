@@ -253,12 +253,12 @@ class SQLiteDB:
         self,
         platform: Platform,
         signal: str,
-        buy_type: str,
-        buy_amount_type: str,
+        buy_type: BuyType,
+        buy_amount_type: AmountType,
         buy_amount: float,
         buy_slippage: float,
-        sell_mode: str,
-        sell_type: str,
+        sell_mode: SellMode,
+        sell_type: SellType,
         sell_value: float,
         sell_slippage: float,
     ) -> str:
@@ -279,12 +279,12 @@ class SQLiteDB:
                     platform.value,
                     signal,
                     True,  # Default to active
-                    buy_type,
-                    buy_amount_type,
+                    buy_type.value,
+                    buy_amount_type.value,
                     buy_amount,
                     buy_slippage,
-                    sell_mode,
-                    sell_type,
+                    sell_mode.value,
+                    sell_type.value,
                     sell_value,
                     sell_slippage,
                 ),
@@ -387,7 +387,7 @@ class SQLiteDB:
             # Return the profile as a Pydantic model
             return Profile(
                 id=row[0],
-                platform=row[1],
+                platform=Platform(row[1]),
                 signal=row[2],
                 is_active=bool(row[3]),
                 buy_type=BuyType(row[4]),
@@ -401,3 +401,18 @@ class SQLiteDB:
             )
         # Raise an exception if the profile is not found
         raise ProfileNotFoundError(profile_id)
+
+    def delete_profile(self, profile_id: str) -> None:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            DELETE FROM profile WHERE id = ?;
+            """,
+            (profile_id,),
+        )
+        self.connection.commit()
+
+        if cursor.rowcount == 0:
+            raise ProfileNotFoundError(profile_id)
+
+        print(f"Profile with ID '{profile_id}' has been deleted.")
