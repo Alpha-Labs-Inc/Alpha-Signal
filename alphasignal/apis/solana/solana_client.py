@@ -2,7 +2,7 @@ import os
 import base58
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.api import Client
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_exponential
 from alphasignal.models.wallet import Wallet
 from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
@@ -37,14 +37,23 @@ class SolanaClient:
                     f"Error fetching decimals for mint address {token.token_mint_address}: {e}"
                 )
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=15, min=15, max=60)
+    )
     def get_owner_token_accounts(self, wallet: Wallet):
-        opts = TokenAccountOpts(
-            program_id=Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        )
-        return self.client.get_token_accounts_by_owner_json_parsed(
-            wallet.public_key, opts
-        )
+        try:
+            opts = TokenAccountOpts(
+                program_id=Pubkey.from_string(
+                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                )
+            )
+            return self.client.get_token_accounts_by_owner_json_parsed(
+                wallet.public_key, opts
+            )
+        except:
+            raise Exception("Rate Limited by Solana RPC, wait 10 seconds")
 
+    @retry(stop=stop_after_attempt(3), sleep=10)
     def get_sol_balance(self, wallet: Wallet):
         try:
             response = self.client.get_balance(wallet.public_key)

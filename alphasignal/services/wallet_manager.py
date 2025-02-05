@@ -63,100 +63,147 @@ class WalletManager:
             List[WalletToken]: A list of tokens with their mint addresses, balances, and names.
         """
         # Solana RPC endpoint
-        sql_db = SQLiteDB()
         try:
             solana_client = SolanaClient()
-            jupiter_client = JupiterClient()
             dexscreener_client = DexscreenerClient()
 
             response = solana_client.get_owner_token_accounts(self.wallet)
             if not response.value:
                 return []
-
             tokens = []
             for token_info in response.value:
                 mint_address = token_info.account.data.parsed["info"]["mint"]
-                token_data = sql_db.get_token_info(mint_address)
-                if token_data is None:
-                    token_data = await dexscreener_client.get_token_pairs(mint_address)
-                val = await jupiter_client.fetch_token_value(mint_address)
                 bal = float(
                     token_info.account.data.parsed["info"]["tokenAmount"]["uiAmount"]
                 )
-                usd_bal = float(val) * float(bal)
-                if token_data is None:
-                    tokens.append(
-                        WalletToken(
-                            mint_address=mint_address,
-                            balance=bal,
-                            token_name="",
-                            value=val,
-                            usd_balance=usd_bal,
-                        )
-                    )
-                else:
-                    tokens.append(
-                        WalletToken(
-                            token_name=token_data.name,
-                            token_ticker=token_data.ticker,
-                            image=token_data.image,
-                            mint_address=mint_address,
-                            balance=bal,
-                            value=val,
-                            usd_balance=usd_bal,
-                        )
-                    )
+                try:
+                    token_data = await dexscreener_client.get_token_pairs(mint_address)
 
+                    tokens.append(
+                        WalletToken(
+                            mint_address=token_data["mint_address"],
+                            token_name=token_data["token_name"],
+                            token_ticker=token_data["token_ticker"],
+                            image=token_data["image"],
+                            value=float(token_data["priceUsd"]),
+                            balance=bal,
+                            usd_balance=float(token_data["priceUsd"] * bal),
+                            percent_change_24hr=token_data["h24"],
+                            percent_change_6hr=token_data["h6"],
+                            percent_change_1hr=token_data["h1"],
+                            percent_change_5min=token_data["m5"],
+                            change_24hr=(
+                                float(
+                                    (token_data["priceUsd"] * token_data["h24"]) / 100
+                                )
+                                if token_data.get("priceUsd") is not None
+                                and token_data.get("h24") is not None
+                                else None
+                            ),
+                            change_6hr=(
+                                float((token_data["priceUsd"] * token_data["h6"]) / 100)
+                                if token_data.get("priceUsd") is not None
+                                and token_data.get("h6") is not None
+                                else None
+                            ),
+                            change_1hr=(
+                                float((token_data["priceUsd"] * token_data["h1"]) / 100)
+                                if token_data.get("priceUsd") is not None
+                                and token_data.get("h1") is not None
+                                else None
+                            ),
+                            change_5min=(
+                                float((token_data["priceUsd"] * token_data["m5"]) / 100)
+                                if token_data.get("priceUsd") is not None
+                                and token_data.get("m5") is not None
+                                else None
+                            ),
+                        )
+                    )
+                except Exception as e:
+                    raise Exception(f"Error getting data: {e}")
+            tokens = sorted(tokens, key=lambda t: t.usd_balance, reverse=True)
+            return tokens
         except Exception as e:
-            raise e
-        tokens = sorted(tokens, key=lambda t: t.usd_balance, reverse=True)
-        return tokens
+            raise Exception(
+                f"error here:{repr(e)}, {type(e).__name__}, message: {e}"
+            ) from e
+
+        # return tokens
 
     async def get_wallet_value(self):
         tokens = await self.get_tokens()
         total_value = 0.0
+        total_change_24 = 0.0
         if not tokens:
             return
-
         for token in tokens:
             wallet_value = token.balance * token.value
             total_value += wallet_value
-        return WalletValueResponse(wallet_tokens=tokens, total_value=total_value)
+        for token in tokens:
+            total_change_24 += token.change_24hr
+        percent_change = (((total_value + total_change_24) / total_value) * 100) - 100
+        return WalletValueResponse(
+            wallet_tokens=tokens,
+            total_value=total_value,
+            percent_change_value_24h=percent_change,
+        )
 
     async def get_sol_value(self):
         try:
-            sql_db = SQLiteDB()
             solana_client = SolanaClient()
-            jupiter_client = JupiterClient()
             dexscreener_client = DexscreenerClient()
             solana_mint = "So11111111111111111111111111111111111111112"
             sol_bal = solana_client.get_sol_balance(self.wallet)
-            val = await jupiter_client.fetch_token_value(solana_mint)
-            sol_info = sql_db.get_token_info(solana_mint)
-            usd_bal = float(val) * float(sol_bal)
-            if sol_info is None:
-                sol_info = await dexscreener_client.get_token_pairs(solana_mint)
-            if sol_info is None:
-                return WalletToken(
-                    mint_address=solana_mint,
-                    balance=sol_bal,
-                    token_name="Solana",
-                    value=val,
-                    usd_balance=usd_bal,
-                )
-
-            else:
-                val = await jupiter_client.fetch_token_value(solana_mint)
-                usd_bal = float(val) * float(sol_bal)
-
-                return WalletToken(
-                    token_ticker=sol_info.ticker,
-                    image=sol_info.image,
-                    mint_address=solana_mint,
-                    balance=sol_bal,
-                    token_name="Solana",
-                    value=val,
-                    usd_balance=usd_bal,
-                )
+            token_data = await dexscreener_client.get_token_pairs(solana_mint)
+            return WalletToken(
+                mint_address=token_data["mint_address"],
+                token_name=token_data["token_name"],
+                token_ticker=token_data["token_ticker"],
+                image=token_data["image"],
+                value=float(token_data["priceUsd"]),
+                balance=sol_bal,
+                usd_balance=float(token_data["priceUsd"] * sol_bal),
+                percent_change_24hr=token_data["h24"],
+                percent_change_6hr=token_data["h6"],
+                percent_change_1hr=token_data["h1"],
+                percent_change_5min=token_data["m5"],
+                change_24hr=(
+                    float(
+                        token_data["priceUsd"]
+                        - (token_data["priceUsd"] * token_data["h24"])
+                    )
+                    if token_data.get("priceUsd") is not None
+                    and token_data.get("h24") is not None
+                    else None
+                ),
+                change_6hr=(
+                    float(
+                        token_data["priceUsd"]
+                        - (token_data["priceUsd"] * token_data["h6"])
+                    )
+                    if token_data.get("priceUsd") is not None
+                    and token_data.get("h6") is not None
+                    else None
+                ),
+                change_1hr=(
+                    float(
+                        token_data["priceUsd"]
+                        - (token_data["priceUsd"] * token_data["h1"])
+                    )
+                    if token_data.get("priceUsd") is not None
+                    and token_data.get("h1") is not None
+                    else None
+                ),
+                change_5min=(
+                    float(
+                        token_data["priceUsd"]
+                        - (token_data["priceUsd"] * token_data["m5"])
+                    )
+                    if token_data.get("priceUsd") is not None
+                    and token_data.get("m5") is not None
+                    else None
+                ),
+            )
         except Exception as e:
             raise e

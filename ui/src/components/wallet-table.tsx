@@ -24,14 +24,29 @@ interface WalletToken {
   balance: number
   value: number
   usd_balance?: number
+  change_24hr?: number
+  change_6hr?: number
+  change_1hr?: number
+  change_5min?: number
+  percent_change_24hr?: number
+  percent_change_6hr?: number
+  percent_change_1hr?: number
+  percent_change_5min?: number
 }
 
 const fetchWalletData = async (): Promise<{
   wallet_tokens: WalletToken[]
   total_value: number
+  percent_change_value_24h: number
+
 }> => {
-  const { data } = await axios.get('http://localhost:8000/wallet-value')
-  return data
+  try {
+    const { data } = await axios.get('http://localhost:8000/wallet-value')
+    return data
+  } catch (error) {
+    console.error('Error fetching wallet data:', error)
+    return { wallet_tokens: [], total_value: 0, percent_change_value_24h: 0 }
+  }
 }
 
 const TableView = () => {
@@ -62,18 +77,38 @@ const TableView = () => {
     return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`
   }
 
+
+  const formatPriceChange = (price?: number, percent?: number) => {
+    if (price === undefined || price === null || percent === undefined || percent === null) return '-';
+    const formatted = `$${price.toFixed(2)} (${percent.toFixed(2)}%)`;
+    return (
+      <span className={percent > 0 ? 'text-green-500' : percent < 0 ? 'text-red-500' : ''}>
+        {formatted}
+      </span>
+    );
+  };
+
   const formatMintAddress = (address: string): string => {
     return `${address.slice(0, 6)}...${address.slice(-6)}`
   }
 
   if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>
+  if (!data || !data.wallet_tokens) return <div>No wallet data available</div>
 
-  const walletTokens = data?.wallet_tokens || []
-  const totalValue = data?.total_value || 0
+  const walletTokens = data.wallet_tokens
+  const totalValue = data.total_value
+  const percentChangeValue24h = data?.percent_change_value_24h || 0
 
   return (
-    <Card className="{walletTokens.length > 0 ? 'rounded-lg' : 'bg-transparent'} shadow-md">
+    <Card className={`shadow-md ${percentChangeValue24h !== 0 ? '' : ''}`}
+      style={{
+        backgroundColor: percentChangeValue24h > 0
+          ? 'rgba(0, 255, 0, 0.01)'  // Very subtle green tint
+          : percentChangeValue24h < 0
+            ? 'rgba(255, 0, 0, 0.01)'  // Very subtle red tint
+            : 'transparent'
+      }}>
       <CardHeader className="relative flex items-center justify-center">
         <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg">
           Wallet
@@ -83,11 +118,7 @@ const TableView = () => {
           className="ml-auto flex items-center justify-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform"
           disabled={isFetching}
         >
-          {isFetching ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <RefreshCcw size={18} />
-          )}
+          {isFetching ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
         </Button>
       </CardHeader>
 
@@ -98,9 +129,14 @@ const TableView = () => {
               <TableHead></TableHead>
               <TableHead>Ticker</TableHead>
               <TableHead>Mint Address</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">USD Balance</TableHead>
+
+              <TableHead className="text-center">Value</TableHead>
+              <TableHead className="text-center">24h Change</TableHead>
+              {/* <TableHead className="text-center">6h Change</TableHead>
+              <TableHead className="text-center">1h Change</TableHead>
+              <TableHead className="text-center">5m Change</TableHead> */}
+              <TableHead className="text-center">Balance</TableHead>
+              <TableHead className="text-center">USD Balance</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -147,11 +183,16 @@ const TableView = () => {
                       )}
                     </Button>
                   </TableCell>
-                  <TableCell className="text-left">
-                    {formatNumber(token.balance)}
-                  </TableCell>
-                  <TableCell className="text-right">
+
+                  <TableCell className="text-center">
                     ${formatNumber(token.value)}
+                  </TableCell>
+                  <TableCell className="text-center">{formatPriceChange(token.change_24hr, token.percent_change_24hr)}</TableCell>
+                  {/* <TableCell className="text-right">{formatPriceChange(token.change_6hr, token.percent_change_6hr)}</TableCell>
+                  <TableCell className="text-right">{formatPriceChange(token.change_1hr, token.percent_change_1hr)}</TableCell>
+                  <TableCell className="text-right">{formatPriceChange(token.change_5min, token.percent_change_5min)}</TableCell> */}
+                  <TableCell className="text-center">
+                    {formatNumber(token.balance)}
                   </TableCell>
                   <TableCell className="text-right">
                     ${token.usd_balance?.toFixed(2) || '0.00'}
@@ -168,10 +209,12 @@ const TableView = () => {
           </TableBody>
         </Table>
         <div className="text-right font-bold mt-4">
-          Total Wallet Value: ${totalValue.toFixed(2)}
+          Total Wallet Value: $ {totalValue.toFixed(2)}  <span className={percentChangeValue24h > 0 ? 'text-green-500' : percentChangeValue24h < 0 ? 'text-red-500' : 'text-white'}>
+            ({percentChangeValue24h.toFixed(2)}%)
+          </span>
         </div>
       </CardContent>
-    </Card>
+    </Card >
   )
 }
 

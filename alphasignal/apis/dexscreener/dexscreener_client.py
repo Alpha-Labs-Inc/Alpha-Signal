@@ -12,6 +12,7 @@ data = response.json()
 
 class DexscreenerClient:
     BASE_URL = "https://api.dexscreener.com/tokens/v1"
+    TOKEN_PAIRS_BASE_URL = "https://api.dexscreener.com/token-pairs/v1"
     CHAIN_ID = "solana"
 
     def __init__(self):
@@ -26,25 +27,27 @@ class DexscreenerClient:
         :return: JSON response with token pair details or None if request fails
         """
         url = f"{self.BASE_URL}/{self.CHAIN_ID}/{token_address}"
+
         try:
-            if token_address == USDC_MINT_ADDRESS:
-                self.sql_db.add_token_info(
-                    token_address,
-                    "USD Coin",
-                    "USDC",
-                    "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=040",
-                )
-                return self.sql_db.get_token_info(token_address)
-            else:
-                response = requests.get(url, headers={})
-                response.raise_for_status()
-                data = response.json()
-                if len(data) == 1:
-                    pair = data[0]
+            token_data = self.sql_db.get_token_info(mint_address=token_address)
+            response = requests.get(url, headers={})
+            data = response.json()
+            token_info = data[0]
+            if token_data is None:
+                if token_address == USDC_MINT_ADDRESS:
+                    self.sql_db.add_token_info(
+                        token_address,
+                        "USD Coin",
+                        "USDC",
+                        "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=040",
+                    )
+                else:
                     result = {
-                        "image_url": pair.get("info", {}).get("imageUrl"),
-                        "base_token_symbol": pair.get("baseToken", {}).get("symbol"),
-                        "name": pair.get("baseToken", {}).get("name"),
+                        "image_url": token_info.get("info", {}).get("imageUrl"),
+                        "base_token_symbol": token_info.get("baseToken", {}).get(
+                            "symbol"
+                        ),
+                        "name": token_info.get("baseToken", {}).get("name"),
                     }
                     # Store data in database
                     self.sql_db.add_token_info(
@@ -53,9 +56,27 @@ class DexscreenerClient:
                         result["base_token_symbol"],
                         result["image_url"],
                     )
+                token_data = self.sql_db.get_token_info(mint_address=token_address)
 
-                    return self.sql_db.get_token_info(token_address)
-            return None
+            result = {
+                "mint_address": token_address,
+                "image": token_data.image,
+                "token_ticker": token_data.ticker,
+                "token_name": token_data.name,
+                "priceUsd": float(token_info.get("priceUsd", None)),
+                "h24": float(token_info.get("priceChange", {}).get("h24"))
+                if token_info.get("priceChange", {}).get("h24") is not None
+                else None,
+                "h6": float(token_info.get("priceChange", {}).get("h6"))
+                if token_info.get("priceChange", {}).get("h6") is not None
+                else None,
+                "h1": float(token_info.get("priceChange", {}).get("h1"))
+                if token_info.get("priceChange", {}).get("h1") is not None
+                else None,
+                "m5": float(token_info.get("priceChange", {}).get("m5"))
+                if token_info.get("priceChange", {}).get("m5") is not None
+                else None,
+            }
+            return result
         except Exception as e:
-            print(f"Error fetching data: {e}")
-            return None
+            raise Exception(f"Error fetching data: {e}")
