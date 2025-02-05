@@ -131,12 +131,12 @@ const TableView = () => {
               <TableHead>Mint Address</TableHead>
 
               <TableHead className="text-center">Value</TableHead>
-              <TableHead className="text-center">24h Change</TableHead>
+              <TableHead className="text-center">24 Hour Change</TableHead>
               {/* <TableHead className="text-center">6h Change</TableHead>
               <TableHead className="text-center">1h Change</TableHead>
               <TableHead className="text-center">5m Change</TableHead> */}
               <TableHead className="text-center">Balance</TableHead>
-              <TableHead className="text-center">USD Balance</TableHead>
+              <TableHead className="text-right">USD Balance</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
