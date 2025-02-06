@@ -55,7 +55,7 @@ const AutoBuy = () => {
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Configuration</CardTitle>
+          <CardTitle>Auto Buy Configuration</CardTitle>
         </CardHeader>
         <CardContent>
           <div>
