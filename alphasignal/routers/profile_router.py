@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, HTTPException
 from alphasignal.database.db import ProfileNotFoundError
 from alphasignal.models.enums import BuyType, AmountType, Platform, SellMode, SellType
@@ -91,3 +92,28 @@ async def delete_profile(profile_id: str):
     except ProfileNotFoundError as e:
         raise HTTPException(status_code=404, detail="Profile not found")
     return True
+
+
+@router.get("/profiles", response_model=List[ProfileResponse])
+async def get_profiles():
+    """
+    Retrieve all available profiles.
+    """
+    profiles = profile_manager.get_profiles()
+    return [
+        ProfileResponse(
+            id=p.id,
+            platform=p.platform.value,
+            signal=p.signal,
+            is_active=p.is_active,
+            buy_type=p.buy_type.value,
+            buy_amount_type=p.buy_amount_type.value,
+            buy_amount=p.buy_amount,
+            buy_slippage=p.buy_slippage,
+            sell_mode=p.sell_mode.value,
+            sell_type=p.sell_type.value,
+            sell_value=p.sell_value,
+            sell_slippage=p.sell_slippage,
+        )
+        for p in profiles
+    ]

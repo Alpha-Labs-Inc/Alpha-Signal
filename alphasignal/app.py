@@ -33,6 +33,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         exc_info=True,  # Logs full traceback
     )
 
+    print(f"Unexpected error at {request.method} {request.url}: {exc}")
+
     return JSONResponse(
         status_code=500,
         content={"detail": "An internal server error occurred."},

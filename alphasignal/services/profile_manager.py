@@ -1,3 +1,4 @@
+from typing import List
 import uuid
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.configs import AutoBuyConfig, AutoSellConfig
@@ -73,3 +74,6 @@ class ProfileManager:
 
     def delete_profile(self, profile_id: str) -> None:
         self.db.delete_profile(profile_id)
+
+    def get_profiles(self) -> List[Profile]:
+        return self.db.get_profiles()

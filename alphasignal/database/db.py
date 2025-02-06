@@ -62,7 +62,7 @@ class SQLiteDB:
             buy_type TEXT,
             buy_amount_type TEXT,
             buy_amount REAL,
-            buy_slippage REAL
+            buy_slippage REAL,
             sell_mode TEXT,
             sell_type TEXT,
             sell_value REAL,
@@ -329,12 +329,12 @@ class SQLiteDB:
     def update_profile(
         self,
         profile_id: str,
-        buy_type: str,
-        buy_amount_type: str,
+        buy_type: BuyType,
+        buy_amount_type: AmountType,
         buy_amount: float,
         buy_slippage: float,
-        sell_mode: str,
-        sell_type: str,
+        sell_mode: SellMode,
+        sell_type: SellType,
         sell_value: float,
         sell_slippage: float,
     ) -> None:
@@ -354,12 +354,12 @@ class SQLiteDB:
                 WHERE id = ?
                 """,
                 (
-                    buy_type,
-                    buy_amount_type,
+                    buy_type.value,
+                    buy_amount_type.value,
                     buy_amount,
                     buy_slippage,
-                    sell_mode,
-                    sell_type,
+                    sell_mode.value,
+                    sell_type.value,
                     sell_value,
                     sell_slippage,
                     profile_id,
@@ -416,3 +416,32 @@ class SQLiteDB:
             raise ProfileNotFoundError(profile_id)
 
         print(f"Profile with ID '{profile_id}' has been deleted.")
+
+    def get_profiles(self) -> List[Profile]:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, platform, signal, is_active, buy_type, buy_amount_type, 
+                buy_amount, buy_slippage, sell_mode, sell_type, 
+                sell_value, sell_slippage
+            FROM profile;
+            """
+        )
+        rows = cursor.fetchall()
+        return [
+            Profile(
+                id=row[0],
+                platform=Platform(row[1]),
+                signal=row[2],
+                is_active=bool(row[3]),
+                buy_type=BuyType(row[4]),
+                buy_amount_type=AmountType(row[5]),
+                buy_amount=row[6],
+                buy_slippage=row[7],
+                sell_mode=SellMode(row[8]),
+                sell_type=SellType(row[9]),
+                sell_value=row[10],
+                sell_slippage=row[11],
+            )
+            for row in rows
+        ]
