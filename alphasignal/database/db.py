@@ -416,3 +416,32 @@ class SQLiteDB:
             raise ProfileNotFoundError(profile_id)
 
         print(f"Profile with ID '{profile_id}' has been deleted.")
+
+    def get_profiles(self) -> List[Profile]:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, platform, signal, is_active, buy_type, buy_amount_type, 
+                buy_amount, buy_slippage, sell_mode, sell_type, 
+                sell_value, sell_slippage
+            FROM profile;
+            """
+        )
+        rows = cursor.fetchall()
+        return [
+            Profile(
+                id=row[0],
+                platform=Platform(row[1]),
+                signal=row[2],
+                is_active=bool(row[3]),
+                buy_type=BuyType(row[4]),
+                buy_amount_type=AmountType(row[5]),
+                buy_amount=row[6],
+                buy_slippage=row[7],
+                sell_mode=SellMode(row[8]),
+                sell_type=SellType(row[9]),
+                sell_value=row[10],
+                sell_slippage=row[11],
+            )
+            for row in rows
+        ]
