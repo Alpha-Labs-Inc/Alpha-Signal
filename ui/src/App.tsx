@@ -8,6 +8,7 @@ import { Toaster } from './components/ui/toaster'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import OrderHistory from './components/order-history'
 import AutoBuy from './components/auto-buy'
+import AutoSell from './components/auto-sell'
 
 function App() {
   const queryClient = new QueryClient()
@@ -24,8 +25,13 @@ function App() {
   )
 
   const configsNode = (
-    <div className="max-w-xs">
-      <AutoBuy />
+    <div className="grid grid-cols-3">
+      <div className="max-w-xs">
+        <AutoBuy />
+      </div>
+      <div className="max-w-xs">
+        <AutoSell />
+      </div>
     </div>
   )
 
