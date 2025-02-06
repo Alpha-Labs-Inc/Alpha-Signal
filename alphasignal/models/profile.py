@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
-from alphasignal.models.enums import AmountType, BuyType, SellMode, SellType
+from alphasignal.models.enums import AmountType, BuyType, Platform, SellMode, SellType
 
 
 class Profile(BaseModel):
     id: str
-    platform: str
+    platform: Platform
     signal: str
     is_active: bool
     buy_type: BuyType

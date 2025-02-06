@@ -9,9 +9,6 @@ class AutoBuyConfig(BaseModel):
     amount: float
     slippage: float
 
-    class Config:
-        use_enum_values = True
-
 
 class AutoSellConfig(BaseModel):
     sell_mode: SellMode
@@ -19,13 +16,7 @@ class AutoSellConfig(BaseModel):
     sell_value: float
     slippage: float
 
-    class Config:
-        use_enum_values = True
-
 
 class BaseSellConfig(BaseModel):
     sell_type: SellType
     slippage: float
-
-    class Config:
-        use_enum_values = True

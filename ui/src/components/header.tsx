@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Avatar, AvatarImage } from './ui/avatar'
-import ManageModal from './manage-modal'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
@@ -41,14 +40,22 @@ const Header = () => {
     const fetchSolValue = async () => {
       try {
         const { data } = await axios.get('http://localhost:8000/sol-value')
-        if (data?.balance !== undefined && data?.usd_balance !== undefined && data?.percent_change_24hr !== undefined) {
+        if (
+          data?.balance !== undefined &&
+          data?.usd_balance !== undefined &&
+          data?.percent_change_24hr !== undefined
+        ) {
           setWalletData({
             sol_balance: data.balance,
             usd_value: data.usd_balance,
-            percent_change_24hr: data.percent_change_24hr
+            percent_change_24hr: data.percent_change_24hr,
           })
         } else {
-          setWalletData({ sol_balance: 0, usd_value: 0, percent_change_24hr: 0 })
+          setWalletData({
+            sol_balance: 0,
+            usd_value: 0,
+            percent_change_24hr: 0,
+          })
         }
       } catch (error) {
         console.error('Error fetching SOL value:', error)
@@ -105,7 +112,7 @@ const Header = () => {
       </HoverCard>
 
       <div className="ml-auto flex items-center space-x-4">
-        <HoverCard >
+        <HoverCard>
           <HoverCardTrigger asChild>
             <div
               onClick={() => navigate('/')}
@@ -114,17 +121,16 @@ const Header = () => {
               Wallet
             </div>
           </HoverCardTrigger>
-          <HoverCardContent
-            className="shadow-md relative"
-          >
+          <HoverCardContent className="shadow-md relative">
             <div
               className="absolute inset-0 rounded-md"
               style={{
-                background: (walletData?.percent_change_24hr ?? 0) > 0
-                  ? 'rgba(0, 255, 0, 0.02)' // Subtle green overlay
-                  : (walletData?.percent_change_24hr ?? 0) < 0
-                    ? 'rgba(255, 0, 0, 0.02)' // Subtle red overlay
-                    : 'transparent',
+                background:
+                  (walletData?.percent_change_24hr ?? 0) > 0
+                    ? 'rgba(0, 255, 0, 0.02)' // Subtle green overlay
+                    : (walletData?.percent_change_24hr ?? 0) < 0
+                      ? 'rgba(255, 0, 0, 0.02)' // Subtle red overlay
+                      : 'transparent',
                 pointerEvents: 'none', // Ensures the overlay doesn't interfere with interactions
               }}
             />
@@ -161,27 +167,26 @@ const Header = () => {
 
             <p className="text-sm mt-2">
               SOL Balance:{' '}
-              <span className="font-bold">
-                {walletData?.sol_balance}
-              </span>
+              <span className="font-bold">{walletData?.sol_balance}</span>
             </p>
             <p className="text-sm">
               USD Value:{' '}
               <span className="font-bold">
                 ${walletData?.usd_value.toFixed(2)}
-                <span className={
-                  (walletData?.percent_change_24hr ?? 0) > 0
-                    ? 'text-green-500'
-                    : (walletData?.percent_change_24hr ?? 0) < 0
-                      ? 'text-red-500'
-                      : 'text-white'
-                }>
+                <span
+                  className={
+                    (walletData?.percent_change_24hr ?? 0) > 0
+                      ? 'text-green-500'
+                      : (walletData?.percent_change_24hr ?? 0) < 0
+                        ? 'text-red-500'
+                        : 'text-white'
+                  }
+                >
                   ({(walletData?.percent_change_24hr ?? 0).toFixed(2)}%)
                 </span>
               </span>
             </p>
           </HoverCardContent>
-
         </HoverCard>
 
         <div>
@@ -191,7 +196,13 @@ const Header = () => {
           >
             Order History
           </span>
-          <ManageModal />
+          {/* <ManageModal /> */}
+          <span
+            onClick={() => navigate('/configure')}
+            className="mr-4 text-base hover:underline cursor-pointer"
+          >
+            Configure
+          </span>
         </div>
       </div>
     </div>

@@ -23,16 +23,16 @@ export interface Orders {
   balance: number
 }
 
-const fetchOrderData = async (): Promise<Orders[]> => {
-  const { data } = await axios.get('http://127.0.0.1:8000/orders/0')
-  return data.orders
-}
-
-const cancelOrder = async (orderId: string) => {
-  await axios.delete(`http://127.0.0.1:8000/orders/cancel/${orderId}`)
-}
-
 const OrderBalance = () => {
+  const fetchOrderData = async (): Promise<Orders[]> => {
+    const { data } = await axios.get('http://127.0.0.1:8000/orders/0')
+    return data.orders
+  }
+
+  const cancelOrder = async (orderId: string) => {
+    await axios.delete(`http://127.0.0.1:8000/orders/cancel/${orderId}`)
+  }
+
   const { data, error, isLoading, refetch } = useQuery<Orders[]>({
     queryKey: ['order-data'],
     queryFn: fetchOrderData,

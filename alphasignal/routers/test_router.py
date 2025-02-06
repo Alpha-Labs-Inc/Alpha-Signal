@@ -3,8 +3,6 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
 # Configure the logger
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
