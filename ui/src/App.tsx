@@ -7,6 +7,7 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { Toaster } from './components/ui/toaster'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import OrderHistory from './components/order-history'
+import AutoBuy from './components/auto-buy'
 
 function App() {
   const queryClient = new QueryClient()
@@ -22,6 +23,12 @@ function App() {
     </div>
   )
 
+  const configsNode = (
+    <div className="max-w-xs">
+      <AutoBuy />
+    </div>
+  )
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -31,6 +38,9 @@ function App() {
           <div className="container mx-auto p-4 m-4">
             <Routes>
               <Route path="/" element={homeNode} />
+
+              <Route path="/configure" element={configsNode} />
+
               <Route path="/order-history" element={<OrderHistory />} />
               {/* Add more routes here */}
             </Routes>
