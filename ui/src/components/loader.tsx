@@ -1,5 +1,5 @@
 
-interface Props { className: string }
+interface Props { className?: string }
 const Loader = (props: Props) => {
   return (
     <div className={`${props.className} flex w-full justify-center`}>
