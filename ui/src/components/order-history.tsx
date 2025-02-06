@@ -11,13 +11,15 @@ import {
   TableRow,
 } from './ui/table'
 
+import Loader from './loader'
+
 const OrderHistory = () => {
   const fetchOrderData = async (type: number): Promise<Orders[]> => {
     const { data } = await axios.get(`http://127.0.0.1:8000/orders/${type}`)
     return data.orders
   }
 
-  const { data } = useQuery<Orders[]>({
+  const { data, error, isLoading } = useQuery<Orders[]>({
     queryKey: ['completed-order-history-data'],
     queryFn: () => fetchOrderData(2),
   })
@@ -26,6 +28,8 @@ const OrderHistory = () => {
     queryKey: ['cancelled-order-history-data'],
     queryFn: () => fetchOrderData(3),
   })
+  if (isLoading) return <Loader className='flex items-center mx-auto h-64' />
+  if (error) return <div>Error loading data</div>
 
   const headerRow = (
     <TableHeader>
@@ -48,7 +52,11 @@ const OrderHistory = () => {
   const completedOrders = (
     <Card>
       <CardHeader>
-        <CardTitle>Orders Completed</CardTitle>
+        <CardHeader className="relative flex items-center justify-center">
+          <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg">
+            Order History
+          </CardTitle>
+        </CardHeader>
       </CardHeader>
       <CardContent>
         <Table>
