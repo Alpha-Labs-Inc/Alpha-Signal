@@ -7,7 +7,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from './ui/select'
@@ -74,7 +73,6 @@ const AutoBuy = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Buy Type</SelectLabel>
                     <SelectItem value="USDC">USDC</SelectItem>
                     <SelectItem value="SOL">SOL</SelectItem>
                   </SelectGroup>
@@ -96,7 +94,6 @@ const AutoBuy = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Amount Type</SelectLabel>
                     <SelectItem value="percent">percent</SelectItem>
                     <SelectItem value="amount">amount</SelectItem>
                   </SelectGroup>

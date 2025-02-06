@@ -7,7 +7,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from './ui/select'
@@ -77,7 +76,6 @@ const AutoBuy = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Buy Type</SelectLabel>
                     <SelectItem value="USDC">USDC</SelectItem>
                     <SelectItem value="SOL">SOL</SelectItem>
                   </SelectGroup>
@@ -85,23 +83,22 @@ const AutoBuy = () => {
               </Select>
             </div>
             <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Sell Type</Label>
+              <Label className="m-2">Sell Mode</Label>
               <Select
                 onValueChange={(e) =>
                   setAutoBuyStates({
                     ...autoBuyStates,
-                    sell_type: e,
+                    sell_mode: e,
                   })
                 }
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a Amount Type" />
+                  <SelectValue placeholder="Select a Sell Mode" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Amount Type</SelectLabel>
-                    <SelectItem value="percent">percent</SelectItem>
-                    <SelectItem value="amount">amount</SelectItem>
+                    <SelectItem value="time_based">time_based</SelectItem>
+                    <SelectItem value="stop_loss">stop_loss</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
