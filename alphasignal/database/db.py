@@ -62,7 +62,7 @@ class SQLiteDB:
             buy_type TEXT,
             buy_amount_type TEXT,
             buy_amount REAL,
-            buy_slippage REAL
+            buy_slippage REAL,
             sell_mode TEXT,
             sell_type TEXT,
             sell_value REAL,
@@ -329,12 +329,12 @@ class SQLiteDB:
     def update_profile(
         self,
         profile_id: str,
-        buy_type: str,
-        buy_amount_type: str,
+        buy_type: BuyType,
+        buy_amount_type: AmountType,
         buy_amount: float,
         buy_slippage: float,
-        sell_mode: str,
-        sell_type: str,
+        sell_mode: SellMode,
+        sell_type: SellType,
         sell_value: float,
         sell_slippage: float,
     ) -> None:
@@ -354,12 +354,12 @@ class SQLiteDB:
                 WHERE id = ?
                 """,
                 (
-                    buy_type,
-                    buy_amount_type,
+                    buy_type.value,
+                    buy_amount_type.value,
                     buy_amount,
                     buy_slippage,
-                    sell_mode,
-                    sell_type,
+                    sell_mode.value,
+                    sell_type.value,
                     sell_value,
                     sell_slippage,
                     profile_id,
