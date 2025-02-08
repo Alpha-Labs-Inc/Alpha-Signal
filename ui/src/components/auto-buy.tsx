@@ -13,6 +13,7 @@ import {
 import { useState } from 'react'
 import { Button } from './ui/button'
 import Loader from './loader'
+import { toast } from '@/hooks/use-toast'
 
 interface AutoBuyConfig {
   buy_type: string
@@ -44,6 +45,11 @@ const AutoBuy = () => {
   const saveAutoBuyConfig = async (payload: AutoBuyConfig): Promise<any> => {
     const { data } = await axios.post('http://127.0.0.1:8000/config/auto-buy', {
       ...payload,
+    })
+    toast({
+      title: 'Configuration Updated',
+      description: `The auto buy configuration has been seuccsefully updated.`,
+      duration: 2000,
     })
     return data
   }

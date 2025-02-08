@@ -13,6 +13,7 @@ import {
 import { useState } from 'react'
 import { Button } from './ui/button'
 import Loader from './loader'
+import { toast } from '@/hooks/use-toast'
 
 interface AutoSellConfig {
   sell_mode: string
@@ -48,6 +49,11 @@ const AutoBuy = () => {
         ...payload,
       }
     )
+    toast({
+      title: 'Configuration Updated',
+      description: `The auto sell configuration has been seuccsefully updated.`,
+      duration: 2000,
+    })
     return data
   }
 
