@@ -12,8 +12,9 @@ import {
 } from './ui/select'
 import { useState } from 'react'
 import { Button } from './ui/button'
+import Loader from './loader'
 
-interface AutoBuyConfig {
+interface AutoSellConfig {
   sell_mode: string
   sell_type: string
   sell_value: number
@@ -21,37 +22,40 @@ interface AutoBuyConfig {
 }
 
 const AutoBuy = () => {
-  const [autoBuyStates, setAutoBuyStates] = useState<AutoBuyConfig>({
+  const [autoSellStates, setAutoSellStates] = useState<AutoSellConfig>({
     sell_mode: '',
     sell_type: '',
     sell_value: 0,
     slippage: 0,
   })
 
-  const getAutoBuyConfig = async (): Promise<AutoBuyConfig> => {
+  const getAutoSellConfig = async (): Promise<AutoSellConfig> => {
     const { data } = await axios.get('http://127.0.0.1:8000/config/auto-sell')
-    return data.orders
+    setAutoSellStates(data)
+    return data
   }
 
-  const { data } = useQuery({
-    queryKey: ['get-auto-buy-config'],
-    queryFn: getAutoBuyConfig,
+  const { data, isLoading } = useQuery({
+    queryKey: ['get-auto-sell-config'],
+    queryFn: getAutoSellConfig,
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const saveAutoBuyConfig = async (payload: AutoBuyConfig): Promise<any> => {
+  const saveAutoSellConfig = async (payload: AutoSellConfig): Promise<any> => {
     const { data } = await axios.post(
       'http://127.0.0.1:8000/config/auto-sell',
       {
         ...payload,
       }
     )
-    return data.orders
+    return data
   }
 
   const mutation = useMutation({
-    mutationFn: saveAutoBuyConfig,
+    mutationFn: saveAutoSellConfig,
   })
+
+  if (isLoading) return <Loader />
 
   return (
     <div>
@@ -65,11 +69,12 @@ const AutoBuy = () => {
               <Label className="m-2">Sell Type</Label>
               <Select
                 onValueChange={(e) =>
-                  setAutoBuyStates({
-                    ...autoBuyStates,
+                  setAutoSellStates({
+                    ...autoSellStates,
                     sell_type: e,
                   })
                 }
+                defaultValue={data?.sell_type}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a Buy Type" />
@@ -86,11 +91,12 @@ const AutoBuy = () => {
               <Label className="m-2">Sell Mode</Label>
               <Select
                 onValueChange={(e) =>
-                  setAutoBuyStates({
-                    ...autoBuyStates,
+                  setAutoSellStates({
+                    ...autoSellStates,
                     sell_mode: e,
                   })
                 }
+                defaultValue={data?.sell_mode}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a Sell Mode" />
@@ -108,8 +114,8 @@ const AutoBuy = () => {
               <Label className="m-2">Sell Value</Label>
               <input
                 onChange={(e) =>
-                  setAutoBuyStates({
-                    ...autoBuyStates,
+                  setAutoSellStates({
+                    ...autoSellStates,
                     sell_value: Number(e.target.value),
                   })
                 }
@@ -121,8 +127,8 @@ const AutoBuy = () => {
               <Label className="m-2">Slippage</Label>
               <input
                 onChange={(e) =>
-                  setAutoBuyStates({
-                    ...autoBuyStates,
+                  setAutoSellStates({
+                    ...autoSellStates,
                     slippage: Number(e.target.value),
                   })
                 }
@@ -130,7 +136,7 @@ const AutoBuy = () => {
                 placeholder={JSON.stringify(data?.slippage)}
               />
             </div>
-            <Button onClick={() => mutation.mutate(autoBuyStates)}>
+            <Button onClick={() => mutation.mutate(autoSellStates)}>
               Submit
             </Button>
           </div>

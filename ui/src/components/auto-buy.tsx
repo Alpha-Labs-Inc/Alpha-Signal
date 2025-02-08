@@ -12,6 +12,7 @@ import {
 } from './ui/select'
 import { useState } from 'react'
 import { Button } from './ui/button'
+import Loader from './loader'
 
 interface AutoBuyConfig {
   buy_type: string
@@ -30,10 +31,11 @@ const AutoBuy = () => {
 
   const getAutoBuyConfig = async (): Promise<AutoBuyConfig> => {
     const { data } = await axios.get('http://127.0.0.1:8000/config/auto-buy')
-    return data.orders
+    setAutoBuyStates(data)
+    return data
   }
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['get-auto-buy-config'],
     queryFn: getAutoBuyConfig,
   })
@@ -43,12 +45,15 @@ const AutoBuy = () => {
     const { data } = await axios.post('http://127.0.0.1:8000/config/auto-buy', {
       ...payload,
     })
-    return data.orders
+    return data
   }
 
   const mutation = useMutation({
     mutationFn: saveAutoBuyConfig,
   })
+
+
+  if (isLoading) return <Loader />
 
   return (
     <div>
@@ -67,6 +72,7 @@ const AutoBuy = () => {
                     buy_type: e,
                   })
                 }
+                defaultValue={data?.buy_type}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a Buy Type" />
@@ -88,6 +94,7 @@ const AutoBuy = () => {
                     amount_type: e,
                   })
                 }
+                defaultValue={data?.amount_type}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a Amount Type" />
