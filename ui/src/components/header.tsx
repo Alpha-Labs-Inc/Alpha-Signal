@@ -191,6 +191,12 @@ const Header = () => {
 
         <div>
           <span
+            onClick={() => navigate('/signals')}
+            className="mr-4 text-base hover:underline cursor-pointer"
+          >
+            Signals
+          </span>
+          <span
             onClick={() => navigate('/order-history')}
             className="mr-4 text-base hover:underline cursor-pointer"
           >

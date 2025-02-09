@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import OrderHistory from './components/order-history'
 import AutoBuy from './components/auto-buy'
 import AutoSell from './components/auto-sell'
+import ProfilesPage from './components/profiles'
 
 function App() {
   const queryClient = new QueryClient()
@@ -48,6 +49,8 @@ function App() {
               <Route path="/configure" element={configsNode} />
 
               <Route path="/order-history" element={<OrderHistory />} />
+
+              <Route path="/signals" element={<ProfilesPage />} />
               {/* Add more routes here */}
             </Routes>
           </div>
