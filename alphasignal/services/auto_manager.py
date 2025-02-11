@@ -22,7 +22,7 @@ class AutoManager:
         mint_address: str,
         platform: Platform,
         signal: str,
-    ) -> str:
+    ) -> str | None:
         """
         Auto buy a token using the profile settings.
 
@@ -39,6 +39,9 @@ class AutoManager:
             raise Exception(
                 f"No profile found for platform '{platform.value}' and signal '{signal}'."
             )
+
+        if not profile.is_active:
+            return None
 
         tokens = await self.wallet.get_tokens()
 

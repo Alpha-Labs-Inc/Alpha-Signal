@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { useToast } from '@/hooks/use-toast'
 import { Trash2 } from "lucide-react"; // Import trashcan icon
 import PlatformIcon from "./platform-icon";
 import PlatformLinkButton from "./platform-link-button";
@@ -68,8 +69,13 @@ const updateProfile = async ({ profileId, updatedData }: { profileId: string; up
     await axios.put(`http://127.0.0.1:8000/profile/${profileId}`, updatedData);
 };
 
-const ProfilesPage = () => {
+const createProfile = async (profileData: { platform: string, signal: string }) => {
+    const { data } = await axios.post("http://127.0.0.1:8000/profile", profileData);
+    return data;
+};
 
+const ProfilesPage = () => {
+    const { toast } = useToast()
     const fetchProfiles = async (): Promise<Profile[]> => {
         const { data } = await axios.get("http://127.0.0.1:8000/profiles");
 
@@ -121,13 +127,71 @@ const ProfilesPage = () => {
         mutation.mutate({ profileId, updatedData: editedProfiles[profileId] });
     };
 
+    const createMutation = useMutation({
+        mutationFn: createProfile,
+        onSuccess: () => {
+            toast({
+                title: "Profile Created",
+                description: "The profile has been successfully created.",
+                duration: 2000,
+            });
+            refetch(); // Re-fetch profiles after creation
+        },
+    });
+
+    const [platform, setPlatform] = useState("twitter");
+    const [signal, setSignal] = useState("");
+
+    const handleCreateProfile = () => {
+        createMutation.mutate({ platform, signal });
+    };
+
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>Error loading profiles.</p>;
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Trading Signals</CardTitle>
+                <div className="flex justify-between items-center">
+                    <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold">Trading Signals</CardTitle>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button className="ml-auto">Add Signal</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="space-y-4">
+                            {/* Platform Selection */}
+                            <div>
+                                <Label>Platform</Label>
+                                <Select onValueChange={setPlatform} defaultValue="twitter">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Platform" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="twitter">Twitter</SelectItem>
+                                            {/* Add more platforms as needed */}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Signal Input */}
+                            <div>
+                                <Label>Signal</Label>
+                                <Input
+                                    value={signal}
+                                    onChange={(e) => setSignal(e.target.value)}
+                                    placeholder="Enter Signal"
+                                />
+                            </div>
+
+                            {/* Create Button */}
+                            <Button onClick={handleCreateProfile} className="mt-4">
+                                Create
+                            </Button>
+                        </PopoverContent>
+                    </Popover>
+                </div>
             </CardHeader>
             <CardContent>
                 <Accordion type="multiple" className="w-full">
