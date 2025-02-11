@@ -145,7 +145,7 @@ const ProfilesPage = () => {
                                     </div>
                                     <Badge
                                         variant={profile.is_active ? "success" : "destructive"}
-                                        className="ml-auto"
+                                        className="ml-auto mr-4"
                                     >
                                         {profile.is_active ? "Active" : "Inactive"}
                                     </Badge>
