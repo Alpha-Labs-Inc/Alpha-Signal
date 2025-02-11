@@ -105,7 +105,7 @@ const Header = () => {
             <h4 className="text-sm font-semibold">Alpha Labs Inc</h4>
             <p className="text-sm">AI Algorithmic Trading for the Blockchain</p>
             <span className="text-xs text-muted-foreground">
-              Find us at @AlphaSignalCrypto on X
+              Find us at <a href="https://x.com/_AlphaSignal_">@_AlphaSignal_</a> on X
             </span>
           </div>
         </HoverCardContent>
