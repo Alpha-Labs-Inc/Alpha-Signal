@@ -10,8 +10,7 @@ from alphasignal.services.service import (
     fund,
     get_swap_quote,
     get_token_value,
-    get_wallet_value,
-    add_order_command,
+``  add_order_command,
     swap_tokens,
 )
 
