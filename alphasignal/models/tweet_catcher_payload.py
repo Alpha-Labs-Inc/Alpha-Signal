@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+from datetime import datetime
 from enum import Enum
 
 
@@ -17,7 +18,7 @@ class UserInfo(BaseModel):
     blocking: bool
     can_dm: bool
     can_media_tag: bool
-    created_at: str
+    created_at: datetime
     description: str
     entities: Dict[str, Any]
     fast_followers_count: int
@@ -47,6 +48,10 @@ class UserInfo(BaseModel):
     verified: bool
     withheld_in_countries: List[str] = Field(default_factory=list)
 
+    @validator("created_at", pre=True)
+    def parse_created_at(cls, value):
+        return datetime.strptime(value, "%a %b %d %H:%M:%S %z %Y")
+
 
 class Task(BaseModel):
     user: str
@@ -57,7 +62,6 @@ class Task(BaseModel):
 
 
 class Entities(BaseModel):
-    # Expand these if you need more detail. Example includes just user_mentions.
     user_mentions: Optional[List[Dict[str, Any]]] = None
     hashtags: Optional[List[Dict[str, Any]]] = None
     symbols: Optional[List[Dict[str, Any]]] = None
@@ -109,7 +113,7 @@ class TweetStatus(BaseModel):
 
 class WebhookData(BaseModel):
     id_str: str
-    created_at: str
+    created_at: datetime
     full_text: Optional[str] = None
     text: Optional[str] = None  # Some tweets may only have 'text'
     entities: Optional[Entities] = None
@@ -119,6 +123,10 @@ class WebhookData(BaseModel):
     is_reply: bool
     retweeted_status: Optional[TweetStatus] = None
     reply_status: Optional[TweetStatus] = None
+
+    @validator("created_at", pre=True)
+    def parse_created_at(cls, value):
+        return datetime.strptime(value, "%a %b %d %H:%M:%S %z %Y")
 
 
 class TweetCatcherWebhookPayload(BaseModel):
