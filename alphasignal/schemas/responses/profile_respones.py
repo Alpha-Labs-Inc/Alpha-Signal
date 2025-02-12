@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class ProfileResponse(BaseModel):
     id: str
     platform: str
-    signal: str
+    username: str
     is_active: bool
     buy_type: str
     buy_amount_type: str

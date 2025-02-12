@@ -16,7 +16,9 @@ async def add_profile(request: ProfileCreateRequest):
     """
     Create a new profile with default buy/sell settings.
     """
-    profile_id = profile_manager.add_profile(Platform(request.platform), request.signal)
+    profile_id = profile_manager.add_profile(
+        Platform(request.platform), request.username
+    )
     return profile_id
 
 
@@ -60,14 +62,14 @@ async def update_profile(profile_id: str, request: ProfileUpdateRequest):
 @router.get("/profile/{profile_id}", response_model=ProfileResponse)
 async def get_profile(profile_id: str):
     """
-    Retrieve a profile based on platform and signal.
+    Retrieve a profile based on platform and username.
     """
     try:
         profile = profile_manager.get_profile_by_id(profile_id)
         return ProfileResponse(
             id=profile.id,
             platform=profile.platform.value,
-            signal=profile.signal,
+            username=profile.username,
             is_active=profile.is_active,
             buy_type=profile.buy_type.value,
             buy_amount_type=profile.buy_amount_type.value,
@@ -104,7 +106,7 @@ async def get_profiles():
         ProfileResponse(
             id=p.id,
             platform=p.platform.value,
-            signal=p.signal,
+            username=p.username,
             is_active=p.is_active,
             buy_type=p.buy_type.value,
             buy_amount_type=p.buy_amount_type.value,

@@ -21,23 +21,23 @@ class AutoManager:
         self,
         mint_address: str,
         platform: Platform,
-        signal: str,
+        username: str,
     ) -> str | None:
         """
         Auto buy a token using the profile settings.
 
         Args:
             mint_address (str): The mint address of the token.
-            platform (str): The platform associated with the signal.
-            signal (str): The trading signal.
+            platform (str): The platform associated with the username.
+            username (str): The trading username.
         """
 
-        # Retrieve profile based on platform and signal
-        profile = self.profiles.get_profile(platform.value, signal)
+        # Retrieve profile based on platform and username
+        profile = self.profiles.get_profile(platform.value, username)
 
         if profile is None:
             raise Exception(
-                f"No profile found for platform '{platform.value}' and signal '{signal}'."
+                f"No profile found for platform '{platform.value}' and username '{username}'."
             )
 
         if not profile.is_active:

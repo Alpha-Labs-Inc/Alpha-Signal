@@ -6,7 +6,7 @@ from alphasignal.models.enums import AmountType, BuyType, Platform, SellMode, Se
 class Profile(BaseModel):
     id: str
     platform: Platform
-    signal: str
+    username: str
     is_active: bool
     buy_type: BuyType
     buy_amount_type: AmountType

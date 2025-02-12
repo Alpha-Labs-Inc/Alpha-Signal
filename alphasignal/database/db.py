@@ -13,6 +13,8 @@ from alphasignal.models.enums import (
     SellMode,
     SellType,
 )
+from alphasignal.models.event import Event
+from alphasignal.models.tweet import Tweet
 from alphasignal.models.profile import Profile
 from alphasignal.models.token_info import TokenInfo
 
@@ -57,7 +59,7 @@ class SQLiteDB:
         CREATE TABLE IF NOT EXISTS profile (
             id TEXT PRIMARY KEY,
             platform TEXT,
-            signal TEXT,
+            username TEXT,
             is_active BOOLEAN,
             buy_type TEXT,
             buy_amount_type TEXT,
@@ -67,6 +69,37 @@ class SQLiteDB:
             sell_type TEXT,
             sell_value REAL,
             sell_slippage REAL
+        );
+        """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS tweets (
+            id TEXT PRIMARY KEY,
+            full_text TEXT,
+            is_retweet BOOLEAN,
+            is_reply BOOLEAN,
+            created_at DATETIME
+        );
+        """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS telegrams (
+            id TEXT PRIMARY KEY,
+            telegram_user_id TEXT,
+            username TEXT,
+            chat_id TEXT,
+            full_text TEXT,
+            created_at DATETIME
+        );
+        """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS events (
+            id TEXT PRIMARY KEY,
+            profile_id TEXT,
+            tweet_id TEXT,
+            telegram_id TEXT,
+            time_processed DATETIME,
+            FOREIGN KEY(profile_id) REFERENCES profile(id)
+            FOREIGN KEY(tweet_id) REFERENCES tweets(id)
+            FOREIGN KEY(telegram_id) REFERENCES telegrams(id)          
         );
         """)
         self.connection.commit()
@@ -252,7 +285,7 @@ class SQLiteDB:
     def add_profile(
         self,
         platform: Platform,
-        signal: str,
+        username: str,
         buy_type: BuyType,
         buy_amount_type: AmountType,
         buy_amount: float,
@@ -262,14 +295,14 @@ class SQLiteDB:
         sell_value: float,
         sell_slippage: float,
     ) -> str:
-        # Generate a unique ID based on platform and signal using hashlib
-        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{signal}"))
+        # Generate a unique ID based on platform and username using hashlib
+        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{username}"))
         try:
             cursor = self.connection.cursor()
             cursor.execute(
                 """
                 INSERT INTO profile (
-                    id, platform, signal, is_active, buy_type, buy_amount_type, 
+                    id, platform, username, is_active, buy_type, buy_amount_type, 
                     buy_amount, buy_slippage, sell_mode, sell_type, 
                     sell_value, sell_slippage
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -277,7 +310,7 @@ class SQLiteDB:
                 (
                     profile_id,
                     platform.value,
-                    signal,
+                    username,
                     True,  # Default to active
                     buy_type.value,
                     buy_amount_type.value,
@@ -291,7 +324,7 @@ class SQLiteDB:
             )
             self.connection.commit()
             print(
-                f"Profile with platform '{platform}' and signal '{signal}' added successfully."
+                f"Profile with platform '{platform}' and username '{username}' added successfully."
             )
             return profile_id
         except sqlite3.Error as e:
@@ -374,7 +407,7 @@ class SQLiteDB:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT id, platform, signal, is_active, buy_type, buy_amount_type, 
+            SELECT id, platform, username, is_active, buy_type, buy_amount_type, 
                    buy_amount, buy_slippage, sell_mode, sell_type, 
                    sell_value, sell_slippage
             FROM profile
@@ -388,7 +421,7 @@ class SQLiteDB:
             return Profile(
                 id=row[0],
                 platform=Platform(row[1]),
-                signal=row[2],
+                username=row[2],
                 is_active=bool(row[3]),
                 buy_type=BuyType(row[4]),
                 buy_amount_type=AmountType(row[5]),
@@ -421,7 +454,7 @@ class SQLiteDB:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT id, platform, signal, is_active, buy_type, buy_amount_type, 
+            SELECT id, platform, username, is_active, buy_type, buy_amount_type, 
                 buy_amount, buy_slippage, sell_mode, sell_type, 
                 sell_value, sell_slippage
             FROM profile;
@@ -432,7 +465,7 @@ class SQLiteDB:
             Profile(
                 id=row[0],
                 platform=Platform(row[1]),
-                signal=row[2],
+                username=row[2],
                 is_active=bool(row[3]),
                 buy_type=BuyType(row[4]),
                 buy_amount_type=AmountType(row[5]),
@@ -445,3 +478,48 @@ class SQLiteDB:
             )
             for row in rows
         ]
+
+    def add_tweet(self, tweet: Tweet) -> None:
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO tweets (
+                    id, full_text, is_retweet, is_reply, created_at
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    tweet.id,
+                    tweet.full_text,
+                    tweet.is_retweet,
+                    tweet.is_reply,
+                    tweet.created_at.isoformat(),
+                ),
+            )
+            self.connection.commit()
+            print(f"Tweet with ID '{tweet.id}' added successfully.")
+        except sqlite3.Error as e:
+            print(f"Error adding tweet: {e}")
+
+    def add_event(self, event: Event) -> None:
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO events (
+                    id, profile_id, full_text, tweet_id, telegram_id, time_processed
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event.id,
+                    event.profile_id,
+                    event.full_text,
+                    event.tweet_id,
+                    event.telegram_id,
+                    event.time_processed.isoformat(),
+                ),
+            )
+            self.connection.commit()
+            print(f"Event with ID '{event.id}' added successfully.")
+        except sqlite3.Error as e:
+            print(f"Error adding event: {e}")

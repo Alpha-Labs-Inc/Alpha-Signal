@@ -13,14 +13,14 @@ class ProfileManager:
         self.db = SQLiteDB()
         # Load the configurations
 
-    def add_profile(self, platform: Platform, signal: str) -> str:
+    def add_profile(self, platform: Platform, username: str) -> str:
         self.buy_config = load_config(AUTO_BUY_CONFIG_PATH, AutoBuyConfig)
         self.sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
         # Default the rest of the arguments from the configs
         profile_id = self.db.add_profile(
             platform=platform,
-            signal=signal,
+            username=username,
             buy_type=self.buy_config.buy_type,
             buy_amount_type=self.buy_config.amount_type,
             buy_amount=self.buy_config.amount,
@@ -65,8 +65,8 @@ class ProfileManager:
             sell_slippage=sell_slippage,
         )
 
-    def get_profile(self, platform: str, signal: str) -> Profile:
-        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{signal}"))
+    def get_profile(self, platform: str, username: str) -> Profile:
+        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{username}"))
         return self.db.get_profile_data(profile_id)
 
     def get_profile_by_id(self, profile_id: str) -> Profile:

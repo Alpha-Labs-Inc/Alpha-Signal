@@ -38,7 +38,7 @@ import PlatformLinkButton from "./platform-link-button";
 interface Profile {
     id: string;
     platform: string;
-    signal: string;
+    username: string;
     is_active: boolean;
     buy_type: string;
     buy_amount_type: string;
@@ -69,7 +69,7 @@ const updateProfile = async ({ profileId, updatedData }: { profileId: string; up
     await axios.put(`http://127.0.0.1:8000/profile/${profileId}`, updatedData);
 };
 
-const createProfile = async (profileData: { platform: string, signal: string }) => {
+const createProfile = async (profileData: { platform: string, username: string }) => {
     const { data } = await axios.post("http://127.0.0.1:8000/profile", profileData);
     return data;
 };
@@ -140,10 +140,10 @@ const ProfilesPage = () => {
     });
 
     const [platform, setPlatform] = useState("twitter");
-    const [signal, setSignal] = useState("");
+    const [username, setUsername] = useState("");
 
     const handleCreateProfile = () => {
-        createMutation.mutate({ platform, signal });
+        createMutation.mutate({ platform, username });
     };
 
     if (isLoading) return <p>Loading...</p>;
@@ -156,7 +156,7 @@ const ProfilesPage = () => {
                     <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold">Trading Signals</CardTitle>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button className="ml-auto">Add Signal</Button>
+                            <Button className="ml-auto">Add username</Button>
                         </PopoverTrigger>
                         <PopoverContent className="space-y-4">
                             {/* Platform Selection */}
@@ -175,13 +175,13 @@ const ProfilesPage = () => {
                                 </Select>
                             </div>
 
-                            {/* Signal Input */}
+                            {/* username Input */}
                             <div>
-                                <Label>Signal</Label>
+                                <Label>username</Label>
                                 <Input
-                                    value={signal}
-                                    onChange={(e) => setSignal(e.target.value)}
-                                    placeholder="Enter Signal"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter Username"
                                 />
                             </div>
 
@@ -203,9 +203,9 @@ const ProfilesPage = () => {
                                     <div className="flex items-center gap-4">
                                         <PlatformIcon platform={profile.platform} />
                                         <span className="font-bold text-lg">
-                                            {profile.signal}
+                                            {profile.username}
                                         </span>
-                                        <PlatformLinkButton platform={profile.platform} signal={profile.signal} />
+                                        <PlatformLinkButton platform={profile.platform} username={profile.username} />
                                     </div>
                                     <Badge
                                         variant={profile.is_active ? "success" : "destructive"}
@@ -375,7 +375,7 @@ const ProfilesPage = () => {
                                                     <AlertDialogHeader>
                                                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            This will remove the signal from the system.
+                                                            This will remove the username from the system.
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
