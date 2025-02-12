@@ -68,7 +68,8 @@ class SQLiteDB:
             sell_mode TEXT,
             sell_type TEXT,
             sell_value REAL,
-            sell_slippage REAL
+            sell_slippage REAL,
+            is_visable BOOLEAN DEFAULT 1
         );
         """)
         cursor.executescript("""
@@ -296,7 +297,7 @@ class SQLiteDB:
         sell_slippage: float,
     ) -> str:
         # Generate a unique ID based on platform and username using hashlib
-        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{username}"))
+        profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform.value}_{username}"))
         try:
             cursor = self.connection.cursor()
             cursor.execute(
@@ -409,7 +410,7 @@ class SQLiteDB:
             """
             SELECT id, platform, username, is_active, buy_type, buy_amount_type, 
                    buy_amount, buy_slippage, sell_mode, sell_type, 
-                   sell_value, sell_slippage
+                   sell_value, sell_slippage, is_visable
             FROM profile
             WHERE id = ?;
             """,
@@ -431,6 +432,7 @@ class SQLiteDB:
                 sell_type=SellType(row[9]),
                 sell_value=row[10],
                 sell_slippage=row[11],
+                is_visable=row[12],
             )
         # Raise an exception if the profile is not found
         raise ProfileNotFoundError(profile_id)
@@ -439,9 +441,9 @@ class SQLiteDB:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            DELETE FROM profile WHERE id = ?;
+            UPDATE profile SET is_visable = ?, is_active = ? WHERE id = ?
             """,
-            (profile_id,),
+            (False, False, profile_id),
         )
         self.connection.commit()
 
@@ -450,14 +452,30 @@ class SQLiteDB:
 
         print(f"Profile with ID '{profile_id}' has been deleted.")
 
+    def revive_profile(self, profile_id: str) -> None:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            UPDATE profile SET is_visable = ?, is_active = ? WHERE id = ?
+            """,
+            (True, True, profile_id),
+        )
+        self.connection.commit()
+
+        if cursor.rowcount == 0:
+            raise ProfileNotFoundError(profile_id)
+
+        print(f"Profile with ID '{profile_id}' has been revived.")
+
     def get_profiles(self) -> List[Profile]:
         cursor = self.connection.cursor()
         cursor.execute(
             """
             SELECT id, platform, username, is_active, buy_type, buy_amount_type, 
                 buy_amount, buy_slippage, sell_mode, sell_type, 
-                sell_value, sell_slippage
-            FROM profile;
+                sell_value, sell_slippage, is_visable
+            FROM profile
+            WHERE is_visable = 1
             """
         )
         rows = cursor.fetchall()
@@ -475,6 +493,7 @@ class SQLiteDB:
                 sell_type=SellType(row[9]),
                 sell_value=row[10],
                 sell_slippage=row[11],
+                is_visable=row[12],
             )
             for row in rows
         ]

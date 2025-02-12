@@ -1,6 +1,6 @@
 from typing import List
 import uuid
-from alphasignal.database.db import SQLiteDB
+from alphasignal.database.db import ProfileNotFoundError, SQLiteDB
 from alphasignal.models.configs import AutoBuyConfig, AutoSellConfig
 from alphasignal.models.constants import AUTO_BUY_CONFIG_PATH, AUTO_SELL_CONFIG_PATH
 from alphasignal.models.enums import AmountType, BuyType, Platform, SellMode, SellType
@@ -17,20 +17,43 @@ class ProfileManager:
         self.buy_config = load_config(AUTO_BUY_CONFIG_PATH, AutoBuyConfig)
         self.sell_config = load_config(AUTO_SELL_CONFIG_PATH, AutoSellConfig)
 
-        # Default the rest of the arguments from the configs
-        profile_id = self.db.add_profile(
-            platform=platform,
-            username=username,
-            buy_type=self.buy_config.buy_type,
-            buy_amount_type=self.buy_config.amount_type,
-            buy_amount=self.buy_config.amount,
-            buy_slippage=self.buy_config.slippage,
-            sell_mode=self.sell_config.sell_mode,
-            sell_type=self.sell_config.sell_type,
-            sell_value=self.sell_config.sell_value,
-            sell_slippage=self.sell_config.slippage,
-        )
-        return profile_id
+        # If the profile did not exist previously make a new one else update the existing one and revive it
+        try:
+            profile = self.get_profile(platform.value, username)
+        except ProfileNotFoundError as e:
+            # Default the rest of the arguments from the configs
+            profile_id = self.db.add_profile(
+                platform=platform,
+                username=username,
+                buy_type=self.buy_config.buy_type,
+                buy_amount_type=self.buy_config.amount_type,
+                buy_amount=self.buy_config.amount,
+                buy_slippage=self.buy_config.slippage,
+                sell_mode=self.sell_config.sell_mode,
+                sell_type=self.sell_config.sell_type,
+                sell_value=self.sell_config.sell_value,
+                sell_slippage=self.sell_config.slippage,
+            )
+            return profile_id
+
+        if profile.is_visable:
+            return profile.id
+        else:
+            self.update_profile(
+                profile.id,
+                buy_type=self.buy_config.buy_type,
+                buy_amount_type=self.buy_config.amount_type,
+                buy_amount=self.buy_config.amount,
+                buy_slippage=self.buy_config.slippage,
+                sell_mode=self.sell_config.sell_mode,
+                sell_type=self.sell_config.sell_type,
+                sell_value=self.sell_config.sell_value,
+                sell_slippage=self.sell_config.slippage,
+            )
+
+            self.db.revive_profile(profile.id)
+
+            return profile.id
 
     def activate_profile(self, profile_id: str) -> None:
         # Activate the profile
@@ -67,6 +90,7 @@ class ProfileManager:
 
     def get_profile(self, platform: str, username: str) -> Profile:
         profile_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{platform}_{username}"))
+
         return self.db.get_profile_data(profile_id)
 
     def get_profile_by_id(self, profile_id: str) -> Profile:
