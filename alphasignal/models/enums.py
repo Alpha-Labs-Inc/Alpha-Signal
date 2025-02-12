@@ -30,3 +30,9 @@ class OrderStatus(Enum):
 
 class Platform(Enum):
     TWITTER = "twitter"
+
+
+class TweetSentiment(Enum):
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    NEUTRAL = "neutral"
