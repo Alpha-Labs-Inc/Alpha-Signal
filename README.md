@@ -31,7 +31,9 @@ Alpha Signal Crypto
 [😸 Github](https://github.com/Alpha-Labs-Inc/Alpha-Signal)
 <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
 [🌎 Website](https://alphasignalcrypto.com/)
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+</div>
+<div align="center">
+  
 [🚗 Roadmap](https://alphasignalcrypto.com/roadmap)
 <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
 [👀 Vision](https://alphasignalcrypto.com/vision)
@@ -100,6 +102,8 @@ Your backend is up and running for signals.
   <a href="https://www.sqlite.org/">
     <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/SQLite370.svg" alt="SQLite" width="120"/>
   </a>
+</div>
+  <div align="center">
   <a href="https://jup.ag/">
     <img src="https://cryptologos.cc/logos/jupiter-ag-jup-logo.png?v=040" alt="Jupiter" width="120"/>
   </a>
