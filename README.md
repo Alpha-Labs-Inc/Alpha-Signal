@@ -32,12 +32,16 @@ Alpha Signal Crypto
 [😸 Github](https://github.com/Alpha-Labs-Inc/Alpha-Signal)
 <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
 [🌎 Website](https://alphasignalcrypto.com/)
+<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+[🔔 X](https://x.com/_AlphaSignal_)
+
 </div>
 <div align="center">
   
 [🚗 Roadmap](https://alphasignalcrypto.com/roadmap)
 <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
 [👀 Vision](https://alphasignalcrypto.com/vision)
+
 
 </div>
 
