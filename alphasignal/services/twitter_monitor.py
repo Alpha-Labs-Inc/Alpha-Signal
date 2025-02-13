@@ -12,7 +12,7 @@ from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
 from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
 from alphasignal.models.enums import Platform, TweetSentiment, TweetType
-
+from 
 
 class TwitterMonitor:
     def __init__(self):
@@ -23,13 +23,19 @@ class TwitterMonitor:
         """Returns all matches for stock tickers in the text."""
         ticker_pattern = re.compile(r"\$[A-Za-z]{1,5}")
         tickers = ticker_pattern.findall(message)
-        return [TokenInfo(ticker=ticker) for ticker in tickers]
+        return [
+            TokenInfo(ticker=ticker, mint_address=None, name=None, image=None)
+            for ticker in tickers
+        ]
 
-    def _find_solana_addresses(self, message: str) -> List[TokenInfo]:
-        """Returns all matches for potential Solana wallet addresses."""
+    def _find_mint_addresses(self, message: str) -> List[TokenInfo]:
+        """Returns all matches for potential Solana mint addresses."""
         solana_pattern = re.compile(r"[1-9A-HJ-NP-Za-km-z]{32,44}")
         addresses = solana_pattern.findall(message)
-        return [TokenInfo(mint_address=address) for address in addresses]
+        return [
+            TokenInfo(mint_address=address, ticker=None, name=None, image=None)
+            for address in addresses
+        ]
 
     def _determine_tweet_type(
         self, tweetPayload: TweetCatcherWebhookPayload
@@ -58,7 +64,7 @@ class TwitterMonitor:
         """
         tweet_id = str(uuid.uuid4())
         event_id = str(uuid.uuid4())
-        created_at = datetime.now(timezone.utc)
+        created_at = datetime.now(timezone.utc).isoformat()
 
         tweet = Tweet(
             id=tweet_id,
@@ -68,7 +74,7 @@ class TwitterMonitor:
             created_at=created_at,
         )
 
-        if tweetPayload.data.user:
+        if tweetPayload.task.user:
             profile_id = self.profile_manager.get_profile(
                 Platform.TWITTER.value, tweetPayload.task.user
             ).id
@@ -77,7 +83,7 @@ class TwitterMonitor:
             id=event_id,
             profile_id=profile_id,
             tweet_id=tweet_id,
-            telegram_id=None,  # telegram_id is null
+            telegram_id=None,
             time_processed=created_at,
         )
 
@@ -85,24 +91,26 @@ class TwitterMonitor:
         self.db.add_event(event)
 
         # Add extracted tweet data to the database
-        tokens = [token.dict() for token in extracted_data.tokens]
+        tokens = [token.model_dump() for token in extracted_data.tokens]
         token_sentiments = [
-            {"token_info": token_info.dict(), "sentiment": sentiment.value}
+            {"token_info": token_info.model_dump(), "sentiment": sentiment.value}
             for token_info, sentiment in extracted_data.token_sentiment
         ]
         self.db.add_extracted_tweet_data(
             tweet_id=tweet_id,
             tweet_type=extracted_data.tweet_type.value,
-            tokens=tokens,
-            token_sentiment=token_sentiments,
+            tokens=str(tokens),
+            token_sentiment=str(token_sentiments),
         )
 
     def _classify_tokens_sentiment(
-        self, token: str, tweet_text: str
+        self, tokens: List[TokenInfo]
     ) -> List[Tuple[TokenInfo, TweetSentiment]]:
-        # Placeholder for sentiment classification logic
-        # You can replace this with actual sentiment analysis using an LLM
-        pass
+        # Initialize the LLM
+        llm = OpenAI(api_key="your_openai_api_key")
+        token1 = tokens[0]
+        test = [(token1, TweetSentiment.POSITIVE)]
+        return test
 
     def _extract_tweet_info(
         self, tweetPayload: TweetCatcherWebhookPayload
@@ -120,7 +128,7 @@ class TwitterMonitor:
 
         # Extract tickers and Solana addresses
         tickers = self._find_tickers(message)
-        solana_addresses = self._find_solana_addresses(message)
+        solana_addresses = self._find_mint_addresses(message)
 
         # Combine tickers and Solana addresses into a single list of TokenInfo
         tokens = tickers + solana_addresses
@@ -128,7 +136,7 @@ class TwitterMonitor:
         # Classify sentiment for tokens
         token_sentiments = []
         if tokens != []:
-            token_sentiments = self._classify_tokens_sentiment(tickers)
+            token_sentiments = self._classify_tokens_sentiment(tokens)
 
         return ExtractedTweetData(
             tweet_type=tweet_type,

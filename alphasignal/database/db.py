@@ -522,7 +522,7 @@ class SQLiteDB:
                     tweet.full_text,
                     tweet.is_retweet,
                     tweet.is_reply,
-                    tweet.created_at.isoformat(),
+                    tweet.created_at,
                 ),
             )
             self.connection.commit()
@@ -536,16 +536,15 @@ class SQLiteDB:
             cursor.execute(
                 """
                 INSERT INTO events (
-                    id, profile_id, full_text, tweet_id, telegram_id, time_processed
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    id, profile_id, tweet_id, telegram_id, time_processed
+                ) VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     event.id,
                     event.profile_id,
-                    event.full_text,
                     event.tweet_id,
                     event.telegram_id,
-                    event.time_processed.isoformat(),
+                    event.time_processed,
                 ),
             )
             self.connection.commit()

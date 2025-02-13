@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
 from alphasignal.services.twitter_monitor import TwitterMonitor
 
@@ -16,7 +16,7 @@ async def process_tweet_webhook(tweetPayload: TweetCatcherWebhookPayload) -> Non
         tweetPayload (TweetCatcherWebhookPayload): The webhook payload received from TweetCatcher.
 
     Returns:
-    None
+        bool: True if the tweet was successfully processed
     """
-    await twitter_monitor.process_tweet_webhook(tweetPayload)
+    twitter_monitor.process_tweet_webhook(tweetPayload)
     return True
