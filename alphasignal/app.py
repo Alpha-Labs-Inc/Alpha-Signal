@@ -23,7 +23,6 @@ origins = [
 ]
 
 load_dotenv()
-initialize_database()
 
 app = FastAPI(docs_url="/api/docs")
 
