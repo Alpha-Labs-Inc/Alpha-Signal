@@ -16,3 +16,4 @@ class Profile(BaseModel):
     sell_type: SellType
     sell_value: float
     sell_slippage: float
+    is_visable: bool

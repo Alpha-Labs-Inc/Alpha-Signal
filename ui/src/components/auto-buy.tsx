@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import Loader from './loader'
 import { toast } from '@/hooks/use-toast'
+import { Input } from './ui/input'
 
 interface AutoBuyConfig {
   buy_type: string
@@ -116,28 +117,28 @@ const AutoBuy = () => {
 
             <div className="my-4 flex flex-col justify-center items-start">
               <Label className="m-2">Amount</Label>
-              <input
+              <Input
+                type="number"
+                defaultValue={JSON.stringify(data?.amount)}
                 onChange={(e) =>
                   setAutoBuyStates({
                     ...autoBuyStates,
                     amount: Number(e.target.value),
                   })
                 }
-                type="text"
-                placeholder={JSON.stringify(data?.amount)}
               />
             </div>
             <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Slippage</Label>
-              <input
+              <Label className="m-2">Slippage (%)</Label>
+              <Input
+                type="number"
+                defaultValue={JSON.stringify(data ? data.slippage / 100 : 0)}
                 onChange={(e) =>
                   setAutoBuyStates({
                     ...autoBuyStates,
-                    slippage: Number(e.target.value),
+                    slippage: Number(e.target.value) * 100,
                   })
                 }
-                type="text"
-                placeholder={JSON.stringify(data?.slippage)}
               />
             </div>
             <Button onClick={() => mutation.mutate(autoBuyStates)}>

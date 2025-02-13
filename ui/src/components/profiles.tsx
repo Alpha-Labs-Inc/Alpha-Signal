@@ -156,7 +156,7 @@ const ProfilesPage = () => {
                     <CardTitle className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold">Trading Signals</CardTitle>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button className="ml-auto">Add username</Button>
+                            <Button className="ml-auto">Add Signal</Button>
                         </PopoverTrigger>
                         <PopoverContent className="space-y-4">
                             {/* Platform Selection */}
@@ -271,9 +271,9 @@ const ProfilesPage = () => {
                                                         <Label>Buy Slippage (%)</Label>
                                                         <Input
                                                             type="number"
-                                                            defaultValue={editableProfile.buy_slippage}
+                                                            defaultValue={editableProfile.buy_slippage / 100}
                                                             onChange={(e) =>
-                                                                handleInputChange(profile.id, "buy_slippage", Number(e.target.value))
+                                                                handleInputChange(profile.id, "buy_slippage", Number(e.target.value) * 100)
                                                             }
                                                         />
                                                     </div>
@@ -337,9 +337,9 @@ const ProfilesPage = () => {
                                                         <Label>Sell Slippage (%)</Label>
                                                         <Input
                                                             type="number"
-                                                            defaultValue={editableProfile.sell_slippage}
+                                                            defaultValue={editableProfile.sell_slippage / 100}
                                                             onChange={(e) =>
-                                                                handleInputChange(profile.id, "sell_slippage", Number(e.target.value))
+                                                                handleInputChange(profile.id, "sell_slippage", Number(e.target.value) * 100)
                                                             }
                                                         />
                                                     </div>
