@@ -4,9 +4,9 @@ from typing import Optional
 
 class TokenInfo(BaseModel):
     mint_address: Optional[str]
-    name: Optional[str]
     ticker: Optional[str]
-    image: Optional[HttpUrl]
+    name: Optional[str] = None
+    image: Optional[HttpUrl] = None
 
     @model_validator(mode="before")
     def check_mint_address_or_ticker(cls, values):
