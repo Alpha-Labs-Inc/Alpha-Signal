@@ -79,13 +79,39 @@ Your backend is up and running for signals.
 3. Run `npm run dev`
 4. Click on the local-host link, you now have access to view your Alpha Signal application.
 
-## Technologies Used
+## Integrations
 
 - Frontend: React
 - Backend: Python
 - Package Management: Poetry
 - Database: A locally hosted SQLite Database.
 - Integrations: Jupiter, Dex Screener, X/Twitter
+
+<div align="center">
+  <a href="https://react.dev/">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="React" width="120"/>
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="120"/>
+  </a>
+  <a href="https://python-poetry.org/">
+    <img src="https://python-poetry.org/images/logo-origami.svg" alt="Poetry" width="120"/>
+  </a>
+  <a href="https://www.sqlite.org/">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/SQLite370.svg" alt="SQLite" width="120"/>
+  </a>
+  <a href="https://jup.ag/">
+    <img src="https://cryptologos.cc/logos/jupiter-ag-jup-logo.png?v=040" alt="Jupiter" width="120"/>
+  </a>
+  <a href="https://x.com/home">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="120"/>
+  </a>
+  <a href="https://dexscreener.com/">
+    <img src="https://mediaresource.sfo2.digitaloceanspaces.com/wp-content/uploads/2024/04/20232343/dex-screener-logo-png_seeklogo-527276.png" alt="Dex Screener" width="120"/>
+  </a>
+</div>
+
+
 
 ## Roadmap
 
