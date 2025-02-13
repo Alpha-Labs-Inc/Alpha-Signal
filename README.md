@@ -1,6 +1,7 @@
 <h1 align="center">
-
+  <a href="https://alphasignalcrypto.com/">
   <img src="./ui/public/alpha_signal_logo.svg" alt="Alpha Signal Crypto Logo" width="400"/>
+  </a>
   <p>
 Alpha Signal Crypto
 </p>
