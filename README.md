@@ -21,9 +21,9 @@ Alpha Signal Crypto
   <a href="https://github.com/Alpha-Labs-Inc/Alpha-Signal/stargazers">
     <img src="https://img.shields.io/github/stars/Alpha-Labs-Inc/Alpha-Signal?style=social" alt="GitHub Stars"/>
   </a>
-  <a href="https://github.com/Alpha-Labs-Inc/Alpha-Signal/releases">
+<!--   <a href="https://github.com/Alpha-Labs-Inc/Alpha-Signal/releases">
     <img src="https://img.shields.io/github/downloads/Alpha-Labs-Inc/Alpha-Signal/total?color=blue" alt="Downloads"/>
-  </a>
+  </a> -->
 
 </br>
 </p>
