@@ -1,0 +1,88 @@
+{
+    "task": {
+      "user": "TestAcct0000",
+      "userInfo": {
+        "advertiser_account_service_levels": [],
+        "advertiser_account_type": "none",
+        "analytics_type": "disabled",
+        "blocked_by": false,
+        "blocking": false,
+        "can_dm": false,
+        "can_media_tag": true,
+        "created_at": "Mon Jan 13 02:37:28 +0000 2025",
+        "description": "",
+        "entities": {
+          "description": {
+            "hashtags": [],
+            "symbols": [],
+            "urls": [],
+            "user_mentions": []
+          }
+        },
+        "fast_followers_count": 0,
+        "favourites_count": 0,
+        "follow_request_sent": false,
+        "followers_count": 0,
+        "followed_by": false,
+        "following": false,
+        "friends_count": 0,
+        "has_custom_timelines": false,
+        "has_extended_profile": true,
+        "is_translator": false,
+        "location": "",
+        "media_count": 0,
+        "muting": false,
+        "name": "Test",
+        "normal_followers_count": 0,
+        "notifications": false,
+        "pinned_tweet_ids_str": [],
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1878632428597563393/yB-IOAGq_normal.png",
+        "profile_interstitial_type": "",
+        "profile_link_color": "1DA1F2",
+        "protected": false,
+        "screen_name": "TestAcct0000",
+        "statuses_count": 10,
+        "translator_type": "None",
+        "verified": false,
+        "withheld_in_countries": []
+      },
+      "reason": "new_tweet",
+      "taskId": 262445,
+      "group": ""
+    },
+    "data": {
+      "id_str": "1889190154331447550",
+      "created_at": "Tue Feb 11 05:50:06 +0000 2025",
+      "full_text": "@cz_binance con",
+      "entities": {
+        "user_mentions": [
+          {
+            "id_str": "902926941413453824",
+            "indices": [
+              0,
+              11
+            ],
+            "name": "CZ 🔶 BNB",
+            "screen_name": "cz_binance"
+          }
+        ]
+      },
+      "user": {
+        "screen_name": "TestAcct0000",
+        "name": "Test",
+        "image": "https://pbs.twimg.com/profile_images/1878632428597563393/yB-IOAGq_normal.png"
+      },
+      "is_retweet": false,
+      "is_reply": true,
+      "reply_status": {
+        "id_str": "1888842954015699033",
+        "full_text": "4 years ago today. Some things never change. 😂",
+        "entities": {},
+        "user": {
+          "screen_name": "cz_binance",
+          "name": "CZ 🔶 BNB",
+          "image": "https://pbs.twimg.com/profile_images/1781374522966601732/HA_dnDvL_normal.jpg"
+        }
+      }
+    }
+  }

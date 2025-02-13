@@ -1,13 +1,6 @@
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from enum import Enum
-
-
-class TweetType(Enum):
-    POST = "post"
-    REPLY = "reply"
-    RETWEET = "retweet"
 
 
 class UserInfo(BaseModel):

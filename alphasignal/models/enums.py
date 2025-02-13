@@ -36,3 +36,9 @@ class TweetSentiment(Enum):
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
+
+
+class TweetType(Enum):
+    POST = "post"
+    REPLY = "reply"
+    RETWEET = "retweet"

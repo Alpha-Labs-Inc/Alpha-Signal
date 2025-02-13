@@ -102,6 +102,16 @@ class SQLiteDB:
             FOREIGN KEY(telegram_id) REFERENCES telegrams(id)          
         );
         """)
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS extracted_tweets_data (
+            id TEXT PRIMARY KEY,
+            tweet_id TEXT,
+            tweet_type TEXT,
+            tokens TEXT,
+            token_sentiment TEXT,
+            FOREIGN KEY(tweet_id) REFERENCES tweets(id)
+        );
+        """)
         self.connection.commit()
 
     def add_token_info(
@@ -523,3 +533,34 @@ class SQLiteDB:
             print(f"Event with ID '{event.id}' added successfully.")
         except sqlite3.Error as e:
             print(f"Error adding event: {e}")
+
+    def add_extracted_tweet_data(
+        self,
+        tweet_id: str,
+        tweet_type: str,
+        tokens: str,
+        token_sentiment: str,
+    ) -> None:
+        try:
+            cursor = self.connection.cursor()
+            extracted_data_id = str(uuid.uuid4())
+            cursor.execute(
+                """
+                INSERT INTO extracted_tweets_data (
+                    id, tweet_id, tweet_type, tokens, token_sentiment
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    extracted_data_id,
+                    tweet_id,
+                    tweet_type,
+                    tokens,
+                    token_sentiment,
+                ),
+            )
+            self.connection.commit()
+            print(
+                f"Extracted tweet data with ID '{extracted_data_id}' added successfully."
+            )
+        except sqlite3.Error as e:
+            print(f"Error adding extracted tweet data: {e}")

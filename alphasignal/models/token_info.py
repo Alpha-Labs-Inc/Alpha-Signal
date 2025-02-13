@@ -1,9 +1,17 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, model_validator
 from typing import Optional
 
 
 class TokenInfo(BaseModel):
-    mint_address: str
-    name: str
-    ticker: str
+    mint_address: Optional[str]
+    name: Optional[str]
+    ticker: Optional[str]
     image: Optional[HttpUrl]
+
+    @model_validator(mode="before")
+    def check_mint_address_or_ticker(cls, values):
+        mint_address = values.get("mint_address")
+        ticker = values.get("ticker")
+        if not mint_address and not ticker:
+            raise ValueError("Either mint_address or ticker must be provided")
+        return values

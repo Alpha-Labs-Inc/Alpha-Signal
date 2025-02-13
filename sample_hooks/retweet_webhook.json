@@ -1,0 +1,292 @@
+{
+  "task": {
+    "user": "TestAcct0000",
+    "userInfo": {
+      "advertiser_account_service_levels": [],
+      "advertiser_account_type": "none",
+      "analytics_type": "disabled",
+      "blocked_by": false,
+      "blocking": false,
+      "can_dm": false,
+      "can_media_tag": true,
+      "created_at": "Mon Jan 13 02:37:28 +0000 2025",
+      "description": "",
+      "entities": {
+        "description": {
+          "hashtags": [],
+          "symbols": [],
+          "urls": [],
+          "user_mentions": []
+        }
+      },
+      "fast_followers_count": 0,
+      "favourites_count": 0,
+      "follow_request_sent": false,
+      "followers_count": 0,
+      "followed_by": false,
+      "following": false,
+      "friends_count": 0,
+      "has_custom_timelines": false,
+      "has_extended_profile": true,
+      "is_translator": false,
+      "location": "",
+      "media_count": 0,
+      "muting": false,
+      "name": "Test",
+      "normal_followers_count": 0,
+      "notifications": false,
+      "pinned_tweet_ids_str": [],
+      "profile_image_url_https": "https://pbs.twimg.com/profile_images/1878632428597563393/yB-IOAGq_normal.png",
+      "profile_interstitial_type": "",
+      "profile_link_color": "1DA1F2",
+      "protected": false,
+      "screen_name": "TestAcct0000",
+      "statuses_count": 10,
+      "translator_type": "None",
+      "verified": false,
+      "withheld_in_countries": []
+    },
+    "reason": "new_tweet",
+    "taskId": 262445,
+    "group": ""
+  },
+  "data": {
+    "id_str": "1889190065835769916",
+    "created_at": "Tue Feb 11 05:49:45 +0000 2025",
+    "full_text": "RT @MitchSteds: GM\nmonday again https://t.co/Ica85GVIuq",
+    "entities": {},
+    "extended_entities": {
+      "media": [
+        {
+          "additional_media_info": {
+            "monetizable": false,
+            "source_user": {
+              "user_results": {
+                "rest_id": "187460946",
+                "result": {
+                  "__typename": "User",
+                  "action_counts": {
+                    "favorites_count": 0
+                  },
+                  "avatar": {
+                    "image_url": "https://pbs.twimg.com/profile_images/1608201465910235142/hEbO0KA1_normal.jpg"
+                  },
+                  "banner": {
+                    "image_url": "https://pbs.twimg.com/profile_banners/187460946/1640722366"
+                  },
+                  "core": {
+                    "created_at": "Mon Sep 06 08:46:32 +0000 2010",
+                    "name": "MitchSteds",
+                    "screen_name": "MitchSteds"
+                  },
+                  "dm_permissions": {
+                    "can_dm": false
+                  },
+                  "exclusive_tweet_following": false,
+                  "identity_profile_labels_highlighted_label": {},
+                  "location": {
+                    "location": "Cuzzle"
+                  },
+                  "media_permissions": {
+                    "can_media_tag": true
+                  },
+                  "notifications_settings": {},
+                  "pinned_items": {
+                    "tweet_ids_str": [
+                      "1512185846266580998"
+                    ]
+                  },
+                  "privacy": {},
+                  "private_super_following": false,
+                  "profile_bio": {
+                    "description": "“Man who says it cannot be done should not interrupt man doing it”\n\n...everything here cannot be taken seriously!",
+                    "entities": {
+                      "description": {}
+                    }
+                  },
+                  "profile_metadata": {
+                    "profile_interstitial_type": "",
+                    "profile_link_color": "525252"
+                  },
+                  "profile_translation": {
+                    "translator_type_enum": "None"
+                  },
+                  "properties": {
+                    "has_extended_profile": true
+                  },
+                  "relationship_counts": {
+                    "followers": 4192,
+                    "following": 685
+                  },
+                  "relationship_perspectives": {},
+                  "rest_id": "187460946",
+                  "super_follow_eligible": false,
+                  "super_followed_by": false,
+                  "super_following": false,
+                  "tweet_counts": {
+                    "media_tweets": 8158,
+                    "tweets": 16597
+                  },
+                  "website": {
+                    "url": ""
+                  },
+                  "verification": {
+                    "is_blue_verified": true
+                  }
+                }
+              }
+            }
+          },
+          "display_url": "pic.twitter.com/Ica85GVIuq",
+          "expanded_url": "https://twitter.com/MitchSteds/status/1888863815061626981/video/1",
+          "ext_media_availability": {
+            "status": "Available"
+          },
+          "id_str": "1888863801447002112",
+          "indices": [
+            32,
+            55
+          ],
+          "media_key": "7_1888863801447002112",
+          "media_results": {
+            "id": "QXBpTWVkaWFSZXN1bHRzOgwAAwoAARo2l56qV7AACgACGjfAWwNWgDwAAA==",
+            "result": {
+              "__typename": "ApiMedia",
+              "id": "QXBpTWVkaWE6DAADCgABGjaXnqpXsAAKAAIaN8BbA1aAPAAA",
+              "media_key": "7_1888863801447002112"
+            }
+          },
+          "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/1888863801447002112/pu/img/XUgxLFZ5cBN2E1Ul.jpg",
+          "original_info": {
+            "focus_rects": [],
+            "height": 1024,
+            "width": 576
+          },
+          "sizes": {
+            "large": {
+              "h": 1024,
+              "w": 576
+            }
+          },
+          "source_status_id_str": "1888863815061626981",
+          "source_user_id_str": "187460946",
+          "type": "video",
+          "url": "https://t.co/Ica85GVIuq",
+          "video_info": {
+            "aspect_ratio": [
+              9,
+              16
+            ],
+            "duration_millis": 8800,
+            "variants": [
+              {
+                "content_type": "application/x-mpegURL",
+                "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/pl/oDyiiZati8IZi4-y.m3u8?tag=12"
+              },
+              {
+                "bitrate": 632000,
+                "content_type": "video/mp4",
+                "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/320x568/lOjovEdkFlqEzK65.mp4?tag=12"
+              },
+              {
+                "bitrate": 950000,
+                "content_type": "video/mp4",
+                "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/480x852/xlxsYuIj7jL8QZN6.mp4?tag=12"
+              },
+              {
+                "bitrate": 2176000,
+                "content_type": "video/mp4",
+                "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/576x1024/g_lXMO-RBCiRMaew.mp4?tag=12"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "user": {
+      "screen_name": "TestAcct0000",
+      "name": "Test",
+      "image": "https://pbs.twimg.com/profile_images/1878632428597563393/yB-IOAGq_normal.png"
+    },
+    "is_retweet": true,
+    "is_reply": false,
+    "retweeted_status": {
+      "full_text": "GM\nmonday again https://t.co/Ica85GVIuq",
+      "extended_entities": {
+        "media": [
+          {
+            "additional_media_info": {
+              "monetizable": false
+            },
+            "display_url": "pic.twitter.com/Ica85GVIuq",
+            "expanded_url": "https://twitter.com/MitchSteds/status/1888863815061626981/video/1",
+            "ext_media_availability": {
+              "status": "Available"
+            },
+            "id_str": "1888863801447002112",
+            "indices": [
+              16,
+              39
+            ],
+            "media_key": "7_1888863801447002112",
+            "media_results": {
+              "id": "QXBpTWVkaWFSZXN1bHRzOgwAAwoAARo2l56qV7AACgACGjaXodXWYGUAAA==",
+              "result": {
+                "__typename": "ApiMedia",
+                "id": "QXBpTWVkaWE6DAADCgABGjaXnqpXsAAKAAIaNpeh1dZgZQAA",
+                "media_key": "7_1888863801447002112"
+              }
+            },
+            "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/1888863801447002112/pu/img/XUgxLFZ5cBN2E1Ul.jpg",
+            "original_info": {
+              "focus_rects": [],
+              "height": 1024,
+              "width": 576
+            },
+            "sizes": {
+              "large": {
+                "h": 1024,
+                "w": 576
+              }
+            },
+            "type": "video",
+            "url": "https://t.co/Ica85GVIuq",
+            "video_info": {
+              "aspect_ratio": [
+                9,
+                16
+              ],
+              "duration_millis": 8800,
+              "variants": [
+                {
+                  "content_type": "application/x-mpegURL",
+                  "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/pl/oDyiiZati8IZi4-y.m3u8?tag=12"
+                },
+                {
+                  "bitrate": 632000,
+                  "content_type": "video/mp4",
+                  "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/320x568/lOjovEdkFlqEzK65.mp4?tag=12"
+                },
+                {
+                  "bitrate": 950000,
+                  "content_type": "video/mp4",
+                  "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/480x852/xlxsYuIj7jL8QZN6.mp4?tag=12"
+                },
+                {
+                  "bitrate": 2176000,
+                  "content_type": "video/mp4",
+                  "url": "https://video.twimg.com/ext_tw_video/1888863801447002112/pu/vid/avc1/576x1024/g_lXMO-RBCiRMaew.mp4?tag=12"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "user": {
+        "screen_name": "MitchSteds",
+        "name": "MitchSteds",
+        "image": "https://pbs.twimg.com/profile_images/1608201465910235142/hEbO0KA1_normal.jpg"
+      }
+    }
+  }
+}
