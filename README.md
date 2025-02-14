@@ -78,7 +78,7 @@ Learn more about our vision and long-term goals: [Alpha Signal Crypto Vision](ht
 3. Install `node 22.13.1` and `pnpm 10.1.0`
 #### Running the Backend
 1. Run `poetry install`
-2. Run `poetry run py -m alphasignal.app`
+2. Run `poetry run python -m alphasignal.app`
 Your backend is up and running for signals.
 #### Running the Frontend
 1. In terminal, `cd` to the `ui` folder
