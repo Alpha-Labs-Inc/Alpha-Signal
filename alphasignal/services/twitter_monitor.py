@@ -12,7 +12,6 @@ from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
 from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
 from alphasignal.models.enums import Platform, TweetSentiment, TweetType
-from 
 
 class TwitterMonitor:
     def __init__(self):
