@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime, timezone
 
 
+from alphasignal.ai.chains.twitter_chains import get_tweet_sentiment
+from alphasignal.ai.models.sentiment_response import SentimentResponse
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.token_info import TokenInfo
 from alphasignal.models.tweet_data_extraction import ExtractedTweetData
@@ -104,13 +106,12 @@ class TwitterMonitor:
         )
 
     def _classify_tokens_sentiment(
-        self, tokens: List[TokenInfo]
-    ) -> List[Tuple[TokenInfo, TweetSentiment]]:
+        self, tweet_text: str, tokens: List[TokenInfo]
+    ) -> SentimentResponse:
         # Initialize the LLM
-        llm = OpenAI(api_key="your_openai_api_key")
-        token1 = tokens[0]
-        test = [(token1, TweetSentiment.POSITIVE)]
-        return test
+        token_sentiment = get_tweet_sentiment(tweet_text, tokens)
+        print(token_sentiment)
+        return token_sentiment
 
     def _extract_tweet_info(
         self, tweetPayload: TweetCatcherWebhookPayload
@@ -124,11 +125,11 @@ class TwitterMonitor:
 
         # Determine the tweet type using the helper function
         tweet_type = self._determine_tweet_type(tweetPayload)
-        message = tweetPayload.data.full_text or tweetPayload.data.text or ""
+        full_text = tweetPayload.data.full_text or tweetPayload.data.text or ""
 
         # Extract tickers and Solana addresses
-        tickers = self._find_tickers(message)
-        solana_addresses = self._find_mint_addresses(message)
+        tickers = self._find_tickers(full_text)
+        solana_addresses = self._find_mint_addresses(full_text)
 
         # Combine tickers and Solana addresses into a single list of TokenInfo
         tokens = tickers + solana_addresses
@@ -136,7 +137,7 @@ class TwitterMonitor:
         # Classify sentiment for tokens
         token_sentiments = []
         if tokens != []:
-            token_sentiments = self._classify_tokens_sentiment(tokens)
+            token_sentiments = self._classify_tokens_sentiment(full_text, tokens)
 
         return ExtractedTweetData(
             tweet_type=tweet_type,

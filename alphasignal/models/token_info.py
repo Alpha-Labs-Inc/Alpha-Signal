@@ -3,8 +3,8 @@ from typing import Optional
 
 
 class TokenInfo(BaseModel):
-    mint_address: Optional[str]
-    ticker: Optional[str]
+    mint_address: Optional[str] = None
+    ticker: Optional[str] = None
     name: Optional[str] = None
     image: Optional[HttpUrl] = None
 
