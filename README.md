@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://alphasignalcrypto.com/">
-  <img src="./ui/public/alpha_signal_logo.svg" alt="Alpha Signal Crypto Logo" width="400"/>
+  <img src="./ui/public/Alpha_signal_circle.png" alt="Alpha Signal Crypto Logo" width="200"/>
   </a>
   <p>
 Alpha Signal Crypto
@@ -93,33 +93,16 @@ Your backend is up and running for signals.
 - Package Management: Poetry
 - Database: A locally hosted SQLite Database.
 - Integrations: Jupiter, Dex Screener, X/Twitter
+## Integrations
 
-<div align="center">
-  <a href="https://react.dev/">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="React" width="120"/>
-  </a>
-  <a href="https://www.python.org/">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="120"/>
-  </a>
-  <a href="https://python-poetry.org/">
-    <img src="https://python-poetry.org/images/logo-origami.svg" alt="Poetry" width="120"/>
-  </a>
-  <a href="https://www.sqlite.org/">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/SQLite370.svg" alt="SQLite" width="120"/>
-  </a>
-</div>
-  <div align="center">
-  <a href="https://jup.ag/">
-    <img src="https://cryptologos.cc/logos/jupiter-ag-jup-logo.png?v=040" alt="Jupiter" width="120"/>
-  </a>
-  <a href="https://x.com/home">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="120"/>
-  </a>
-  <a href="https://dexscreener.com/">
-    <img src="https://mediaresource.sfo2.digitaloceanspaces.com/wp-content/uploads/2024/04/20232343/dex-screener-logo-png_seeklogo-527276.png" alt="Dex Screener" width="120"/>
-  </a>
-</div>
 
+| Category          | Integration                                                                 |
+|-------------------|-----------------------------------------------------------------------------|
+| Core Application  | <a href="https://react.dev/"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="React" width="80" align="top"/></a> <a href="https://www.python.org/"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="80" align="top"/></a> <a href="https://python-poetry.org/"><img src="https://python-poetry.org/images/logo-origami.svg" alt="Poetry" width="60" align="top"/></a> |
+| Database          | <a href="https://www.sqlite.org/"><img src="https://upload.wikimedia.org/wikipedia/commons/3/38/SQLite370.svg" alt="SQLite" width="150" align="top"/></a> |
+| External      | <a href="https://jup.ag/"><img src="https://cryptologos.cc/logos/jupiter-ag-jup-logo.png?v=040" alt="Jupiter" width="80" align="top"/></a> <a href="https://x.com/home"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="80" align="top"/></a> <a href="https://dexscreener.com/"><img src="https://mediaresource.sfo2.digitaloceanspaces.com/wp-content/uploads/2024/04/20232343/dex-screener-logo-png_seeklogo-527276.png" alt="Dex Screener" width="80" align="top"/></a> |
+| AI Providers  | <a href="https://openai.com/"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/640px-OpenAI_logo_2025_%28symbol%29.svg.png" alt="OpenAI" width="80" style="margin-top: 20px;" align="top"/></a> <a href="https://www.anthropic.com/"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Claude_AI_logo.svg" alt="Anthropic" width="200" style="margin-top:40;margin-left:30;margin-right:30" align="top"/></a> <a href="https://deepseek.ai/"><img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/DeepSeek_logo.svg" alt="Deepseek" style="margin-top:35" width="200" align="top"/></a> <a href="https://ai.google/"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" width="150" style="margin-top:30;margin-left:30;margin-right:30" align="top"/></a> <a href="https://huggingface.co/"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Hf-logo-with-title.svg" alt="HuggingFace"  style="margin-top:30;margin-right:30" width="250" align="top"/></a> <a href="https://mistral.ai/"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Mistral_AI_logo_%282025%E2%80%93%29.svg" style="margin-top:30" alt="Mistral" width="100" align="top"/></a> 
+| 
 
 
 ## Roadmap
