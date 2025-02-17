@@ -18,5 +18,5 @@ async def process_tweet_webhook(tweetPayload: TweetCatcherWebhookPayload) -> Non
     Returns:
         bool: True if the tweet was successfully processed
     """
-    twitter_monitor.process_tweet_webhook(tweetPayload)
+    await twitter_monitor.process_tweet_webhook(tweetPayload)
     return True

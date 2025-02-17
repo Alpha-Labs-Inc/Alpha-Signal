@@ -1,18 +1,19 @@
-from typing import List
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
-from alphasignal.models.order import Order
-from alphasignal.models.enums import OrderStatus, SellMode, SellType
 from alphasignal.models.wallet_token import WalletToken
 from alphasignal.schemas.responses.swap_confirmation_response import (
     SwapConfirmationResponse,
 )
 from alphasignal.models.token_value import TokenValue
 from alphasignal.schemas.responses.wallet_value_response import WalletValueResponse
-from alphasignal.services.order_manager import OrderManager
-from alphasignal.services.token_manager import TokenManager
 from alphasignal.services.wallet_manager import WalletManager
+
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 def create_wallet():

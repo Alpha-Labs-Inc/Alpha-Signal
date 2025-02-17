@@ -6,7 +6,7 @@ from alphasignal.models.token_info import TokenInfo
 
 
 class TokenSentiment(BaseModel):
-    token_id: TokenInfo = Field(
+    token: TokenInfo = Field(
         description="The mint or contract address of a token.  Will only have 1 or the other, most likely"
     )  # can be the mint address or contract address
     sentiment: TweetSentiment = Field(

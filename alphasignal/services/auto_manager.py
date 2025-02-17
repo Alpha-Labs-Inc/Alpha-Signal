@@ -7,6 +7,11 @@ from alphasignal.models.enums import AmountType, Platform
 from alphasignal.services.order_manager import OrderManager
 from alphasignal.services.profile_manager import ProfileManager
 from alphasignal.services.wallet_manager import WalletManager
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 class AutoManager:
@@ -68,13 +73,17 @@ class AutoManager:
             # Calculate swap amount based on balance percentage
             swap_balance = token_balance * (profile.buy_amount / 100)
 
-        amount = await self.jupiter.swap_tokens(
-            from_token_mint=from_mint_address,
-            to_token_mint=mint_address,
-            input_amount=swap_balance,
-            wallet=self.wallet,
-            slippage_bps=profile.buy_slippage,
-        )
+        try:
+            amount = await self.jupiter.swap_tokens(
+                from_token_mint=from_mint_address,
+                to_token_mint=mint_address,
+                input_amount=swap_balance,
+                wallet=self.wallet,
+                slippage_bps=profile.buy_slippage,
+            )
+        except RetryError as e:
+            logger.error(f"RetryError during token swap: {e}")
+            return None
 
         final_balance = 0 if amount is None else float(amount)
 

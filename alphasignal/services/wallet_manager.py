@@ -4,7 +4,6 @@ import base58
 import os
 import json
 from solders.keypair import Keypair
-
 from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
@@ -12,6 +11,13 @@ from alphasignal.database.db import SQLiteDB
 from alphasignal.models.wallet import Wallet
 from alphasignal.models.wallet_token import WalletToken
 from alphasignal.schemas.responses.wallet_value_response import WalletValueResponse
+
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
+
 
 # Constants
 SOLANA_CLUSTER_URL = "https://api.mainnet-beta.solana.com"  # Mainnet cluster URL
@@ -121,6 +127,7 @@ class WalletManager:
                         )
                     )
                 except Exception as e:
+                    logging.error(f"Error getting token data: {e}")
                     raise Exception(f"Error getting data: {e}")
             tokens = sorted(tokens, key=lambda t: t.usd_balance, reverse=True)
             return tokens
@@ -138,10 +145,13 @@ class WalletManager:
         if not tokens:
             return
         for token in tokens:
+            if token.value is None or token.balance is None:
+                continue
             wallet_value = token.balance * token.value
             total_value += wallet_value
         for token in tokens:
-            total_change_24 += token.change_24hr
+            if token.change_24hr is not None:
+                total_change_24 += token.change_24hr
         percent_change = (((total_value + total_change_24) / total_value) * 100) - 100
         return WalletValueResponse(
             wallet_tokens=tokens,
@@ -156,6 +166,8 @@ class WalletManager:
             solana_mint = "So11111111111111111111111111111111111111112"
             sol_bal = solana_client.get_sol_balance(self.wallet)
             token_data = await dexscreener_client.get_token_pairs(solana_mint)
+            if sol_bal is None or token_data["priceUsd"] is None:
+                raise ValueError("Retrieved SOL balance or price is None")
             return WalletToken(
                 mint_address=token_data["mint_address"],
                 token_name=token_data["token_name"],

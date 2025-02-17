@@ -1,7 +1,12 @@
+import logging
 import requests
 
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.constants import USDC_MINT_ADDRESS
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 response = requests.get(
     "https://api.dexscreener.com/token-pairs/v1/{chainId}/{tokenAddress}",
@@ -79,4 +84,5 @@ class DexscreenerClient:
             }
             return result
         except Exception as e:
+            logging.error(f"Error fetching token data: {e}")
             raise Exception(f"Error fetching data: {e}")

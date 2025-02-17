@@ -1,9 +1,9 @@
 import os
-
 import requests
 import json
 import os
 import base64
+import logging
 from solana.rpc.commitment import Processed
 from solana.rpc.types import TxOpts
 from solders.transaction import VersionedTransaction
@@ -16,6 +16,8 @@ from alphasignal.models.mint_token import MintToken
 from alphasignal.schemas.responses.quote_response import QuoteResponse
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
+
+logger = logging.getLogger(__name__)
 
 
 class JupiterClient:
@@ -46,6 +48,11 @@ class JupiterClient:
         Returns:
             dict: The full swap quote from Jupiter API.
         """
+        try:
+            slippage_bps = int(slippage_bps)  # Ensure slippage_bps is an integer
+        except ValueError:
+            raise Exception("Invalid slippageBps value, must be an integer")
+
         from_token = TokenManager(from_token_mint)
         to_token = TokenManager(to_token_mint)
         from_token_decimals = await from_token.get_token_decimals()
@@ -60,7 +67,11 @@ class JupiterClient:
             "slippageBps": slippage_bps,
             "swapMode": swap_mode,
         }
+        logger.debug(
+            f"Fetching swap quote: from_token_mint={from_token_mint}, to_token_mint={to_token_mint}, input_amount={amount}, slippage_bps={slippage_bps}"
+        )
         response = requests.get(url, params=params)
+        logger.debug(f"Response from swap quote: {response.text}")
 
         if response.status_code != 200:
             raise Exception(f"Error fetching quotes: {response.text}")

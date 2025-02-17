@@ -1,25 +1,27 @@
 import re
-from typing import Dict, Any, List, Tuple
+from typing import List
 import uuid
 from datetime import datetime, timezone
-
+import logging
 
 from alphasignal.ai.chains.twitter_chains import get_tweet_sentiment
 from alphasignal.ai.models.sentiment_response import SentimentResponse
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.token_info import TokenInfo
 from alphasignal.models.tweet_data_extraction import ExtractedTweetData
-from alphasignal.services.profile_manager import ProfileManager
+from alphasignal.services.auto_manager import AutoManager
 from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
 from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
-from alphasignal.models.enums import Platform, TweetSentiment, TweetType
+from alphasignal.models.enums import Platform, TweetType
+from alphasignal.services.profile_manager import ProfileManager
 
 
 class TwitterMonitor:
     def __init__(self):
         self.db = SQLiteDB()
         self.profile_manager = ProfileManager()
+        self.auto_manager = AutoManager()
 
     def _find_tickers(self, message: str) -> List[TokenInfo]:
         """Returns all matches for stock tickers in the text."""
@@ -95,8 +97,8 @@ class TwitterMonitor:
         # Add extracted tweet data to the database
         tokens = [token.model_dump() for token in extracted_data.tokens]
         token_sentiments = [
-            {"token_info": token_info.model_dump(), "sentiment": sentiment.value}
-            for token_info, sentiment in extracted_data.token_sentiment
+            {"token_info": ts.token.model_dump(), "sentiment": ts.sentiment}
+            for ts in extracted_data.token_sentiment.response
         ]
         self.db.add_extracted_tweet_data(
             tweet_id=tweet_id,
@@ -145,15 +147,40 @@ class TwitterMonitor:
             token_sentiment=token_sentiments,
         )
 
-    def process_tweet_webhook(self, tweetPayload: TweetCatcherWebhookPayload) -> None:
+    def _find_mint_address_from_ticker(self, ticker: str) -> str:
+        """
+        A helper function to find the mint address of a token from its ticker.
+        """
+
+    async def process_tweet_webhook(
+        self, tweetPayload: TweetCatcherWebhookPayload
+    ) -> bool:
         """
         Processes the incoming webhook payload from the TweetCatcher service.
+
+        Args:
+            tweetPayload (TweetCatcherWebhookPayload): The incoming webhook payload.
+
+        Returns:
+            bool: True if the tweet was successfully processed
         """
         # perform data extraction and sentiment classification
         extracted_data = self._extract_tweet_info(tweetPayload)
 
-        # action on extracted data
-        ...
-
         # add to db
         self._add_tweet_event_to_db(tweetPayload, extracted_data)
+
+        # if any token missing mint_address, update the model with the mint_address
+        for token in extracted_data.tokens:
+            if not token.mint_address:
+                token.mint_address = self._find_mint_address_from_ticker(token.ticker)
+
+        # action on extracted data
+
+        order = await self.auto_manager.auto_buy(
+            extracted_data.tokens[0].mint_address,
+            platform=Platform.TWITTER,
+            username=tweetPayload.task.user,
+        )
+        if not order:
+            raise Exception("Auto buy failed.")

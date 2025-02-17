@@ -12,6 +12,11 @@ from solders.keypair import Keypair
 from solders.message import Message
 
 from alphasignal.models.mint_token import MintToken
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 class SolanaClient:

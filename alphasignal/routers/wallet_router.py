@@ -16,7 +16,11 @@ from alphasignal.services.service import (
     swap_tokens,
 )
 from fastapi import APIRouter, HTTPException
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,8 +29,12 @@ router = APIRouter()
 async def get_wallet_value():
     try:
         wallet = load_wallet()
-        return await retrieve_wallet_value(wallet=wallet)
+        value = await retrieve_wallet_value(wallet=wallet)
+        if value is None:
+            raise ValueError("Retrieved wallet value is None")
+        return value
     except Exception as e:
+        logger.error(f"Error in get_wallet_value: {e}")
         raise HTTPException(status_code=404, detail=str(e))
 
 
@@ -34,7 +42,10 @@ async def get_wallet_value():
 async def get_sol_value():
     try:
         wallet = load_wallet()
-        return await retrieve_sol_value(wallet=wallet)
+        value = await retrieve_sol_value(wallet=wallet)
+        if value is None:
+            raise ValueError("Retrieved SOL value is None")
+        return value
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
