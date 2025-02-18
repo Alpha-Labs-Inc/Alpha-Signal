@@ -1,9 +1,10 @@
 from alphasignal.apis.jupiter.jupiter_client import JupiterClient
+from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.constants import (
     TYPE_TO_MINT,
 )
-from alphasignal.models.enums import AmountType, Platform
+from alphasignal.models.enums import AmountType, BuyType, Platform
 from alphasignal.services.order_manager import OrderManager
 from alphasignal.services.profile_manager import ProfileManager
 from alphasignal.services.wallet_manager import WalletManager
@@ -18,9 +19,10 @@ class AutoManager:
     def __init__(self):
         self.db = SQLiteDB()
         self.jupiter = JupiterClient()
-        self.wallet = WalletManager()
+        self.wallet_manager = WalletManager()
         self.orders = OrderManager()
         self.profiles = ProfileManager()
+        self.solana_client = SolanaClient()
 
     async def auto_buy(
         self,
@@ -48,16 +50,27 @@ class AutoManager:
         if not profile.is_active:
             return None
 
-        tokens = await self.wallet.get_tokens()
+        tokens = await self.wallet_manager.get_tokens()
 
         # Determine the mint address for the selected buy type
         from_mint_address = TYPE_TO_MINT[profile.buy_type.value]
-
-        # Find balance of the required token
-        token_balance = next(
-            (t.balance for t in tokens if t.mint_address == from_mint_address), 0
-        )
-
+        if profile.buy_type == BuyType.SOL:
+            token_balance = self.solana_client.get_sol_balance(
+                self.wallet_manager.wallet
+            )
+        else:
+            # Find balance of the required token
+            token_balance = None
+            for token in tokens:
+                if token.mint_address == from_mint_address:
+                    token_balance = token.balance
+                    break
+            if token_balance is None:
+                raise Exception(
+                    f"Token balance not found for mint address: {from_mint_address}"
+                )
+        print("TOKEN BALANCE:")
+        print(token_balance)
         swap_balance = 0
 
         if profile.buy_amount_type == AmountType.AMOUNT:
@@ -77,7 +90,7 @@ class AutoManager:
             from_token_mint=from_mint_address,
             to_token_mint=mint_address,
             input_amount=swap_balance,
-            wallet=self.wallet,
+            wallet=self.wallet_manager.wallet,
             slippage_bps=profile.buy_slippage,
         )
 
@@ -90,7 +103,7 @@ class AutoManager:
             sell_value=profile.sell_value,
             sell_type=profile.sell_type,
             balance=final_balance,
-            token_value=self.jupiter.fetch_token_value(mint_address),
+            token_value=await self.jupiter.fetch_token_value(mint_address),
             slippage=profile.sell_slippage,
         )
 

@@ -21,7 +21,6 @@ if __name__ == "__main__":
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
             print(f"Finished order processing: {current_time}")
-
             time.sleep(1)
     except KeyboardInterrupt:
         print("Closing processor")

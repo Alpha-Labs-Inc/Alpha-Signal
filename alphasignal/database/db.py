@@ -190,8 +190,8 @@ class SQLiteDB:
                 """
                 INSERT INTO tracked_orders (
                     id, mint_address, last_price_max, sell_mode, sell_value, 
-                    sell_type, time_added, time_sold, balance, order_status, profit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 0, NULL, ?)
+                    sell_type, time_added, time_sold, balance, order_status, profit, slippage
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, 0, NULL, ?);
                 """,
                 (
                     order_id,

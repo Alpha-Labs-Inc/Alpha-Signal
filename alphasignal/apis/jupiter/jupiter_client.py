@@ -12,12 +12,13 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.models.constants import USDC_MINT_ADDRESS
-from alphasignal.models.mint_token import MintToken
 from alphasignal.schemas.responses.quote_response import QuoteResponse
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
 
 logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.INFO)
 
 
 class JupiterClient:
@@ -55,6 +56,9 @@ class JupiterClient:
 
         from_token = TokenManager(from_token_mint)
         to_token = TokenManager(to_token_mint)
+
+        print(from_token_mint, to_token_mint)
+
         from_token_decimals = await from_token.get_token_decimals()
 
         input_amount_smallest_units = int(amount * (10**from_token_decimals))
@@ -73,6 +77,7 @@ class JupiterClient:
         response = requests.get(url, params=params)
         logger.debug(f"Response from swap quote: {response.text}")
 
+        print(response.text)
         if response.status_code != 200:
             raise Exception(f"Error fetching quotes: {response.text}")
 
@@ -158,9 +163,9 @@ class JupiterClient:
             price_impact_usd=price_impact_usd,
         )
 
-    @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
-    )
+    # @retry(
+    #     stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    # )
     async def swap_tokens(
         self,
         from_token_mint,
@@ -185,16 +190,21 @@ class JupiterClient:
             quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
-
+            print("quote")
+            print(quote)
             transaction_signature = await self.execute_swap(quote, wallet)
-
             try:
-                route_plan = quote.get("routePlan", [])
-                if not route_plan:
-                    raise ValueError("routePlan is empty or missing")
+                out_amount = quote.get("outAmount", None)
+                if out_amount is None:
+                    raise ValueError("outAmount is missing in the quote")
 
-                last_route = route_plan[-1]  # Get the last route in the array
-                return last_route.get("outAmount", None)
+                to_token = TokenManager(to_token_mint)
+
+                out_token_decimals = await to_token.get_token_decimals()
+
+                out_amount = int(out_amount) / (10**out_token_decimals)
+
+                return out_amount
 
             except Exception as e:
                 print(f"Error extracting outAmount from quote: {e}")

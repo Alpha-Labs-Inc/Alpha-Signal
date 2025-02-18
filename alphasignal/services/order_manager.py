@@ -6,7 +6,6 @@ from alphasignal.database.db import SQLiteDB
 from alphasignal.models.order import Order
 from alphasignal.models.constants import SOL_MINT_ADDRESS, USDC_MINT_ADDRESS
 from alphasignal.models.enums import OrderStatus, SellMode, SellType
-from alphasignal.models.wallet_token import WalletToken
 from alphasignal.services.wallet_manager import WalletManager
 
 
@@ -105,7 +104,7 @@ class OrderManager:
             current_value = await self.jupiter.fetch_token_value(order.mint_address)
 
             if order.sell_mode == SellMode.TIME_BASED:
-                elapsed_time = datetime.now(timezone.utc) - order.time_purchased
+                elapsed_time = datetime.now(timezone.utc) - order.time_added
                 if elapsed_time >= timedelta(minutes=order.sell_value):
                     self.db.set_order_status(order.id, OrderStatus.PROCESSING)
                     print(f"Sell {order.mint_address}: Time-based trigger reached.")
@@ -185,7 +184,7 @@ class OrderManager:
         try:
             # User the transaction id to get the profit from the swap
             final_balance = 0 if amount is None else float(amount)
-            profit = final_balance * self.jupiter.fetch_token_value(sell_address)
+            profit = final_balance * await self.jupiter.fetch_token_value(sell_address)
             self.db.complete_order(order.id, profit)
         except Exception as e:
             self.db.complete_order(order.id)
