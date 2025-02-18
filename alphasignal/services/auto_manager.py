@@ -69,8 +69,7 @@ class AutoManager:
                 raise Exception(
                     f"Token balance not found for mint address: {from_mint_address}"
                 )
-        print("TOKEN BALANCE:")
-        print(token_balance)
+
         swap_balance = 0
 
         if profile.buy_amount_type == AmountType.AMOUNT:

@@ -163,9 +163,9 @@ class JupiterClient:
             price_impact_usd=price_impact_usd,
         )
 
-    # @retry(
-    #     stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
-    # )
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def swap_tokens(
         self,
         from_token_mint,
@@ -190,8 +190,7 @@ class JupiterClient:
             quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
-            print("quote")
-            print(quote)
+
             transaction_signature = await self.execute_swap(quote, wallet)
             try:
                 out_amount = quote.get("outAmount", None)
