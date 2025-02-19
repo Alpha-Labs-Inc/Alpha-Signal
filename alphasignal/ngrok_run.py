@@ -2,6 +2,7 @@
 from dotenv import load_dotenv
 import ngrok
 import time
+import os
 
 load_dotenv()
 
@@ -11,7 +12,7 @@ listener = ngrok.forward(
     # oauth_provider="google",
     # oauth_allow_emails="kate.libby@gmail.com",
     # oauth_allow_domains="acme.org",
-    # ip_restriction_allow_cidrs=["110.0.0.0/8", "220.12.0.0/16"],
+    ip_restriction_allow_cidrs=[os.getenv("TWEET_CATCHER_SERVICE_IP")],
     # ip_restriction_deny_cidrs="110.2.3.4/32"
 )
 
