@@ -84,6 +84,7 @@ async def swap_coins(request: SwapQuoteRequest) -> SwapConfirmationResponse:
         )
         return result
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=404, detail=str(e))
 
 

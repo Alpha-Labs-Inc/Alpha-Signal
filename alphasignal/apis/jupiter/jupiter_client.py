@@ -192,6 +192,7 @@ class JupiterClient:
             )
 
             transaction_signature = await self.execute_swap(quote, wallet)
+
             try:
                 out_amount = quote.get("outAmount", None)
                 if out_amount is None:
@@ -260,6 +261,9 @@ class JupiterClient:
 
             opts = TxOpts(skip_preflight=False, preflight_commitment=Processed)
             result = client.send_raw_transaction(txn=bytes(signed_txn), opts=opts)
+
+            print("RAW_RESULT")
+            print(result)
 
             transaction_id = json.loads(result.to_json())["result"]
             return transaction_id

@@ -93,6 +93,9 @@ class AutoManager:
             slippage_bps=profile.buy_slippage,
         )
 
+        print("AMOUNT")
+        print(amount)
+
         final_balance = 0 if amount is None else float(amount)
 
         # Create an order using profile's sell configurations

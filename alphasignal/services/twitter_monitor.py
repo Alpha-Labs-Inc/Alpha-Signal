@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import logging
 
 from alphasignal.ai.chains.twitter_chains import get_tweet_sentiment
-from alphasignal.ai.models.sentiment_response import SentimentResponse
+from alphasignal.ai.models.sentiment_response import SentimentResponse, TokenSentiment
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.token_info import TokenInfo
 from alphasignal.models.tweet_data_extraction import ExtractedTweetData
@@ -13,7 +13,7 @@ from alphasignal.services.auto_manager import AutoManager
 from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
 from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
-from alphasignal.models.enums import Platform, TweetType
+from alphasignal.models.enums import Platform, TweetSentiment, TweetType
 from alphasignal.services.profile_manager import ProfileManager
 
 
@@ -176,11 +176,11 @@ class TwitterMonitor:
                 token.mint_address = self._find_mint_address_from_ticker(token.ticker)
 
         # action on extracted data
-
-        order = await self.auto_manager.auto_buy(
-            extracted_data.tokens[0].mint_address,
-            platform=Platform.TWITTER,
-            username=tweetPayload.task.user,
-        )
-        if not order:
-            raise Exception("Auto buy failed.")
+        if extracted_data.token_sentiment.response[0].sentiment == "positive":
+            order = await self.auto_manager.auto_buy(
+                extracted_data.tokens[0].mint_address,
+                platform=Platform.TWITTER,
+                username=tweetPayload.task.user,
+            )
+            if not order:
+                raise Exception("Auto buy failed.")

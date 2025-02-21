@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
@@ -14,7 +14,8 @@ import { useQuery } from '@tanstack/react-query'
 import { RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
 import { Button } from './ui/button'
-import { FiCheck } from 'react-icons/fi'
+import { FiCheck, FiDollarSign } from 'react-icons/fi'
+import { Checkbox } from './ui/checkbox'
 
 interface WalletToken {
   token_name?: string
@@ -57,6 +58,23 @@ const TableView = () => {
 
   const { toast } = useToast()
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
+  const [hideLowValueTokens, setHideLowValueTokens] = useState(true)
+  const [solValue, setSolValue] = useState<number>(0)
+
+  useEffect(() => {
+    const fetchSolValue = async () => {
+      try {
+        const { data } = await axios.get('http://localhost:8000/sol-value')
+        if (data?.usd_balance !== undefined) {
+          setSolValue(data.usd_balance)
+        }
+      } catch (error) {
+        console.error('Error fetching SOL value:', error)
+      }
+    }
+
+    fetchSolValue()
+  }, [])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard
@@ -92,6 +110,28 @@ const TableView = () => {
     return `${address.slice(0, 6)}...${address.slice(-6)}`
   }
 
+  const sellAsset = async (mintAddress: string, amount: number) => {
+    try {
+      await axios.post('http://localhost:8000/swap-coins', {
+        from_token_mint_address: mintAddress,
+        to_token_mint_address: 'So11111111111111111111111111111111111111112', // Solana mint address
+        amt: amount.toString(), // Use the current balance as the amount
+      })
+      toast({
+        title: 'Asset Sold',
+        description: `The asset with address ${mintAddress} has been sold.`,
+        duration: 2000,
+      })
+    } catch (error) {
+      console.error('Error selling asset:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to sell the asset.',
+        duration: 2000,
+      })
+    }
+  }
+
   if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>
   if (!data || !data.wallet_tokens) return <div>No wallet data available</div>
@@ -99,6 +139,10 @@ const TableView = () => {
   const walletTokens = data.wallet_tokens
   const totalValue = data.total_value
   const percentChangeValue24h = data?.percent_change_value_24h || 0
+
+  const filteredTokens = hideLowValueTokens
+    ? walletTokens.filter(token => token.usd_balance && token.usd_balance >= 0.0001)
+    : walletTokens
 
   return (
     <Card className={`shadow-md ${percentChangeValue24h !== 0 ? '' : ''}`}
@@ -123,6 +167,15 @@ const TableView = () => {
       </CardHeader>
 
       <CardContent>
+        <div className="flex items-center mb-4 relative justify-end">
+          <Checkbox
+            id="hideLowValueTokens"
+            checked={hideLowValueTokens}
+            onCheckedChange={() => setHideLowValueTokens(!hideLowValueTokens)}
+            className="mr-2"
+          />
+          <label htmlFor="hideLowValueTokens">Hide Tokens {"<"} 0.001 USD</label>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,11 +190,12 @@ const TableView = () => {
               <TableHead className="text-center">5m Change</TableHead> */}
               <TableHead className="text-center">Balance</TableHead>
               <TableHead className="text-right">USD Balance</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {walletTokens.length > 0 ? (
-              walletTokens.map((token, index) => (
+            {filteredTokens.length > 0 ? (
+              filteredTokens.map((token, index) => (
                 <TableRow key={index}>
                   <TableCell className="text-left">
                     {token.image && (
@@ -197,6 +251,15 @@ const TableView = () => {
                   <TableCell className="text-right">
                     ${token.usd_balance?.toFixed(2) || '0.00'}
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant={'ghost'}
+                      className="bg-inherit ml-2 p-1 rounded relative z-20"
+                      onClick={() => sellAsset(token.mint_address, token.balance)}
+                    >
+                      Sell Now
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
@@ -209,9 +272,10 @@ const TableView = () => {
           </TableBody>
         </Table>
         <div className="text-right font-bold mt-4">
-          Total Wallet Value: $ {totalValue.toFixed(2)}  <span className={percentChangeValue24h > 0 ? 'text-green-500' : percentChangeValue24h < 0 ? 'text-red-500' : 'text-white'}>
-            ({percentChangeValue24h.toFixed(2)}%)
-          </span>
+          Total Wallet Value: $ {(totalValue + solValue).toFixed(2)}   
+            <span className={percentChangeValue24h > 0 ? 'text-green-500' : percentChangeValue24h < 0 ? 'text-red-500' : 'text-white'}>
+            &nbsp;({percentChangeValue24h.toFixed(2)}%)
+            </span>
         </div>
       </CardContent>
     </Card >
