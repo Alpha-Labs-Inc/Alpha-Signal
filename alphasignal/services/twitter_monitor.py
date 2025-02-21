@@ -15,6 +15,7 @@ from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
 from alphasignal.models.enums import Platform, TweetSentiment, TweetType
 from alphasignal.services.profile_manager import ProfileManager
+from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
 
 
 class TwitterMonitor:
@@ -22,6 +23,7 @@ class TwitterMonitor:
         self.db = SQLiteDB()
         self.profile_manager = ProfileManager()
         self.auto_manager = AutoManager()
+        self.dexscreener_client = DexscreenerClient()
 
     def _find_tickers(self, message: str) -> List[TokenInfo]:
         """Returns all matches for stock tickers in the text."""
@@ -146,10 +148,20 @@ class TwitterMonitor:
             token_sentiment=token_sentiments,
         )
 
-    def _find_mint_address_from_ticker(self, ticker: str) -> str:
+    async def _find_mint_address_from_ticker(self, ticker: str) -> str:
         """
         A helper function to find the mint address of a token from its ticker.
         """
+        if ticker.startswith("$"):
+            ticker = ticker[1:]
+        try:
+            mint_address = await self.dexscreener_client.get_top_volume_mint_address(
+                ticker
+            )
+            return mint_address
+        except Exception as e:
+            logging.error(f"Error finding mint address for ticker {ticker}: {e}")
+            return ""
 
     async def process_tweet_webhook(
         self, tweetPayload: TweetCatcherWebhookPayload
@@ -172,9 +184,12 @@ class TwitterMonitor:
         # if any token missing mint_address, update the model with the mint_address
         for token in extracted_data.tokens:
             if not token.mint_address:
-                token.mint_address = self._find_mint_address_from_ticker(token.ticker)
+                token.mint_address = await self._find_mint_address_from_ticker(
+                    token.ticker
+                )
 
         # action on extracted data
+        # TODO: currently only acts on a single token, need to update to handle multiple tokens
         if extracted_data.token_sentiment.response[0].sentiment == "positive":
             order = await self.auto_manager.auto_buy(
                 extracted_data.tokens[0].mint_address,

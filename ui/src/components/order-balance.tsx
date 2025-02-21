@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   Table,
@@ -37,6 +38,14 @@ const OrderBalance = () => {
     queryKey: ['order-data'],
     queryFn: fetchOrderData,
   })
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch()
+    }, 10000) // 10 seconds
+
+    return () => clearInterval(interval)
+  }, [refetch])
 
   if (isLoading) return <Loader />
   if (error) return <div>Error loading data</div>

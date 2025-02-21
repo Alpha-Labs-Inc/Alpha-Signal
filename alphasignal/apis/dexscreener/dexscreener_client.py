@@ -86,3 +86,57 @@ class DexscreenerClient:
         except Exception as e:
             logging.error(f"Error fetching token data: {e}")
             raise Exception(f"Error fetching data: {e}")
+
+    async def get_top_volume_mint_address(self, ticker: str) -> str:
+        """
+        Searches DexScreener for all pairs matching `ticker` and returns
+        the mint/contract address of the token (base or quote) with the
+        highest 24-hour volume.
+        """
+        if "$" in ticker:
+            raise ValueError("Ticker symbol should not contain '$'")
+
+        # 1) Call the DexScreener search endpoint
+        url = f"https://api.dexscreener.com/latest/dex/search?q={ticker}"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error if request failed
+
+        # Parse the JSON response
+        data = response.json()
+        pairs = data.get("pairs", [])
+
+        # 2) Filter out pairs that actually match the ticker
+        #    in baseToken or quoteToken
+        matching_pairs = []
+        for pair in pairs:
+            base_symbol = pair.get("baseToken", {}).get("symbol")
+            quote_symbol = pair.get("quoteToken", {}).get("symbol")
+
+            if base_symbol == ticker or quote_symbol == ticker:
+                matching_pairs.append(pair)
+
+        if not matching_pairs:
+            raise ValueError(f"No pairs found for ticker: {ticker}")
+
+        # 3) Find the pair with the highest 24-hour volume
+        top_pair = None
+        max_volume = 0.0
+
+        for pair in matching_pairs:
+            # volume.h24 is in USD
+            vol_24h = pair.get("volume", {}).get("h24", 0.0)
+            if vol_24h > max_volume:
+                max_volume = vol_24h
+                top_pair = pair
+
+        if not top_pair:
+            raise ValueError(f"No valid pair with volume found for ticker: {ticker}")
+
+        # 4) Retrieve the mint address from whichever side matches the ticker
+        base_token_info = top_pair.get("baseToken", {})
+        quote_token_info = top_pair.get("quoteToken", {})
+
+        if base_token_info.get("symbol") == ticker:
+            return base_token_info.get("address")
+        else:
+            return quote_token_info.get("address")

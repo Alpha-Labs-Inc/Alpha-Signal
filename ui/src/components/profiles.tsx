@@ -196,7 +196,7 @@ const ProfilesPage = () => {
             <CardContent>
                 <Accordion type="multiple" className="w-full">
                     {profiles?.map((profile) => {
-                        const editableProfile = profile;
+                        const editableProfile = editedProfiles[profile.id] || profile;
                         return (
                             <AccordionItem key={profile.id} value={profile.id}>
                                 <AccordionTrigger className="flex justify-between items-center p-4">
@@ -219,12 +219,12 @@ const ProfilesPage = () => {
                                         {/* Buy Settings */}
                                         <Card>
                                             <CardHeader>
-                                                <CardTitle>Buy Settings</CardTitle>
+                                                <CardTitle>AutoBuy Settings</CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="grid grid-cols-1 gap-4">
                                                     <div>
-                                                        <Label>Buy Type</Label>
+                                                        <Label>Buy From</Label>
                                                         <Select
                                                             onValueChange={(e) => handleInputChange(profile.id, "buy_type", e)}
                                                             defaultValue={editableProfile.buy_type}
@@ -241,7 +241,7 @@ const ProfilesPage = () => {
                                                         </Select>
                                                     </div>
                                                     <div>
-                                                        <Label>Buy Amount Type</Label>
+                                                        <Label>Buy Mode</Label>
                                                         <Select
                                                             onValueChange={(e) => handleInputChange(profile.id, "buy_amount_type", e)}
                                                             defaultValue={editableProfile.buy_amount_type}
@@ -257,11 +257,20 @@ const ProfilesPage = () => {
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    <div>
-                                                        <Label>Buy Amount</Label>
+                                                    <div className="relative">
+                                                        <Label>
+                                                            {editableProfile.buy_amount_type === "percent"
+                                                                ? `Total % of ${editableProfile.buy_type} Spent per Buy`
+                                                                : `Total ${editableProfile.buy_type} Spent per Buy`}
+                                                        </Label>
                                                         <Input
                                                             type="number"
                                                             defaultValue={editableProfile.buy_amount}
+                                                            placeholder={
+                                                                editableProfile.buy_amount_type === "percent"
+                                                                    ? "% (percentage)"
+                                                                    : `Units (${editableProfile.buy_type})`
+                                                            }
                                                             onChange={(e) =>
                                                                 handleInputChange(profile.id, "buy_amount", Number(e.target.value))
                                                             }
@@ -285,10 +294,27 @@ const ProfilesPage = () => {
                                         {/* Sell Settings */}
                                         <Card>
                                             <CardHeader>
-                                                <CardTitle>Sell Settings</CardTitle>
+                                                <CardTitle>AutoSell Settings</CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <Label>Sell To</Label>
+                                                        <Select
+                                                            onValueChange={(e) => handleInputChange(profile.id, "sell_type", e)}
+                                                            defaultValue={editableProfile.sell_type}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select Sell Type" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectGroup>
+                                                                    <SelectItem value="USDC">USDC</SelectItem>
+                                                                    <SelectItem value="SOL">SOL</SelectItem>
+                                                                </SelectGroup>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                     <div>
                                                         <Label>Sell Mode</Label>
                                                         <Select
@@ -306,28 +332,32 @@ const ProfilesPage = () => {
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    <div>
-                                                        <Label>Sell Type</Label>
-                                                        <Select
-                                                            onValueChange={(e) => handleInputChange(profile.id, "sell_type", e)}
-                                                            defaultValue={editableProfile.sell_type}
-                                                        >
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Select Sell Type" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectGroup>
-                                                                    <SelectItem value="USDC">USDC</SelectItem>
-                                                                    <SelectItem value="SOL">SOL</SelectItem>
-                                                                </SelectGroup>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div>
-                                                        <Label>Sell Value</Label>
+                                                    <div className="flex flex-col items-center">
+                                                        <Label className="text-center">
+                                                            {editableProfile.sell_mode === "time_based"
+                                                                ? "Total Minutes Until Sell"
+                                                                : (
+                                                                    <div className="flex items-center justify-center">
+                                                                        Rolling Stop Loss % to Sell
+                                                                        <Popover>
+                                                                            <PopoverTrigger asChild>
+                                                                                <span className="ml-2 text-gray-500 cursor-pointer">ⓘ</span>
+                                                                            </PopoverTrigger>
+                                                                            <PopoverContent>
+                                                                                This is the percentage drop from the highest price *after* token purchase that will trigger a sell, i.e. the stop-loss price moves up as price does.<br/><br/>This allows for stop losses that protect your downside while also locking in the upside.
+                                                                            </PopoverContent>
+                                                                        </Popover>
+                                                                    </div>
+                                                                )}
+                                                        </Label>
                                                         <Input
                                                             type="number"
                                                             defaultValue={editableProfile.sell_value}
+                                                            placeholder={
+                                                                editableProfile.sell_mode === "time_based"
+                                                                    ? "Minutes"
+                                                                    : "Percentage"
+                                                            }
                                                             onChange={(e) =>
                                                                 handleInputChange(profile.id, "sell_value", Number(e.target.value))
                                                             }

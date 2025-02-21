@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
 import { Button } from './ui/button'
-import { FiCheck, FiDollarSign } from 'react-icons/fi'
+import { FiCheck, FiDollarSign, FiXCircle } from 'react-icons/fi'
 import { Checkbox } from './ui/checkbox'
 
 interface WalletToken {
@@ -54,12 +54,21 @@ const TableView = () => {
   const { data, error, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['wallet-data'],
     queryFn: fetchWalletData,
+    refetchInterval: 15000, // Refresh every 60 seconds
   })
 
   const { toast } = useToast()
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
   const [hideLowValueTokens, setHideLowValueTokens] = useState(true)
   const [solValue, setSolValue] = useState<number>(0)
+  const [loadingTokens, setLoadingTokens] = useState<{ [key: string]: boolean }>({})
+  const [walletTokens, setWalletTokens] = useState<WalletToken[]>([])
+
+  useEffect(() => {
+    if (data?.wallet_tokens) {
+      setWalletTokens(data.wallet_tokens)
+    }
+  }, [data])
 
   useEffect(() => {
     const fetchSolValue = async () => {
@@ -95,7 +104,6 @@ const TableView = () => {
     return num % 1 === 0 ? `${num.toFixed(2)}` : `${num}`
   }
 
-
   const formatPriceChange = (price?: number, percent?: number) => {
     if (price === undefined || price === null || percent === undefined || percent === null) return '-';
     const formatted = `$${price.toFixed(2)} (${percent.toFixed(2)}%)`;
@@ -111,6 +119,7 @@ const TableView = () => {
   }
 
   const sellAsset = async (mintAddress: string, amount: number) => {
+    setLoadingTokens(prev => ({ ...prev, [mintAddress]: true }))
     try {
       await axios.post('http://localhost:8000/swap-coins', {
         from_token_mint_address: mintAddress,
@@ -122,6 +131,8 @@ const TableView = () => {
         description: `The asset with address ${mintAddress} has been sold.`,
         duration: 2000,
       })
+      // Remove the sold asset from the walletTokens state
+      setWalletTokens(prevTokens => prevTokens.filter(token => token.mint_address !== mintAddress))
     } catch (error) {
       console.error('Error selling asset:', error)
       toast({
@@ -129,6 +140,8 @@ const TableView = () => {
         description: 'Failed to sell the asset.',
         duration: 2000,
       })
+    } finally {
+      setLoadingTokens(prev => ({ ...prev, [mintAddress]: false }))
     }
   }
 
@@ -136,7 +149,6 @@ const TableView = () => {
   if (error) return <div>Error loading data</div>
   if (!data || !data.wallet_tokens) return <div>No wallet data available</div>
 
-  const walletTokens = data.wallet_tokens
   const totalValue = data.total_value
   const percentChangeValue24h = data?.percent_change_value_24h || 0
 
@@ -185,9 +197,6 @@ const TableView = () => {
 
               <TableHead className="text-center">Value</TableHead>
               <TableHead className="text-center">24 Hour Change</TableHead>
-              {/* <TableHead className="text-center">6h Change</TableHead>
-              <TableHead className="text-center">1h Change</TableHead>
-              <TableHead className="text-center">5m Change</TableHead> */}
               <TableHead className="text-center">Balance</TableHead>
               <TableHead className="text-right">USD Balance</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -256,8 +265,13 @@ const TableView = () => {
                       variant={'ghost'}
                       className="bg-inherit ml-2 p-1 rounded relative z-20"
                       onClick={() => sellAsset(token.mint_address, token.balance)}
+                      disabled={loadingTokens[token.mint_address]}
                     >
-                      Sell Now
+                      {loadingTokens[token.mint_address] ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        'Sell Now'
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>

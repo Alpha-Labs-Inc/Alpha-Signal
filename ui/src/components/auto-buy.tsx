@@ -49,7 +49,7 @@ const AutoBuy = () => {
     })
     toast({
       title: 'Configuration Updated',
-      description: `The auto buy configuration has been seuccsefully updated.`,
+      description: `The auto buy configuration has been successfully updated.`,
       duration: 2000,
     })
     return data
@@ -58,7 +58,6 @@ const AutoBuy = () => {
   const mutation = useMutation({
     mutationFn: saveAutoBuyConfig,
   })
-
 
   if (isLoading) return <Loader />
 
@@ -70,8 +69,8 @@ const AutoBuy = () => {
         </CardHeader>
         <CardContent>
           <div>
-            <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Buy Type</Label>
+            <div className="my-4 flex flex-col justify-center items-start w-full">
+              <Label className="m-2">Buy From</Label>
               <Select
                 onValueChange={(e) =>
                   setAutoBuyStates({
@@ -81,7 +80,7 @@ const AutoBuy = () => {
                 }
                 defaultValue={data?.buy_type}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a Buy Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -92,7 +91,7 @@ const AutoBuy = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="my-4 flex flex-col justify-center items-start">
+            <div className="my-4 flex flex-col justify-center items-start w-full">
               <Label className="m-2">Amount Type</Label>
               <Select
                 onValueChange={(e) =>
@@ -103,23 +102,32 @@ const AutoBuy = () => {
                 }
                 defaultValue={data?.amount_type}
               >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a Amount Type" />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an Amount Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="percent">percent</SelectItem>
-                    <SelectItem value="amount">amount</SelectItem>
+                    <SelectItem value="percent">Percent</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Amount</Label>
+              <Label className="text-center mb-2">
+                {autoBuyStates.amount_type === "percent"
+                  ? "Total % of Buy Type Spent per Buy"
+                  : `Total ${autoBuyStates.buy_type} Spent per Buy`}
+              </Label>
               <Input
                 type="number"
                 defaultValue={JSON.stringify(data?.amount)}
+                placeholder={
+                  autoBuyStates.amount_type === "percent"
+                    ? "% (percentage)"
+                    : `Units (${autoBuyStates.buy_type})`
+                }
                 onChange={(e) =>
                   setAutoBuyStates({
                     ...autoBuyStates,

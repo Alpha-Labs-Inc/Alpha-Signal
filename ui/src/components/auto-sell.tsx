@@ -15,6 +15,7 @@ import { Button } from './ui/button'
 import Loader from './loader'
 import { toast } from '@/hooks/use-toast'
 import { Input } from './ui/input'
+import { Popover, PopoverTrigger, PopoverContent } from './ui/popover'
 
 interface AutoSellConfig {
   sell_mode: string
@@ -23,7 +24,7 @@ interface AutoSellConfig {
   slippage: number
 }
 
-const AutoBuy = () => {
+const AutoSell = () => {
   const [autoSellStates, setAutoSellStates] = useState<AutoSellConfig>({
     sell_mode: '',
     sell_type: '',
@@ -52,7 +53,7 @@ const AutoBuy = () => {
     )
     toast({
       title: 'Configuration Updated',
-      description: `The auto sell configuration has been seuccsefully updated.`,
+      description: `The auto sell configuration has been successfully updated.`,
       duration: 2000,
     })
     return data
@@ -72,8 +73,8 @@ const AutoBuy = () => {
         </CardHeader>
         <CardContent>
           <div>
-            <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Sell Type</Label>
+            <div className="my-4 flex flex-col justify-center items-start w-full">
+              <Label className="m-2">Sell To</Label>
               <Select
                 onValueChange={(e) =>
                   setAutoSellStates({
@@ -83,8 +84,8 @@ const AutoBuy = () => {
                 }
                 defaultValue={data?.sell_type}
               >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a Buy Type" />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a Sell Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -94,7 +95,7 @@ const AutoBuy = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="my-4 flex flex-col justify-center items-start">
+            <div className="my-4 flex flex-col justify-center items-start w-full">
               <Label className="m-2">Sell Mode</Label>
               <Select
                 onValueChange={(e) =>
@@ -105,23 +106,44 @@ const AutoBuy = () => {
                 }
                 defaultValue={data?.sell_mode}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a Sell Mode" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="time_based">time_based</SelectItem>
-                    <SelectItem value="stop_loss">stop_loss</SelectItem>
+                    <SelectItem value="time_based">Time Based</SelectItem>
+                    <SelectItem value="stop_loss">Stop Loss</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="my-4 flex flex-col justify-center items-start">
-              <Label className="m-2">Sell Value</Label>
+              <Label className="text-center mb-2">
+                {autoSellStates.sell_mode === "time_based"
+                  ? "Total Minutes Until Sell"
+                  : (
+                      <div className="flex items-center justify-center">
+                        Rolling Stop Loss % to Sell
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <span className="ml-2 text-gray-500 cursor-pointer">ⓘ</span>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            This is the percentage drop from the highest price *after* token purchase that will trigger a sell, i.e. the stop-loss price moves up as price does.<br/><br/>This allows for stop losses that protect your downside while also locking in the upside.
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                  )}
+              </Label>
               <Input
                 type="number"
                 defaultValue={JSON.stringify(data?.sell_value)}
+                placeholder={
+                  autoSellStates.sell_mode === "time_based"
+                    ? "Minutes"
+                    : "Percentage"
+                }
                 onChange={(e) =>
                   setAutoSellStates({
                     ...autoSellStates,
@@ -153,4 +175,4 @@ const AutoBuy = () => {
   )
 }
 
-export default AutoBuy
+export default AutoSell

@@ -99,7 +99,7 @@ class WalletManager:
                             percent_change_5min=token_data["m5"],
                             change_24hr=(
                                 float(
-                                    (token_data["priceUsd"] * token_data["h24"]) / 100
+                                    token_data["priceUsd"] * (token_data["h24"] / 100)
                                 )
                                 if token_data.get("priceUsd") is not None
                                 and token_data.get("h24") is not None
@@ -150,7 +150,7 @@ class WalletManager:
             total_value += wallet_value
         for token in tokens:
             if token.change_24hr is not None:
-                total_change_24 += token.change_24hr
+                total_change_24 += token.change_24hr * token.balance
         percent_change = (((total_value + total_change_24) / total_value) * 100) - 100
         return WalletValueResponse(
             wallet_tokens=tokens,
@@ -212,10 +212,7 @@ class WalletManager:
                 percent_change_1hr=token_data["h1"],
                 percent_change_5min=token_data["m5"],
                 change_24hr=(
-                    float(
-                        token_data["priceUsd"]
-                        - (token_data["priceUsd"] * token_data["h24"])
-                    )
+                    float(token_data["priceUsd"] * (token_data["h24"] / 100))
                     if token_data.get("priceUsd") is not None
                     and token_data.get("h24") is not None
                     else None
