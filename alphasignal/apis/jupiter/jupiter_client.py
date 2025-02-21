@@ -72,11 +72,8 @@ class JupiterClient:
             "slippageBps": slippage_bps,
             "swapMode": swap_mode,
         }
-        logger.debug(
-            f"Fetching swap quote: from_token_mint={from_token_mint}, to_token_mint={to_token_mint}, input_amount={amount}, slippage_bps={slippage_bps}"
-        )
+
         response = requests.get(url, params=params)
-        logger.debug(f"Response from swap quote: {response.text}")
 
         if response.status_code != 200:
             raise Exception(f"Error fetching quotes: {response.text}")
@@ -163,9 +160,9 @@ class JupiterClient:
             price_impact_usd=price_impact_usd,
         )
 
-    @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
-    )
+    # @retry(
+    #     stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    # )
     async def swap_tokens(
         self,
         from_token_mint,
@@ -190,35 +187,17 @@ class JupiterClient:
             quote = await self.fetch_swap_quote(
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
-
-            # get initial balance
-            tokens = await wallet_manager.get_tokens()
-            if len(tokens) > 0:
-                token_acct = [
-                    token for token in tokens if token.mint_address == to_token_mint
-                ]
-                if len(token_acct) == 0:
-                    initial_balance = 0
-                else:
-                    initial_balance = token_acct[0].balance
-            else:
-                initial_balance = 0
-
+            # Get initial balance
+            initial_balance = await wallet_manager.get_token_acct_value(to_token_mint)
             # execute transaction
             transaction_signature = await self.execute_swap(
                 quote, wallet_manager.wallet
             )
-            # get final balance
-            tokens = await wallet_manager.get_tokens()
-            token_acct = [
-                token for token in tokens if token.mint_address == to_token_mint
-            ]
-            if len(token_acct) == 0:
-                final_balance = 0
-            else:
-                final_balance = token_acct[0].balance
+            final_balance = await wallet_manager.get_token_acct_value(to_token_mint)
 
             new_token_amount = final_balance - initial_balance
+
+            # Log final balance
 
             return new_token_amount
 

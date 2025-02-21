@@ -93,7 +93,7 @@ class AutoManager:
             slippage_bps=profile.buy_slippage,
         )
 
-        final_balance = 0 if amount is None else float(f"{float(amount):.6f}")
+        final_balance = float(f"{float(amount):.6f}")
 
         # Create an order using profile's sell configurations
         order_id = self.orders.add_order(
@@ -105,5 +105,8 @@ class AutoManager:
             token_value=await self.jupiter.fetch_token_value(mint_address),
             slippage=profile.sell_slippage,
         )
+
+        # Log order creation
+        logger.info(f"Order created with ID: {order_id} and balance: {final_balance}")
 
         return order_id

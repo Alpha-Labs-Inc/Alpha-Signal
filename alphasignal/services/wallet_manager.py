@@ -158,6 +158,38 @@ class WalletManager:
             percent_change_value_24h=percent_change,
         )
 
+    async def get_token_acct_value(self, mint_address: str):
+        """
+        Return the balance for a specific token account in the wallet.
+
+        Args:
+            mint_address (str): The mint address of the token.
+
+        Returns:
+            float: The balance of the specified token.
+        """
+        try:
+            solana_client = SolanaClient()
+            response = solana_client.get_owner_token_accounts(self.wallet)
+            if not response.value:
+                return 0
+
+            for token_info in response.value:
+                token_mint_address = token_info.account.data.parsed["info"]["mint"]
+                if token_mint_address == mint_address:
+                    balance = float(
+                        token_info.account.data.parsed["info"]["tokenAmount"][
+                            "uiAmount"
+                        ]
+                    )
+                    return balance
+
+            # If the mint address is not found in the wallet
+            return 0
+        except Exception as e:
+            logger.error(f"Error getting wallet value: {e}")
+            raise Exception(f"Error getting wallet value: {e}")
+
     async def get_sol_value(self):
         try:
             solana_client = SolanaClient()
