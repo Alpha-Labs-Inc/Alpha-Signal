@@ -5,7 +5,6 @@ import os
 import json
 from solders.keypair import Keypair
 from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
-from alphasignal.apis.jupiter.jupiter_client import JupiterClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
 from alphasignal.models.wallet import Wallet

@@ -75,12 +75,12 @@ def get_load_wallet():
 @router.post("/swap-coins")
 async def swap_coins(request: SwapQuoteRequest) -> SwapConfirmationResponse:
     try:
-        wallet = load_wallet()
+        wallet_manager = load_wallet()
         result = await swap_tokens(
             request.from_token_mint_address,
             request.to_token_mint_address,
             request.amt,
-            wallet,
+            wallet_manager,
         )
         return result
     except Exception as e:

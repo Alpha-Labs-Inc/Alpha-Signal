@@ -173,7 +173,7 @@ class OrderManager:
                 order.mint_address,
                 sell_address,
                 order.balance,
-                self.wallet.wallet,
+                self.wallet,
                 order.slippage,
             )
         except Exception as e:

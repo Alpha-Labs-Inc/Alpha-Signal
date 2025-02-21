@@ -89,14 +89,11 @@ class AutoManager:
             from_token_mint=from_mint_address,
             to_token_mint=mint_address,
             input_amount=swap_balance,
-            wallet=self.wallet_manager.wallet,
+            wallet_manager=self.wallet_manager,
             slippage_bps=profile.buy_slippage,
         )
 
-        print("AMOUNT")
-        print(amount)
-
-        final_balance = 0 if amount is None else float(amount)
+        final_balance = 0 if amount is None else float(f"{float(amount):.6f}")
 
         # Create an order using profile's sell configurations
         order_id = self.orders.add_order(

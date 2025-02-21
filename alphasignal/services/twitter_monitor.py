@@ -112,7 +112,6 @@ class TwitterMonitor:
     ) -> SentimentResponse:
         # Initialize the LLM
         token_sentiment = get_tweet_sentiment(tweet_text, tokens)
-        print(token_sentiment)
         return token_sentiment
 
     def _extract_tweet_info(

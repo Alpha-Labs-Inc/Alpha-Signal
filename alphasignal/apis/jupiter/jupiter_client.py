@@ -15,6 +15,7 @@ from alphasignal.models.constants import USDC_MINT_ADDRESS
 from alphasignal.schemas.responses.quote_response import QuoteResponse
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
+from alphasignal.services.wallet_manager import WalletManager
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,6 @@ class JupiterClient:
         response = requests.get(url, params=params)
         logger.debug(f"Response from swap quote: {response.text}")
 
-        print(response.text)
         if response.status_code != 200:
             raise Exception(f"Error fetching quotes: {response.text}")
 
@@ -171,7 +171,7 @@ class JupiterClient:
         from_token_mint,
         to_token_mint,
         input_amount,
-        wallet,
+        wallet_manager,
         slippage_bps=50,
     ):
         """
@@ -191,24 +191,36 @@ class JupiterClient:
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
 
-            transaction_signature = await self.execute_swap(quote, wallet)
+            # get initial balance
+            tokens = await wallet_manager.get_tokens()
+            if len(tokens) > 0:
+                token_acct = [
+                    token for token in tokens if token.mint_address == to_token_mint
+                ]
+                if len(token_acct) == 0:
+                    initial_balance = 0
+                else:
+                    initial_balance = token_acct[0].balance
+            else:
+                initial_balance = 0
 
-            try:
-                out_amount = quote.get("outAmount", None)
-                if out_amount is None:
-                    raise ValueError("outAmount is missing in the quote")
+            # execute transaction
+            transaction_signature = await self.execute_swap(
+                quote, wallet_manager.wallet
+            )
+            # get final balance
+            tokens = await wallet_manager.get_tokens()
+            token_acct = [
+                token for token in tokens if token.mint_address == to_token_mint
+            ]
+            if len(token_acct) == 0:
+                final_balance = 0
+            else:
+                final_balance = token_acct[0].balance
 
-                to_token = TokenManager(to_token_mint)
+            new_token_amount = final_balance - initial_balance
 
-                out_token_decimals = await to_token.get_token_decimals()
-
-                out_amount = int(out_amount) / (10**out_token_decimals)
-
-                return out_amount
-
-            except Exception as e:
-                print(f"Error extracting outAmount from quote: {e}")
-                return None
+            return new_token_amount
 
         except ValueError as e:
             raise Exception(f"Error: {e}")
@@ -262,10 +274,8 @@ class JupiterClient:
             opts = TxOpts(skip_preflight=False, preflight_commitment=Processed)
             result = client.send_raw_transaction(txn=bytes(signed_txn), opts=opts)
 
-            print("RAW_RESULT")
-            print(result)
+            txn_signature = result.value
 
-            transaction_id = json.loads(result.to_json())["result"]
-            return transaction_id
+            return txn_signature
         except Exception as e:
             raise Exception(f"Error swapping tokens: {e}")
