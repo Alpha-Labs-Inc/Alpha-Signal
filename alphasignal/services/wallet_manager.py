@@ -1,3 +1,4 @@
+from tenacity import retry, stop_after_attempt, wait_exponential
 import asyncio
 from typing import List
 import base58
@@ -158,6 +159,9 @@ class WalletManager:
             percent_change_value_24h=percent_change,
         )
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def get_token_acct_value(self, mint_address: str):
         """
         Return the balance for a specific token account in the wallet.
@@ -172,7 +176,7 @@ class WalletManager:
             solana_client = SolanaClient()
             response = solana_client.get_owner_token_accounts(self.wallet)
             if not response.value:
-                return 0
+                raise Exception("Failed to get token accounts")
 
             for token_info in response.value:
                 token_mint_address = token_info.account.data.parsed["info"]["mint"]

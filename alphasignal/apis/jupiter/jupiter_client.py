@@ -1,3 +1,4 @@
+import asyncio
 import os
 import requests
 import json
@@ -189,14 +190,27 @@ class JupiterClient:
             )
             # Get initial balance
             initial_balance = await wallet_manager.get_token_acct_value(to_token_mint)
+            print("Initial balance: ", initial_balance)
             # execute transaction
             transaction_signature = await self.execute_swap(
                 quote, wallet_manager.wallet
             )
-            final_balance = await wallet_manager.get_token_acct_value(to_token_mint)
+            # Retry to get final balance if initial and final are equal -> solana takes a moment to update
+            num_retries = 5
+            for retry in range(num_retries):
+                final_balance = await wallet_manager.get_token_acct_value(to_token_mint)
+                if final_balance != initial_balance:
+                    break
+                else:
+                    if retry == num_retries:
+                        raise Exception("Failed to get final balance")
+                    else:
+                        await asyncio.sleep(2)
 
+            print("Final balance: ", final_balance)
             new_token_amount = final_balance - initial_balance
 
+            print(f"Token amount: {new_token_amount}")
             # Log final balance
 
             return new_token_amount
