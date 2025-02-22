@@ -12,7 +12,7 @@ from solders import message
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from alphasignal.apis.solana.solana_client import SolanaClient
-from alphasignal.models.constants import USDC_MINT_ADDRESS
+from alphasignal.models.constants import SOL_MINT_ADDRESS, USDC_MINT_ADDRESS
 from alphasignal.schemas.responses.quote_response import QuoteResponse
 from alphasignal.models.wallet import Wallet
 from alphasignal.services.token_manager import TokenManager
@@ -189,31 +189,32 @@ class JupiterClient:
                 from_token_mint, to_token_mint, input_amount, slippage_bps
             )
             # Get initial balance
-            initial_balance = await wallet_manager.get_token_acct_value(to_token_mint)
-            print("Initial balance: ", initial_balance)
+            if to_token_mint != SOL_MINT_ADDRESS:
+                initial_balance = await wallet_manager.get_token_acct_value(
+                    to_token_mint
+                )
             # execute transaction
             transaction_signature = await self.execute_swap(
                 quote, wallet_manager.wallet
             )
             # Retry to get final balance if initial and final are equal -> solana takes a moment to update
-            num_retries = 5
-            for retry in range(num_retries):
-                final_balance = await wallet_manager.get_token_acct_value(to_token_mint)
-                if final_balance != initial_balance:
-                    break
-                else:
-                    if retry == num_retries:
-                        raise Exception("Failed to get final balance")
+            if to_token_mint != SOL_MINT_ADDRESS:
+                num_retries = 5
+                for retry in range(num_retries):
+                    final_balance = await wallet_manager.get_token_acct_value(
+                        to_token_mint
+                    )
+                    if final_balance != initial_balance:
+                        break
                     else:
-                        await asyncio.sleep(2)
-
-            print("Final balance: ", final_balance)
-            new_token_amount = final_balance - initial_balance
-
-            print(f"Token amount: {new_token_amount}")
-            # Log final balance
-
-            return new_token_amount
+                        if retry == num_retries:
+                            raise Exception("Failed to get final balance")
+                        else:
+                            await asyncio.sleep(2)
+                new_token_amount = final_balance - initial_balance
+                return new_token_amount
+            else:
+                return None
 
         except ValueError as e:
             raise Exception(f"Error: {e}")
