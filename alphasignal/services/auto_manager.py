@@ -107,6 +107,8 @@ class AutoManager:
         )
 
         # Log order creation
-        logger.info(f"Order created with ID: {order_id} and balance: {final_balance}")
+        logger.info(
+            f"Order created with ID: {order_id} and balance of: {final_balance}"
+        )
 
         return order_id
