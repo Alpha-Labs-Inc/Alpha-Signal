@@ -76,19 +76,24 @@ Learn more about our vision and long-term goals: [Alpha Signal Crypto Vision](ht
 1. Install `python 3.13.1`
 2. Install `poetry 2.0.1`
 3. Install `node 22.13.1` and `pnpm 10.1.0`
+
+#### Configuring the backend
+The twitter/X api cost to get real time webhooks is nontrivial ($>2000 a month). The best workaround is using a service that resells webhook capability though a third party service. Here is the best available. https://monitor.tweet-catcher.com/.
+
 #### Running the Backend
 1. Run `poetry install`
 2. Run the main backend: `poetry run python -m alphasignal.app`
    - Your backend is up and running for signals.
 3. In a new terminal window, run the order processor service: `poetry run python -m alphasignal.processor`
 4. In another terminal, run the ngrok service to forward tweet webhooks: `poetry run python -m alphasignal.ngrok_run`
-   
+
 Note: A single startup script using Docker Compose is in the works to streamline these processes.
 #### Running the Frontend
 1. In terminal, `cd` to the `ui` folder
 2. Run `pnpm install`
 3. Run `npm run dev`
 4. Click on the local-host link, you now have access to view your Alpha Signal application.
+
 
 ## Integrations
 
