@@ -27,13 +27,10 @@ class WalletManager:
     def __init__(self, make_wallet: bool = False):
         self.make_wallet = make_wallet
         self.wallet_save_file = os.getenv("WALLET_SAVE_FILE", "wallet_keypair.json")
-        if not os.path.exists(self.wallet_save_file) and not self.make_wallet:
-            raise Exception("No wallet found.")
-        elif make_wallet and not os.path.exists(self.wallet_save_file):
+        if not os.path.exists(self.wallet_save_file):
             self.wallet = asyncio.run(self.create_wallet())
-        elif os.path.exists(self.wallet_save_file) and make_wallet:
-            raise Exception("Wallet already found.")
-        self.wallet = self.load_wallet()
+        else:
+            self.wallet = self.load_wallet()
 
     def load_wallet(self):
         """Load the wallet's public and secret keys."""
