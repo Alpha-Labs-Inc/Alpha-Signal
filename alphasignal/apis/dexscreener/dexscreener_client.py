@@ -44,7 +44,7 @@ class DexscreenerClient:
                         token_address,
                         "USD Coin",
                         "USDC",
-                        "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=040",
+                        "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
                     )
                 else:
                     result = {
