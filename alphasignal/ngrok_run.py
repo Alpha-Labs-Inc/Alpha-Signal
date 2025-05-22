@@ -3,12 +3,11 @@ from dotenv import load_dotenv
 import ngrok
 import time
 import os
-import sys  # added import
 
 load_dotenv()
 
 listener = ngrok.forward(
-    "127.0.0.1:8000",
+    "0.0.0.1:8000",
     authtoken_from_env=True,
     # oauth_provider="google",
     # oauth_allow_emails="kate.libby@gmail.com",
@@ -17,9 +16,8 @@ listener = ngrok.forward(
     # ip_restriction_deny_cidrs="110.2.3.4/32"
 )
 
-# Output ngrok url to console and flush stdout for docker logs
-print(f"Ingress established at {listener.url()}")
-sys.stdout.flush()
+# Output ngrok url to console with immediate flush
+print(f"Ingress established at {listener.url()}", flush=True)
 
 if __name__ == "__main__":
     try:
