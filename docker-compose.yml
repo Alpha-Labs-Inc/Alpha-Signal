@@ -34,3 +34,10 @@ services:
       - API_URL=http://app:8000
     env_file:
       - .env
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
