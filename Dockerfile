@@ -15,6 +15,7 @@ RUN poetry config virtualenvs.create false \
 
 # Copy the full project
 COPY . .
+RUN chmod +x start_backend.sh   # Ensure startup script is executable
 
 # Expose port 8000 (used by your FastAPI app)
 EXPOSE 8000
