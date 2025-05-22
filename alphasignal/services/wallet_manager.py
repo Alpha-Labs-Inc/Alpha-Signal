@@ -5,6 +5,9 @@ import base58
 import os
 import json
 from solders.keypair import Keypair
+from solders.system_program import transfer
+from solders.pubkey import Pubkey
+from solders.transaction import Transaction
 from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
@@ -248,3 +251,41 @@ class WalletManager:
             )
         except Exception as e:
             raise e
+
+    # # TODO Update: Breaking change
+    # async def send_all_sol(self, destination_pubkey: str) -> str:
+    #     """
+    #     Send your entire SOL balance from this wallet to the given destination.
+    #     Returns the transaction signature.
+    #     """
+    #     solana_client = SolanaClient()
+
+    #     # 1) Fetch current SOL balance (in SOL)
+    #     sol_balance = solana_client.get_sol_balance(self.wallet)
+    #     if sol_balance is None or sol_balance <= 0:
+    #         raise ValueError("No SOL available to send.")
+
+    #     # 2) Convert SOL to lamports (1 SOL = 1e9 lamports)
+    #     lamports = int(sol_balance * 1e9)
+
+    #     # 3) Build transfer instruction
+    #     sender_pubkey = Pubkey.from_string(str(self.wallet.public_key))
+    #     recipient_pubkey = Pubkey.from_string(destination_pubkey)
+    #     ix = transfer(
+    #         from_pubkey=sender_pubkey,
+    #         to_pubkey=recipient_pubkey,
+    #         lamports=lamports,
+    #     )
+
+    #     # 4) Create transaction and set recent blockhash
+    #     tx = Transaction.new_with_payer([ix], sender_pubkey)
+    #     recent = await solana_client.client.get_recent_blockhash()
+    #     tx.message.recent_blockhash = recent.value.blockhash
+
+    #     # 5) Sign and serialize
+    #     tx.sign([self.wallet.wallet_keypair])
+    #     raw_tx = tx.serialize()
+
+    #     # 6) Send and return signature
+    #     resp = await solana_client.client.send_raw_transaction(raw_tx)
+    #     return resp.value

@@ -27,7 +27,7 @@ class TwitterMonitor:
 
     def _find_tickers(self, message: str) -> List[TokenInfo]:
         """Returns all matches for stock tickers in the text."""
-        ticker_pattern = re.compile(r"\$[A-Za-z]{1,5}")
+        ticker_pattern = re.compile(r"\$[A-Za-z]{1,15}")
         tickers = ticker_pattern.findall(message)
         return [
             TokenInfo(ticker=ticker, mint_address=None, name=None, image=None)
