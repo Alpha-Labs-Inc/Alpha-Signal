@@ -27,6 +27,7 @@ Alpha Signal Crypto
 
 </br>
 </p>
+
 <div align="center">
 
 [😸 Github](https://github.com/Alpha-Labs-Inc/Alpha-Signal)
@@ -46,6 +47,12 @@ Alpha Signal Crypto
 </div>
 
 </h1>
+<div align="center">
+
+<h4>CA: 3AdCHhGH84c2zr8U8eXaspPbKiPmQgKcqmQtApnSpump</h4>
+<br>
+</div>
+
 <p>
     
 </p>
