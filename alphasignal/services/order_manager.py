@@ -167,22 +167,29 @@ class OrderManager:
         elif order.sell_type == SellType.USDC:
             sell_address = USDC_MINT_ADDRESS
 
-        # Try to sell the order
-        try:
-            amount = await self.jupiter.swap_tokens(
-                order.mint_address,
-                sell_address,
-                order.balance,
-                self.wallet,
-                order.slippage,
+        amount = None
+        for attempt in range(5):  # Try to sell the order with multiple attempts
+            try:
+                amount = await self.jupiter.swap_tokens(
+                    order.mint_address,
+                    sell_address,
+                    order.balance - int(attempt),
+                    self.wallet,
+                    order.slippage,
+                )
+                break  # Exit loop if successful
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed for order {order.id}: {e}")
+                await asyncio.sleep(1)  # wait before retrying
+
+        if amount is None:
+            print(
+                f"All attempts to sell order {order.id} failed. Reactivating tracking."
             )
-        except Exception as e:
-            print(f"There was an error selling {order.id} reactivating tracking.")
             self.db.set_order_status(order.id, OrderStatus.ACTIVE)
-            raise e
+            return
 
         try:
-            # User the transaction id to get the profit from the swap
             final_balance = 0 if amount is None else float(amount)
             profit = final_balance * await self.jupiter.fetch_token_value(sell_address)
             self.db.complete_order(order.id, profit)
