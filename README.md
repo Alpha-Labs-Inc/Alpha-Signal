@@ -129,4 +129,13 @@ Check out our roadmap to see upcoming features and developments: [Alpha Signal C
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+
+## Ngrok Networking Setup
+
+When you start the system with `docker-compose up --build` the ngrok service will forward your internal port 8000 to a public URL. You will see an output like:
+
+    Ingress established at http://<random-id>.ngrok.io
+
+Use this URL to configure any external services (e.g. webhooks) that need to reach your application. If required, update the `API_URL` environment variable in the docker-compose file or your application configuration with this URL.
+
 Stay ahead in the crypto game with Alpha Signal Crypto 🚀

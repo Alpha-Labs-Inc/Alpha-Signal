@@ -10,6 +10,8 @@ services:
       - "8000:8000"
     environment:
       - HOST=127.0.0.1
+    env_file:
+      - .env
     depends_on:
       - processor
 
@@ -18,8 +20,8 @@ services:
       context: .
       target: python-base
     command: python alphasignal/processor.py
-    environment:
-      - SOME_PROCESSOR_ENV=value
+    env_file:
+      - .env
 
   ngrok:
     build:
@@ -30,12 +32,5 @@ services:
       - "4040:4040"  # ngrok web UI
     environment:
       - API_URL=http://app:8000
-
-  ui:
-    build:
-      context: ./ui
-      dockerfile: Dockerfile
-    command: npm run start
-    ports:
-      - "5173:5173"
-
+    env_file:
+      - .env

@@ -1,15 +1,17 @@
-FROM python:3.13 AS python-base
+FROM python:3.13.1 AS python-base
 
 WORKDIR /alphasignal
+ENV PYTHONPATH=/alphasignal
 
 # Install Poetry
 RUN pip install poetry
 
 # Copy pyproject.toml and poetry.lock (if available)
-COPY pyproject.toml poetry.lock* /app/
+COPY pyproject.toml poetry.lock* ./
 
-# Configure Poetry to install dependencies into the global environment
-RUN poetry config virtualenvs.create false && poetry install --no-dev
+# Install dependencies
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-root
 
 # Copy the full project
 COPY . .

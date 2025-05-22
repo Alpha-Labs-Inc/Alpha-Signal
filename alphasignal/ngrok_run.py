@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import ngrok
 import time
 import os
+import sys  # added import
 
 load_dotenv()
 
@@ -16,8 +17,9 @@ listener = ngrok.forward(
     # ip_restriction_deny_cidrs="110.2.3.4/32"
 )
 
-# Output ngrok url to console
+# Output ngrok url to console and flush stdout for docker logs
 print(f"Ingress established at {listener.url()}")
+sys.stdout.flush()
 
 if __name__ == "__main__":
     try:
