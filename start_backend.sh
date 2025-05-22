@@ -19,4 +19,4 @@ wait $PID_APP $PID_PROCESSOR $PID_NGROK
 
 # Then print the last few lines of the ngrok log
 echo "=== ngrok logs (last 20 lines) ==="
-tail -n 1 ngrok.log
+tail -n 20 ngrok.log

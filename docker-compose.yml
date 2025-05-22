@@ -1,37 +1,14 @@
 #TODO: Single startup script work in progress
 
 services:
-  app:
+  backend:
     build:
       context: .
       target: python-base
-    command: python alphasignal/app.py
+    command: ./start_backend.sh
     ports:
-      - "8000:8000"
-    environment:
-      - HOST=127.0.0.1
-    env_file:
-      - .env
-    depends_on:
-      - processor
-
-  processor:
-    build:
-      context: .
-      target: python-base
-    command: python alphasignal/processor.py
-    env_file:
-      - .env
-
-  ngrok:
-    build:
-      context: .
-      target: python-base
-    command: python alphasignal/ngrok_run.py
-    ports:
-      - "4040:4040"  # ngrok web UI
-    environment:
-      - API_URL=http://app:8000
+      - "8000:8000"  # API port
+      - "4040:4040"  # ngrok web UI port
     env_file:
       - .env
 
@@ -40,4 +17,6 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "80:80"  # Serve production build
+    depends_on:
+      - backend
