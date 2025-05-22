@@ -18,6 +18,8 @@ FROM nginx:alpine-slim
 COPY --from=node /ui/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
+RUN chmod -R 755 /usr/share/nginx/html    # Ensure files are executable and readable by Nginx
+
 # Expose port used by Vite
 EXPOSE 80
 
