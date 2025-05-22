@@ -1,7 +1,7 @@
 [project]
 name = "alphasignal"
 version = "0.1.0"
-description = "One stop shop for the Alpha Singal."
+description = "One stop shop for the Alpha Signal."
 authors = []
 license = "MIT"
 readme = "README.md"
