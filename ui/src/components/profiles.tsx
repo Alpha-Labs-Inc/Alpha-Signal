@@ -280,7 +280,7 @@ const ProfilesPage = () => {
                                                         <Label>Buy Slippage (%)</Label>
                                                         <Input
                                                             type="number"
-                                                            defaultValue={editableProfile.buy_slippage / 100}
+                                                            defaultValue={(editableProfile.buy_slippage ?? 0) / 100} // Updated to handle undefined
                                                             onChange={(e) =>
                                                                 handleInputChange(profile.id, "buy_slippage", Number(e.target.value) * 100)
                                                             }
@@ -367,7 +367,7 @@ const ProfilesPage = () => {
                                                         <Label>Sell Slippage (%)</Label>
                                                         <Input
                                                             type="number"
-                                                            defaultValue={editableProfile.sell_slippage / 100}
+                                                            defaultValue={(editableProfile.sell_slippage ?? 0) / 100} // Updated to handle undefined
                                                             onChange={(e) =>
                                                                 handleInputChange(profile.id, "sell_slippage", Number(e.target.value) * 100)
                                                             }

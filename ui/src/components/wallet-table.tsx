@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { RefreshCcw, Loader2 } from 'lucide-react'
 import Loader from './loader'
 import { Button } from './ui/button'
-import { FiCheck, FiDollarSign, FiXCircle } from 'react-icons/fi'
+import { FiCheck } from 'react-icons/fi'
 import { Checkbox } from './ui/checkbox'
 
 interface WalletToken {
