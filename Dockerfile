@@ -1,4 +1,4 @@
-FROM python:3.13.1 AS python-base
+FROM python:3.13.1-slim AS python-base
 
 WORKDIR /alphasignal
 ENV PYTHONPATH=/alphasignal
