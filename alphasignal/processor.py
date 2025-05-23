@@ -17,12 +17,12 @@ if __name__ == "__main__":
         while True:
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            print(f"Starting order processing: {current_time}")
+            print(f"Starting order processing: {current_time}", flush=True)
             asyncio.run(order_manager.process_orders())
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
             if now.second % 30 == 0:
-                print(f"Finished order processing: {current_time}")
+                print(f"Finished order processing: {current_time}", flush=True)
             time.sleep(5)
     except KeyboardInterrupt:
         print("Closing processor")
