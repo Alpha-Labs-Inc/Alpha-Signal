@@ -6,7 +6,7 @@ import logging
 
 from alphasignal.ai.chains.twitter_chains import get_tweet_sentiment
 from alphasignal.ai.models.sentiment_response import SentimentResponse, TokenSentiment
-from alphasignal.database.db import SQLiteDB
+from alphasignal.database.db import ProfileNotFoundError, SQLiteDB
 from alphasignal.models.token_info import TokenInfo
 from alphasignal.models.tweet_data_extraction import ExtractedTweetData
 from alphasignal.services.auto_manager import AutoManager
@@ -81,9 +81,19 @@ class TwitterMonitor:
         )
 
         if tweetPayload.task.user:
-            profile_id = self.profile_manager.get_profile(
-                Platform.TWITTER.value, tweetPayload.task.user
-            ).id
+            try:
+                profile_id = self.profile_manager.get_profile(
+                    Platform.TWITTER.value, tweetPayload.task.user
+                ).id
+            except ProfileNotFoundError:
+                # If the profile does not exist, create a new one
+                profile_id = self.profile_manager.add_profile(
+                    platform=Platform.TWITTER,
+                    username=tweetPayload.task.user,
+                )
+            except Exception as e:
+                logging.error(f"Error retrieving profile: {e}")
+                raise
 
         event = Event(
             id=event_id,
