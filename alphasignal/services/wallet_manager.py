@@ -5,9 +5,11 @@ import base58
 import os
 import json
 from solders.keypair import Keypair
-from solders.system_program import transfer
+from solders.system_program import transfer, TransferParams
 from solders.pubkey import Pubkey
 from solders.transaction import Transaction
+from solders.message import MessageV0
+from solders.transaction import VersionedTransaction
 from alphasignal.apis.dexscreener.dexscreener_client import DexscreenerClient
 from alphasignal.apis.solana.solana_client import SolanaClient
 from alphasignal.database.db import SQLiteDB
@@ -253,39 +255,43 @@ class WalletManager:
             raise e
 
     # # TODO Update: Breaking change
-    # async def send_all_sol(self, destination_pubkey: str) -> str:
-    #     """
-    #     Send your entire SOL balance from this wallet to the given destination.
-    #     Returns the transaction signature.
-    #     """
-    #     solana_client = SolanaClient()
+    async def send_all_sol(self, destination_pubkey: str) -> str:
+        """
+        Send your entire SOL balance from this wallet to the given destination.
+        Returns the transaction signature.
+        """
+        solana_client = SolanaClient()
 
-    #     # 1) Fetch current SOL balance (in SOL)
-    #     sol_balance = solana_client.get_sol_balance(self.wallet)
-    #     if sol_balance is None or sol_balance <= 0:
-    #         raise ValueError("No SOL available to send.")
+        # 1) Fetch current SOL balance (in SOL)
+        sol_balance = solana_client.get_sol_balance(self.wallet)
+        if sol_balance is None or sol_balance <= 0:
+            raise ValueError("No SOL available to send.")
 
-    #     # 2) Convert SOL to lamports (1 SOL = 1e9 lamports)
-    #     lamports = int(sol_balance * 1e9)
+        # 2) Convert SOL to lamports (1 SOL = 1e9 lamports)
+        lamports = int(sol_balance * 1e9) - 2000000  # Leave 0.002 SOL for fees
+        if lamports <= 0:
+            raise ValueError("Not enough SOL to cover transaction fees.")
 
-    #     # 3) Build transfer instruction
-    #     sender_pubkey = Pubkey.from_string(str(self.wallet.public_key))
-    #     recipient_pubkey = Pubkey.from_string(destination_pubkey)
-    #     ix = transfer(
-    #         from_pubkey=sender_pubkey,
-    #         to_pubkey=recipient_pubkey,
-    #         lamports=lamports,
-    #     )
+        # 3) Build transfer instruction
+        sender_pubkey = Pubkey.from_string(str(self.wallet.public_key))
+        recipient_pubkey = Pubkey.from_string(destination_pubkey)
+        ix = transfer(
+            TransferParams(
+                from_pubkey=sender_pubkey, to_pubkey=recipient_pubkey, lamports=lamports
+            )
+        )
+        # 4) Build versioned transaction using MessageV0 and VersionedTransaction
+        recent_resp = solana_client.client.get_latest_blockhash()
+        blockhash = recent_resp.value.blockhash
 
-    #     # 4) Create transaction and set recent blockhash
-    #     tx = Transaction.new_with_payer([ix], sender_pubkey)
-    #     recent = await solana_client.client.get_recent_blockhash()
-    #     tx.message.recent_blockhash = recent.value.blockhash
+        msg = MessageV0.try_compile(
+            payer=sender_pubkey,
+            instructions=[ix],
+            address_lookup_table_accounts=[],
+            recent_blockhash=blockhash,
+        )
+        tx = VersionedTransaction(msg, [self.wallet.wallet_keypair])
 
-    #     # 5) Sign and serialize
-    #     tx.sign([self.wallet.wallet_keypair])
-    #     raw_tx = tx.serialize()
-
-    #     # 6) Send and return signature
-    #     resp = await solana_client.client.send_raw_transaction(raw_tx)
-    #     return resp.value
+        # 5) Serialize and send
+        resp = solana_client.client.send_transaction(tx)
+        return resp.value
