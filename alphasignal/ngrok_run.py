@@ -9,6 +9,7 @@ load_dotenv()
 listener = ngrok.forward(
     "localhost:8000",  # Updated upstream address to localhost
     authtoken_from_env=True,
+    domain=os.getenv("NGROK_DOMAIN"),
     # oauth_provider="google",
     # oauth_allow_emails="kate.libby@gmail.com",
     # oauth_allow_domains="acme.org",

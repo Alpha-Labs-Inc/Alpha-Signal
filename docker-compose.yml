@@ -17,6 +17,6 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     ports:
-      - "80:80"  # Serve production build
+      - "6969:80"  # Serve production build
     depends_on:
       - backend

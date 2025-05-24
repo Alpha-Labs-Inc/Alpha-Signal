@@ -101,7 +101,7 @@ class AutoManager:
             sell_mode=profile.sell_mode,
             sell_value=profile.sell_value,
             sell_type=profile.sell_type,
-            balance=final_balance,
+            balance=int(final_balance),
             token_value=await self.jupiter.fetch_token_value(mint_address),
             slippage=profile.sell_slippage,
         )

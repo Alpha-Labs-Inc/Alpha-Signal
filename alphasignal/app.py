@@ -16,11 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:5173",
-]
+origins = ["http://localhost", "http://localhost:8000", "http://localhost:6969"]
 
 load_dotenv()
 
