@@ -7,27 +7,20 @@ from alphasignal.ai.prompts.twitter_prompts import tweet_classification_prompt
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.exceptions import OutputParserException
 from langchain_core.globals import set_verbose, set_debug
+import logging
+
+
+# Enable debug/verbose logging for the chain
+set_verbose(True)
+set_debug(True)
+
+logger = logging.getLogger(__name__)
 
 
 def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentResponse:
-    """Returns the sentiment of a tweet along with token information.
-
-    Args:
-        tweet_text (str): The text of the tweet.
-        tokens (List[TokenInfo]): A list of token information.
-
-    Returns:
-        SentimentResponse: A response containing token information and the corresponding tweet sentiment.
-    """
-
-    # tokens_strs = [
-    #     token.mint_address if token.mint_address else token.ticker for token in tokens
-    # ]
-
+    """Returns the sentiment of a tweet along with token information."""
     prompt = tweet_classification_prompt
-    parser = PydanticOutputParser(
-        pydantic_object=SentimentResponse,
-    )
+    parser = PydanticOutputParser(pydantic_object=SentimentResponse)
     llm = LLM().llm
     chain = (prompt | llm | parser).with_retry(
         stop_after_attempt=3,
@@ -41,5 +34,8 @@ def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentRe
             "parsing_model": SentimentResponse.model_json_schema(),
         }
     )
+
+    # Log the raw output for debugging
+    logger.debug("chain.invoke output: %s", sentiment.json())
 
     return sentiment

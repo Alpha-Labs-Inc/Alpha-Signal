@@ -185,8 +185,14 @@ class TwitterMonitor:
         Returns:
             bool: True if the tweet was successfully processed
         """
+        # debug log the incoming payload
+        logging.debug("Received tweet payload: %s", tweetPayload)
+
         # perform data extraction and sentiment classification
         extracted_data = self._extract_tweet_info(tweetPayload)
+
+        # debug log the extracted data
+        logging.debug("Extracted tweet data: %s", extracted_data)
 
         # add to db
         self._add_tweet_event_to_db(tweetPayload, extracted_data)
@@ -208,3 +214,4 @@ class TwitterMonitor:
             )
             if not order:
                 raise Exception("Auto buy failed.")
+        return True
