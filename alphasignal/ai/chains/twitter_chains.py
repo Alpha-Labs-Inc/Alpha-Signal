@@ -17,7 +17,9 @@ set_debug(True)
 logger = logging.getLogger(__name__)
 
 
-def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentResponse:
+def get_tweet_sentiment(
+    tweet_text: str, tokens: List[TokenInfo]
+) -> SentimentResponse | None:
     """Returns the sentiment of a tweet along with token information."""
     prompt = tweet_classification_prompt
     parser = PydanticOutputParser(pydantic_object=SentimentResponse)
@@ -27,15 +29,17 @@ def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentRe
         retry_if_exception_type=(OutputParserException, ValidationError),
     )
 
-    sentiment = chain.invoke(
-        {
-            "tweet_text": tweet_text,
-            "tokens": tokens,
-            "parsing_model": SentimentResponse.model_json_schema(),
-        }
-    )
-
-    # Log the raw output for debugging
-    logger.debug("chain.invoke output: %s", sentiment.json())
-
-    return sentiment
+    try:
+        sentiment = chain.invoke(
+            {
+                "tweet_text": tweet_text,
+                "tokens": tokens,
+                "parsing_model": SentimentResponse.model_json_schema(),
+            }
+        )
+        # Log the raw output for debugging
+        logger.debug("chain.invoke output: %s", sentiment.json())
+        return sentiment
+    except (OutputParserException, ValidationError, Exception) as e:
+        logger.error(f"Failed to parse LLM output for tweet sentiment: {e}")
+        return None
