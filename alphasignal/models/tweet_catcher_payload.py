@@ -26,6 +26,8 @@ class UserInfo(BaseModel):
     analytics_type: Optional[str] = None
     business_profile_state: Optional[str] = None
     translator_type: Optional[str] = None
+    followers_count: Optional[int] = None
+    normal_followers_count: Optional[int] = None
 
     @validator("created_at", pre=True)
     def parse_created_at(cls, value):
@@ -33,6 +35,7 @@ class UserInfo(BaseModel):
 
 
 class Task(BaseModel):
+    module: str
     user: str
     userInfo: UserInfo
     reason: str

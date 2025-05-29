@@ -148,15 +148,14 @@ class TwitterMonitor:
         tokens = tickers + solana_addresses
 
         # Classify sentiment for tokens
-        if tokens:
-            token_sentiment = self._classify_tokens_sentiment(full_text, tokens)
-        else:
-            # Always provide a valid SentimentResponse, never None
-            token_sentiment = SentimentResponse()
+        token_sentiments = []
+        if tokens != []:
+            token_sentiments = self._classify_tokens_sentiment(full_text, tokens)
+
         return ExtractedTweetData(
             tweet_type=tweet_type,
             tokens=tokens,
-            token_sentiment=token_sentiment,
+            token_sentiment=token_sentiments,
         )
 
     async def _find_mint_address_from_ticker(self, ticker: str) -> str:
@@ -215,4 +214,3 @@ class TwitterMonitor:
             )
             if not order:
                 raise Exception("Auto buy failed.")
-        return True
