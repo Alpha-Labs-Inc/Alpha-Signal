@@ -148,14 +148,15 @@ class TwitterMonitor:
         tokens = tickers + solana_addresses
 
         # Classify sentiment for tokens
-        token_sentiments = []
-        if tokens != []:
-            token_sentiments = self._classify_tokens_sentiment(full_text, tokens)
-
+        if tokens:
+            token_sentiment = self._classify_tokens_sentiment(full_text, tokens)
+        else:
+            # Always provide a valid SentimentResponse, never None
+            token_sentiment = SentimentResponse()
         return ExtractedTweetData(
             tweet_type=tweet_type,
             tokens=tokens,
-            token_sentiment=token_sentiments,
+            token_sentiment=token_sentiment,
         )
 
     async def _find_mint_address_from_ticker(self, ticker: str) -> str:
