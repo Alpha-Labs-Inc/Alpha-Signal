@@ -26,6 +26,8 @@ def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentRe
         stop_after_attempt=3,
         retry_if_exception_type=(OutputParserException, ValidationError),
     )
+    logging.debug("tweet_text:", tweet_text)
+    print("tweet_text:", tweet_text)
 
     sentiment = chain.invoke(
         {

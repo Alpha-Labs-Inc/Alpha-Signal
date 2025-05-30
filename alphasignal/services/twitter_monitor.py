@@ -187,6 +187,7 @@ class TwitterMonitor:
         """
         # debug log the incoming payload
         logging.debug("Received tweet payload: %s", tweetPayload)
+        print("Received tweet payload: %s", tweetPayload)
 
         # perform data extraction and sentiment classification
         extracted_data = self._extract_tweet_info(tweetPayload)

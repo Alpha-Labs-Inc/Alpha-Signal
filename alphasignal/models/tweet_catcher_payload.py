@@ -28,6 +28,19 @@ class UserInfo(BaseModel):
     translator_type: Optional[str] = None
     followers_count: Optional[int] = None
     normal_followers_count: Optional[int] = None
+    location: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+    friends_count: Optional[int] = None
+    listed_count: Optional[int] = None
+    favourites_count: Optional[int] = None
+    geo_enabled: Optional[bool] = None
+    media_count: Optional[int] = None
+    profile_banner_url: Optional[str] = None
+    pinned_tweet_ids: Optional[List[int]] = None
+    pinned_tweet_ids_str: Optional[List[str]] = None
+    has_custom_timelines: Optional[bool] = None
+    advertiser_account_service_levels: Optional[List[str]] = None
 
     @validator("created_at", pre=True)
     def parse_created_at(cls, value):
