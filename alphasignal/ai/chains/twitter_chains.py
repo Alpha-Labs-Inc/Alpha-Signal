@@ -7,12 +7,9 @@ from alphasignal.ai.prompts.twitter_prompts import tweet_classification_prompt
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.exceptions import OutputParserException
 from langchain_core.globals import set_verbose, set_debug
+
 import logging
 
-
-# Enable debug/verbose logging for the chain
-set_verbose(True)
-set_debug(True)
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +23,7 @@ def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentRe
         stop_after_attempt=3,
         retry_if_exception_type=(OutputParserException, ValidationError),
     )
-    logging.debug("tweet_text:", tweet_text)
+    logging.info("tweet_text:", tweet_text)
     print("tweet_text:", tweet_text)
 
     sentiment = chain.invoke(
@@ -38,6 +35,6 @@ def get_tweet_sentiment(tweet_text: str, tokens: List[TokenInfo]) -> SentimentRe
     )
 
     # Log the raw output for debugging
-    logger.debug("chain.invoke output: %s", sentiment.json())
+    logger.info("chain.invoke output: %s", sentiment.json())
 
     return sentiment

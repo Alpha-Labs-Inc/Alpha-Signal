@@ -185,15 +185,14 @@ class TwitterMonitor:
         Returns:
             bool: True if the tweet was successfully processed
         """
-        # debug log the incoming payload
-        logging.debug("Received tweet payload: %s", tweetPayload)
-        print("Received tweet payload: %s", tweetPayload)
+        # log the incoming payload
+        logging.info("Received tweet payload: %s", tweetPayload)
 
         # perform data extraction and sentiment classification
         extracted_data = self._extract_tweet_info(tweetPayload)
 
-        # debug log the extracted data
-        logging.debug("Extracted tweet data: %s", extracted_data)
+        # log the extracted data
+        logging.info("Extracted tweet data: %s", extracted_data)
 
         # add to db
         self._add_tweet_event_to_db(tweetPayload, extracted_data)

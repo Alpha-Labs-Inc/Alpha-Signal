@@ -56,7 +56,7 @@ Alpha Signal Crypto
 <p>
     
 </p>
-Alpha Signal Crypto is a cutting-edge platform designed to provide real-time crypto signals, analytics, and market insights to traders and investors. Our mission is to empower users with actionable intelligence, leveraging advanced algorithms and expert analysis to help navigate the fast-paced world of cryptocurrency trading.
+Alpha Signal Crypto is a cutting-edge framework designed to provide real-time crypto signals, analytics, and market insights to traders and investors. Our mission is to empower users with actionable intelligence, leveraging advanced algorithms and expert analysis to help navigate the fast-paced world of cryptocurrency trading.
 
 ## Vision
 
@@ -120,7 +120,9 @@ Note: A single startup script using Docker Compose is in the works to streamline
 
 ## Roadmap
 
-Our roadmap outlines the future development and enhancements of Alpha Signal Crypto. We are committed to continuously improving our platform by introducing new features, refining our analytics, and expanding market coverage. Key milestones include AI-powered trading insights, enhanced automation tools, and a more intuitive user experience.
+Our roadmap outlines the intended future development and enhancements of Alpha Signal Crypto. We are committed to continuously improving our framework by introducing new features, refining our analytics, and expanding market coverage.  Key milestones include AI-powered trading insights, enhanced automation tools, and a more intuitive user experience.
+
+While we are commited to making incremental progress over time, the speed at which progress is made is primarily community-driven. We are relying on the open-source community to aid in driving progress in the framework capabilities.
 
 Check out our roadmap to see upcoming features and developments: [Alpha Signal Crypto Roadmap](https://alphasignalcrypto.com/roadmap)
 
