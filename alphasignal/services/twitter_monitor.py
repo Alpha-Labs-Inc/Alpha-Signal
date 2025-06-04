@@ -1,8 +1,8 @@
 import re
-from typing import List
 import uuid
-from datetime import datetime, timezone
 import logging
+from typing import List
+from datetime import datetime, timezone
 
 from alphasignal.ai.chains.twitter_chains import get_tweet_sentiment
 from alphasignal.ai.models.sentiment_response import SentimentResponse, TokenSentiment
@@ -85,13 +85,16 @@ class TwitterMonitor:
                 profile_id = self.profile_manager.get_profile(
                     Platform.TWITTER.value, tweetPayload.task.user
                 ).id
+                print("found profile")
             except ProfileNotFoundError:
                 # If the profile does not exist, create a new one
                 profile_id = self.profile_manager.add_profile(
                     platform=Platform.TWITTER,
                     username=tweetPayload.task.user,
                 )
+                print("created profile")
             except Exception as e:
+                print("problem")
                 logging.error(f"Error retrieving profile: {e}")
                 raise
 
