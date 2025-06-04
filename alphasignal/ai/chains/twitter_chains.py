@@ -6,7 +6,6 @@ from typing import List
 from alphasignal.ai.prompts.twitter_prompts import tweet_classification_prompt
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.exceptions import OutputParserException
-from langchain_core.globals import set_verbose, set_debug
 
 import logging
 
