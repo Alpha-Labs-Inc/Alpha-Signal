@@ -46,17 +46,25 @@ class SolanaClient:
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=15, min=15, max=60)
     )
     def get_owner_token_accounts(self, wallet: Wallet):
+        program_ids = [
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        ]
         try:
-            opts = TokenAccountOpts(
-                program_id=Pubkey.from_string(
-                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            combined_accounts = []
+            for pid in program_ids:
+                opts = TokenAccountOpts(program_id=Pubkey.from_string(pid))
+                resp = self.client.get_token_accounts_by_owner_json_parsed(
+                    wallet.public_key, opts
                 )
+                # resp.value holds the list of accounts
+                combined_accounts.extend(resp.value)
+
+            return combined_accounts
+        except Exception as e:
+            raise Exception(
+                f"Error fetching token accounts for {wallet.public_key}: {e}"
             )
-            return self.client.get_token_accounts_by_owner_json_parsed(
-                wallet.public_key, opts
-            )
-        except:
-            raise Exception("Rate Limited by Solana RPC, wait 10 seconds")
 
     @retry(stop=stop_after_attempt(3), sleep=10)
     def get_sol_balance(self, wallet: Wallet):
