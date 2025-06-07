@@ -43,6 +43,7 @@ const fetchWalletData = async (): Promise<{
 }> => {
   try {
     const { data } = await axios.get('http://localhost:8000/wallet-value')
+    console.log(data)
     return data
   } catch (error) {
     console.error('Error fetching wallet data:', error)

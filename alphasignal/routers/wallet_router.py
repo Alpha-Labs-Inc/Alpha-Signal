@@ -15,6 +15,7 @@ from alphasignal.services.service import (
     retrieve_wallet_value,
     swap_tokens,
 )
+from alphasignal.schemas.requests.send_sol_request import SendSolRequest
 from fastapi import APIRouter, HTTPException
 import logging
 
@@ -111,3 +112,14 @@ async def add_funds(fund_request: FundRequest) -> FundResponse:
         return FundResponse(funded_wallet_public_key=result[0], amt=result[1])
     except Exception as e:
         return HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/send-sol")
+async def send_sol_endpoint(request: SendSolRequest) -> bool:
+    try:
+        wallet = load_wallet()
+        sig = await wallet.send_sol(request.amt, request.destination)
+        return True
+    except Exception as e:
+        logger.error(f"Error in send_sol: {e}")
+        raise HTTPException(status_code=400, detail=str(e))

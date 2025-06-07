@@ -82,6 +82,29 @@ const Header = () => {
     }
   }
 
+  const handleSendSol = async () => {
+    const to = window.prompt('Destination wallet address:')
+    if (!to) return
+    const amtStr = window.prompt('Amount of SOL to send:')
+    if (!amtStr) return
+    const amt = parseFloat(amtStr)
+    if (isNaN(amt) || amt <= 0) {
+      toast({ title: 'Error', description: 'Enter a valid amount' })
+      return
+    }
+    try {
+      const { data } = await axios.post('http://localhost:8000/send-sol', {
+        destination: to,
+        amt,
+      })
+      console.log(data)
+      toast({ title: 'SOL Sent', description: '' })
+    } catch (err) {
+      console.error('Send SOL error:', err)
+      toast({ title: 'Error', description: 'Failed to send SOL' })
+    }
+  }
+
   const navigate = useNavigate()
   return (
     <div className="w-full flex justify-between items-center px-4 py-3">
@@ -209,6 +232,13 @@ const Header = () => {
           >
             Configure
           </span>
+          <Button
+            variant="secondary"
+            className="text-base hover:opacity-80"
+            onClick={handleSendSol}
+          >
+            Send SOL
+          </Button>
         </div>
       </div>
     </div>
