@@ -23,7 +23,6 @@ dependencies = [
     "langchain-mistralai (>=0.2.6,<0.3.0)",
     "langchain-deepseek (>=0.1.2,<0.2.0)",
     "langchain-google-genai (>=2.0.9,<3.0.0)",
-    "pytest (>=8.3.4,<9.0.0)"
 ]
 
 
@@ -33,3 +32,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["alphasignal/tests"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest (>=8.3.4,<9.0.0)",
+]
