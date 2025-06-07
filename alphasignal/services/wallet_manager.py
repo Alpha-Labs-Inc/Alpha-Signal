@@ -75,17 +75,24 @@ class WalletManager:
             solana_client = SolanaClient()
             dexscreener_client = DexscreenerClient()
 
-            response = solana_client.get_owner_token_accounts(self.wallet)
-            if not response.value:
+            accts = solana_client.get_owner_token_accounts(self.wallet)
+            if not accts:
                 return []
             tokens = []
-            for token_info in response.value:
+            for token_info in accts:
                 mint_address = token_info.account.data.parsed["info"]["mint"]
                 bal = float(
                     token_info.account.data.parsed["info"]["tokenAmount"]["uiAmount"]
                 )
+
                 try:
                     token_data = await dexscreener_client.get_token_pairs(mint_address)
+                    # if your client might return None on no data, guard that too:
+                    if not token_data:
+                        logger.warning(
+                            f"No Dexscreener data for {mint_address}, skipping"
+                        )
+                        continue
 
                     tokens.append(
                         WalletToken(
@@ -128,9 +135,18 @@ class WalletManager:
                             ),
                         )
                     )
+
+                except IndexError:
+                    # this is the empty-list case
+                    logger.warning(
+                        f"No pairs found on Dexscreener for {mint_address}, skipping"
+                    )
+                    continue
+
                 except Exception as e:
-                    logging.error(f"Error getting token data: {e}")
-                    raise Exception(f"Error getting data: {e}")
+                    logger.error(f"Error getting token data for {mint_address}: {e}")
+                    continue
+
             tokens = sorted(tokens, key=lambda t: t.usd_balance, reverse=True)
             return tokens
         except Exception as e:
@@ -176,11 +192,11 @@ class WalletManager:
         """
         try:
             solana_client = SolanaClient()
-            response = solana_client.get_owner_token_accounts(self.wallet)
-            if not response.value:
+            accts = solana_client.get_owner_token_accounts(self.wallet)
+            if not accts:
                 raise Exception("Failed to get token accounts")
 
-            for token_info in response.value:
+            for token_info in accts:
                 token_mint_address = token_info.account.data.parsed["info"]["mint"]
                 if token_mint_address == mint_address:
                     balance = float(
@@ -254,8 +270,7 @@ class WalletManager:
         except Exception as e:
             raise e
 
-    # # TODO Update: Breaking change
-    async def send_all_sol(self, destination_pubkey: str) -> str:
+    async def send_sol(self, amt, destination_pubkey: str) -> str:
         """
         Send your entire SOL balance from this wallet to the given destination.
         Returns the transaction signature.
@@ -263,12 +278,12 @@ class WalletManager:
         solana_client = SolanaClient()
 
         # 1) Fetch current SOL balance (in SOL)
-        sol_balance = solana_client.get_sol_balance(self.wallet)
-        if sol_balance is None or sol_balance <= 0:
-            raise ValueError("No SOL available to send.")
+        # sol_balance = solana_client.get_sol_balance(self.wallet)
+        # if sol_balance is None or sol_balance <= 0:
+        #     raise ValueError("No SOL available to send.")
 
         # 2) Convert SOL to lamports (1 SOL = 1e9 lamports)
-        lamports = int(sol_balance * 1e9) - 2000000  # Leave 0.002 SOL for fees
+        lamports = int(amt * 1e9) - 2000000  # Leave 0.002 SOL for fees
         if lamports <= 0:
             raise ValueError("Not enough SOL to cover transaction fees.")
 
