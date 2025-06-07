@@ -9,4 +9,4 @@ from alphasignal.models.token_info import TokenInfo
 class ExtractedTweetData(BaseModel):
     tweet_type: TweetType
     tokens: List[TokenInfo] = []
-    token_sentiment: SentimentResponse = []
+    token_sentiment: SentimentResponse
