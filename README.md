@@ -128,16 +128,53 @@ Check out our roadmap to see upcoming features and developments: [Alpha Signal C
 
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
 
 ---
 
+## Environment Variables
+First, copy the example file:
+```bash
+cp .env.example .env
+```
+Then open `.env` and fill in the **REQUIRED** fields:
+
+- `LLM_PROVIDER`: one of `openai`, `anthropic`, `google`, `deepseek`, `mistral`  
+- `OPENAI_API_KEY`: your OpenAI key (if using OpenAI)  
+- `NGROK_AUTHTOKEN`: your ngrok auth token (copy at https://dashboard.ngrok.com/get-started/your-authtoken)  
+- `NGROK_DOMAIN`: your public ngrok domain (e.g. `abcd1234.ngrok.io`), seen under Endpoints at https://dashboard.ngrok.com/endpoints  
+- `WALLET_SAVE_FILE`: path to your keypair (e.g. `wallet_keypair.json`; do **not** delete)  
+- `SOLANA_CLUSTER_URL`, `JUPITER_API_URL`, and any other LLM/API keys you plan to use.
+
+
+## Controls
+Ensure **Docker Desktop** is running, then manage the app with:
+
+- `./setup.sh`  – initial project setup **and** start the application  
+- `./start.sh`  – launch all services  
+- `./stop.sh`   – stop all services  
+
+**Important Notes**  
+- Do **not** delete your `wallet_keypair.json`.  
+- To withdraw SOL at any time, run:
+  ```bash
+  python send_sol_home.py \
+    --destination <YOUR_WALLET_ADDRESS> \
+    --amount <AMOUNT>
+  ```
+
+## TweetCatcher Service
+1. Purchase access at https://monitor.tweet-catcher.com/  
+2. In the dashboard configure webhooks for each X account:
+   ```
+   https://<YOUR_NGROK_DOMAIN>/webhooks/tweetcatcher/tweet-process
+   ```  
+3. When a tracked account tweets, TweetCatcher will POST to your app, and the tweet is added to Alpha Signal's signals list.
+
 ## Ngrok Networking Setup
+When you run `./start.sh`, ngrok will forward port 8000 to a public URL:
+```
+Ingress established at http://<your_ngrok_url>.ngrok.io
+```
+Use this URL for external webhooks and set `API_URL` accordingly.
 
-When you start the system with `docker-compose up --build` the ngrok service will forward your internal port 8000 to a public URL. You will see an output like:
-
-    Ingress established at http://<random-id>.ngrok.io
-
-Use this URL to configure any external services (e.g. webhooks) that need to reach your application. If required, update the `API_URL` environment variable in the docker-compose file or your application configuration with this URL.
-
-Stay ahead in the crypto game with Alpha Signal Crypto 🚀
