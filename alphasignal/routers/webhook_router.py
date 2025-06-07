@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from alphasignal.models.minimal_tweet_webhook import TweetWebhookMinimal
+from alphasignal.models.tweet_catcher_payload import TweetWebhookMinimal
 from alphasignal.services.twitter_monitor import TwitterMonitor
 
 router = APIRouter()

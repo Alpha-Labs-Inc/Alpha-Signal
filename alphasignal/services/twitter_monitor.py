@@ -10,7 +10,7 @@ from alphasignal.database.db import ProfileNotFoundError, SQLiteDB
 from alphasignal.models.token_info import TokenInfo
 from alphasignal.models.tweet_data_extraction import ExtractedTweetData
 from alphasignal.services.auto_manager import AutoManager
-from alphasignal.models.tweet_catcher_payload import TweetCatcherWebhookPayload
+from alphasignal.models.tweet_catcher_payload import TweetWebhookMinimal
 from alphasignal.models.tweet import Tweet
 from alphasignal.models.event import Event
 from alphasignal.models.enums import Platform, TweetSentiment, TweetType
@@ -43,9 +43,7 @@ class TwitterMonitor:
             for address in addresses
         ]
 
-    def _determine_tweet_type(
-        self, tweetPayload: TweetCatcherWebhookPayload
-    ) -> TweetType:
+    def _determine_tweet_type(self, tweetPayload) -> TweetType:
         """
         A helper function to classify the tweet as a retweet, reply, or post
         based on boolean flags within the tweet data.
@@ -62,7 +60,7 @@ class TwitterMonitor:
 
     def _add_tweet_event_to_db(
         self,
-        tweetPayload: TweetCatcherWebhookPayload,
+        tweetPayload,
         extracted_data: ExtractedTweetData,
     ) -> None:
         """
@@ -129,9 +127,7 @@ class TwitterMonitor:
         token_sentiment = get_tweet_sentiment(tweet_text, tokens)
         return token_sentiment
 
-    def _extract_tweet_info(
-        self, tweetPayload: TweetCatcherWebhookPayload
-    ) -> ExtractedTweetData:
+    def _extract_tweet_info(self, tweetPayload) -> ExtractedTweetData:
         """
         1) Determine if this tweet is a Retweet, Reply, or a Post using the helper function.
         2) Extract the main text to parse out tickers and Solana addresses.
@@ -151,7 +147,7 @@ class TwitterMonitor:
         tokens = tickers + solana_addresses
 
         # Classify sentiment for tokens
-        token_sentiments = []
+        token_sentiments = SentimentResponse(response=[])
         if tokens != []:
             token_sentiments = self._classify_tokens_sentiment(full_text, tokens)
 
@@ -176,9 +172,7 @@ class TwitterMonitor:
             logging.error(f"Error finding mint address for ticker {ticker}: {e}")
             return ""
 
-    async def process_tweet_webhook(
-        self, tweetPayload: TweetCatcherWebhookPayload
-    ) -> bool:
+    async def process_tweet_webhook(self, tweetPayload) -> bool:
         """
         Processes the incoming webhook payload from the TweetCatcher service.
 
@@ -204,16 +198,33 @@ class TwitterMonitor:
         for token in extracted_data.tokens:
             if not token.mint_address:
                 token.mint_address = await self._find_mint_address_from_ticker(
-                    token.ticker
+                    token.ticker or ""
                 )
 
-        # action on extracted data
-        # TODO: currently only acts on a single token, need to update to handle multiple tokens
-        if extracted_data.token_sentiment.response[0].sentiment == "positive":
-            order = await self.auto_manager.auto_buy(
-                extracted_data.tokens[0].mint_address,
-                platform=Platform.TWITTER,
-                username=tweetPayload.task.user,
-            )
-            if not order:
-                raise Exception("Auto buy failed.")
+        # perform auto-buy for positive sentiment tokens, skipping if no mint_address
+        sentiments = (
+            extracted_data.token_sentiment.response
+            if hasattr(extracted_data.token_sentiment, "response")
+            else []
+        )
+        if sentiments and sentiments[0].sentiment == "positive":
+            for token in extracted_data.tokens:
+                if not token.mint_address:
+                    logging.warning(
+                        f"Skipping auto_buy: no mint_address for token {token}"
+                    )
+                    continue
+                try:
+                    order_id = await self.auto_manager.auto_buy(
+                        token.mint_address,
+                        platform=Platform.TWITTER,
+                        username=tweetPayload.task.user,
+                    )
+                    if not order_id:
+                        logging.error(
+                            f"Auto buy returned no order for {token.mint_address}"
+                        )
+                    break
+                except Exception as e:
+                    logging.error(f"Auto buy failed for {token.mint_address}: {e}")
+        return True
