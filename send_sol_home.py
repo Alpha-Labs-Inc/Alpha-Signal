@@ -1,18 +1,19 @@
-import sys
+import argparse
 import asyncio
 from alphasignal.services.wallet_manager import WalletManager
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python send_sol_home.py <destination_wallet_address> <amount>")
-        sys.exit(1)
-    destination = sys.argv[1]
-    try:
-        amount = float(sys.argv[2])
-    except ValueError:
-        print("Error: amount must be a number")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Send SOL to a wallet")
+    parser.add_argument(
+        "-d", "--destination", required=True, help="Destination wallet address"
+    )
+    parser.add_argument(
+        "-a", "--amount", required=True, type=float, help="Amount of SOL to send"
+    )
+    args = parser.parse_args()
+    destination = args.destination
+    amount = args.amount
 
     wallet_manager = WalletManager()
     try:
