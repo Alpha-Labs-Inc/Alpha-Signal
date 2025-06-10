@@ -207,7 +207,7 @@ class TwitterMonitor:
             if hasattr(extracted_data.token_sentiment, "response")
             else []
         )
-        if sentiments and sentiments[0].sentiment == "positive":
+        if sentiments and sentiments[0].sentiment == TweetSentiment.POSITIVE:
             for token in extracted_data.tokens:
                 if not token.mint_address:
                     logging.warning(
