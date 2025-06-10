@@ -13,7 +13,9 @@ from alphasignal.services.service import initialize_database
 from fastapi.middleware.cors import CORSMiddleware
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 origins = ["http://localhost", "http://localhost:8000", "http://localhost:6969"]

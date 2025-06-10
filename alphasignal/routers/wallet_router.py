@@ -20,7 +20,9 @@ from fastapi import APIRouter, HTTPException
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(
+    level=logging.ERROR, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -28,6 +30,7 @@ router = APIRouter()
 
 @router.get("/wallet-value")
 async def get_wallet_value():
+    logger.info("get_wallet_value called")
     try:
         wallet = load_wallet()
         value = await retrieve_wallet_value(wallet=wallet)
@@ -41,6 +44,7 @@ async def get_wallet_value():
 
 @router.get("/sol-value")
 async def get_sol_value():
+    logger.info("get_sol_value called")
     try:
         wallet = load_wallet()
         value = await retrieve_sol_value(wallet=wallet)
@@ -119,6 +123,7 @@ async def send_sol_endpoint(request: SendSolRequest) -> bool:
     try:
         wallet = load_wallet()
         sig = await wallet.send_sol(request.amt, request.destination)
+        logger.info(f"send_sol successful, tx signature: {sig}")
         return True
     except Exception as e:
         logger.error(f"Error in send_sol: {e}")
