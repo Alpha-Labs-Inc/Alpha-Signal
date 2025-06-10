@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
+import { Loader2 } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Avatar, AvatarImage } from './ui/avatar'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import { useToast } from '@/hooks/use-toast'
 import { Button } from './ui/button'
+import { useToast } from '@/hooks/use-toast'
+import { useNavigate } from 'react-router-dom'
 
 const Header = () => {
   const { toast } = useToast()
-  const [walletData, setWalletData] = useState<{
-    sol_balance: number
-    usd_value: number
-    percent_change_24hr: number
-  } | null>(null)
   const [walletKey, setWalletKey] = useState<string | null>(null)
   const [fullWalletKey, setFullWalletKey] = useState<string | null>(null)
-  const [, setLoading] = useState(true)
-  const [, setCopied] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
 
+  // 1) Fetch wallet key once on mount
   useEffect(() => {
     const fetchWalletKey = async () => {
       try {
@@ -26,59 +22,43 @@ const Header = () => {
         if (data?.public_key) {
           setFullWalletKey(data.public_key)
           setWalletKey(
-            `${data.public_key.slice(0, 3)}...${data.public_key.slice(-3)}`
+            `${data.public_key.slice(0, 3)}…${data.public_key.slice(-3)}`
           )
         } else {
           setWalletKey('N/A')
         }
-      } catch (error) {
-        console.error('Error fetching wallet key:', error)
+      } catch {
         setWalletKey('Error')
       }
     }
-
-    const fetchSolValue = async () => {
-      try {
-        const { data } = await axios.get('http://localhost:8000/sol-value')
-        if (
-          data?.balance !== undefined &&
-          data?.usd_balance !== undefined &&
-          data?.percent_change_24hr !== undefined
-        ) {
-          setWalletData({
-            sol_balance: data.balance,
-            usd_value: data.usd_balance,
-            percent_change_24hr: data.percent_change_24hr,
-          })
-        } else {
-          setWalletData({
-            sol_balance: 0,
-            usd_value: 0,
-            percent_change_24hr: 0,
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching SOL value:', error)
-        setWalletData({ sol_balance: 0, usd_value: 0, percent_change_24hr: 0 })
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchWalletKey()
-    fetchSolValue()
   }, [])
+
+  // 2) Poll SOL balance & USD value every 15s
+  const {
+    data: walletData = { sol_balance: 0, usd_value: 0, percent_change_24hr: 0 },
+    isFetching: isFetchingSol,
+  } = useQuery({
+    queryKey: ['sol-value'],
+    queryFn: async () => {
+      const { data } = await axios.get('http://localhost:8000/sol-value')
+      return {
+        sol_balance: data.balance ?? 0,
+        usd_value: data.usd_balance ?? 0,
+        percent_change_24hr: data.percent_change_24hr ?? 0,
+      }
+    },
+    refetchInterval: 15000,
+  })
 
   const copyToClipboard = () => {
     if (fullWalletKey) {
       navigator.clipboard.writeText(fullWalletKey)
-      setCopied(true)
       toast({
         title: 'Address Copied',
         description: `The address ${fullWalletKey} has been copied to your clipboard.`,
         duration: 2000,
       })
-      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -152,8 +132,8 @@ const Header = () => {
                   (walletData?.percent_change_24hr ?? 0) > 0
                     ? 'rgba(0, 255, 0, 0.02)' // Subtle green overlay
                     : (walletData?.percent_change_24hr ?? 0) < 0
-                      ? 'rgba(255, 0, 0, 0.02)' // Subtle red overlay
-                      : 'transparent',
+                    ? 'rgba(255, 0, 0, 0.02)' // Subtle red overlay
+                    : 'transparent',
                 pointerEvents: 'none', // Ensures the overlay doesn't interfere with interactions
               }}
             />
@@ -190,22 +170,26 @@ const Header = () => {
 
             <p className="text-sm mt-2">
               SOL Balance:{' '}
-              <span className="font-bold">{walletData?.sol_balance}</span>
+              <span className="font-bold">{walletData.sol_balance}</span>
+              {isFetchingSol && (
+                <Loader2 size={14} className="inline-block ml-1 animate-spin" />
+              )}
             </p>
+
             <p className="text-sm">
               USD Value:{' '}
               <span className="font-bold">
-                ${walletData?.usd_value.toFixed(2)}
+                ${walletData.usd_value.toFixed(2)}
                 <span
                   className={
-                    (walletData?.percent_change_24hr ?? 0) > 0
+                    walletData.percent_change_24hr > 0
                       ? 'text-green-500'
-                      : (walletData?.percent_change_24hr ?? 0) < 0
-                        ? 'text-red-500'
-                        : 'text-white'
+                      : walletData.percent_change_24hr < 0
+                      ? 'text-red-500'
+                      : ''
                   }
                 >
-                  ({(walletData?.percent_change_24hr ?? 0).toFixed(2)}%)
+                  ({walletData.percent_change_24hr.toFixed(2)}%)
                 </span>
               </span>
             </p>
